@@ -1,0 +1,15 @@
+{
+  "imei": "868373075775991",
+  "vehicle_id": "11111111-2222-3333-4444-555555555555",
+  "hub_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+  "hardware_type": "tracker",
+  "model": "FMC920",
+  "assigned_by": "6dbbe59e-290b-49b2-9034-71f3a5c6f7a5",
+  "requested_by": "tech.sam@omni.test",
+  "technician": "tech.sam@omni.test",
+  "status": "approved",
+  "notes": "IGN test complete",
+  "installation_timestamp": "2025-11-28T10:20:00Z",
+  "photos": ["https://files.omni/pairing/approved/photo1.jpg"],
+  "verification_note": "Wiring verified"
+}

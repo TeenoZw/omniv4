@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Omni Industrial Solutions logo</title>
+  <desc id="desc">Full Omni Industrial Solutions logo with service discipline icons.</desc>
+  <rect width="1200" height="800" fill="#f6f9fc"/>
+  <path fill="#e9eef3" d="M0 0h1200v800H0z"/>
+  <path fill="#dce4eb" d="M110 92h980v616H110z" opacity=".28"/>
+  <defs>
+    <linearGradient id="steel" x1="316" x2="886" y1="96" y2="356" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#06162b"/>
+      <stop offset="0.5" stop-color="#10243d"/>
+      <stop offset="0.54" stop-color="#dfe7ed"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="452" x2="636" y1="185" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1f80ff"/>
+      <stop offset="1" stop-color="#0049dd"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-25%" width="140%" height="150%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="16" stdDeviation="11" flood-color="#06162b" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <path fill="none" stroke="url(#steel)" stroke-linecap="round" stroke-linejoin="round" stroke-width="80" filter="url(#shadow)" d="M344 224c0-75 61-135 136-135 48 0 80 24 118 62l162 162c29 29 60 45 99 45 75 0 136-60 136-135S934 88 859 88c-49 0-81 24-119 62L578 312c-38 38-70 62-119 62-75 0-136-61-136-136Z"/>
+  <path fill="url(#blue)" d="M482 150 420 256h49l-28 97 91-137h-56l6-66Z"/>
+  <path fill="#0b1d34" d="M779 145a91 91 0 1 0 81 143l-27-16a59 59 0 0 1-77-83l23 12 16-28-24-13a59 59 0 0 1 49-1l16-27a91 91 0 0 0-57 13Z"/>
+  <path fill="#0b1d34" d="m856 156 29 28-24 24-29-28 24-24Zm35 68v41h-35v-41h35Zm-36 82-28 28-24-24 28-28 24 24Z"/>
+  <path fill="url(#blue)" d="M557 397h67V252l-67 67v78Z"/>
+  <g fill="#071a31" text-anchor="middle">
+    <text x="600" y="522" font-family="Montserrat, Eurostile, Bank Gothic, Arial, sans-serif" font-size="116" font-weight="800" letter-spacing="24">OMNI</text>
+    <text x="600" y="596" font-family="Montserrat, Arial, sans-serif" font-size="32" font-weight="600" letter-spacing="16">INDUSTRIAL SOLUTIONS</text>
+  </g>
+  <path stroke="#c7d0d9" stroke-width="2" d="M270 635h256m148 0h256"/>
+  <path stroke="#0567f2" stroke-width="3" d="M548 635h84"/>
+  <g transform="translate(166 685)" fill="#071a31" font-family="Montserrat, Arial, sans-serif" font-size="23" font-weight="800" letter-spacing="1">
+    <path fill="#0567f2" d="M22 0 0 40h18L8 82l40-58H26L22 0Z"/>
+    <text x="70" y="28">ELECTRICAL</text><text x="70" y="60">ENGINEERING</text>
+    <path d="M291 41a25 25 0 1 1-50 0 25 25 0 0 1 50 0Zm-16-40h-18l-3 14a37 37 0 0 0-10 6l-14-5-9 16 12 9a39 39 0 0 0 0 12l-12 9 9 16 14-5a37 37 0 0 0 10 6l3 14h18l3-14a37 37 0 0 0 10-6l14 5 9-16-12-9a39 39 0 0 0 0-12l12-9-9-16-14 5a37 37 0 0 0-10-6l-3-14Z"/>
+    <text x="330" y="28">MECHANICAL</text><text x="330" y="60">ENGINEERING</text>
+    <path fill="#0567f2" d="M624 68h76V56h-11V14h-14v42h-10V35h-16v21h-10V27h-15v41Z"/>
+    <text x="730" y="28">INDUSTRIAL</text><text x="730" y="60">SYSTEMS</text>
+    <rect x="942" y="7" width="55" height="44" rx="6" fill="none" stroke="#0567f2" stroke-width="7"/>
+    <path d="m957 30 11-11m-11 11 11 11m16-22-9 22m21-22 11 11m-11 11 11-11" fill="none" stroke="#0567f2" stroke-linecap="round" stroke-linejoin="round" stroke-width="5"/>
+    <path fill="#0567f2" d="M963 56h13v12h-19v8h45v-8h-18V56h12v-7h-33v7Z"/>
+  </g>
+</svg>

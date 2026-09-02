@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "$lib/*": ["src/lib/*"],
+      "src/*": ["src/*"]
+    }
+  },
+  "include": ["src", "svelte.config.js", "vite.config.js", "vitest.config.js"],
+  "exclude": ["node_modules", "dist", "src/App_old.svelte"]
+}

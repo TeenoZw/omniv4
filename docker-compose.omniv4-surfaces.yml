@@ -1,0 +1,30 @@
+services:
+  public-site:
+    build:
+      context: ./client-web
+    container_name: omni-v4-public-site
+    environment:
+      OMNI_SVELTE_ADAPTER: none
+      VITE_OMNI_SURFACE: public
+      VITE_API_URL: ${OMNI_PUBLIC_API_URL:-http://development.localhost:8000/api/method}
+    ports:
+      - "${OMNI_PUBLIC_PORT:-5174}:5174"
+    volumes:
+      - ./client-web:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5174"]
+
+  customer-portal:
+    build:
+      context: ./client-web
+    container_name: omni-v4-customer-portal
+    environment:
+      OMNI_SVELTE_ADAPTER: none
+      VITE_OMNI_SURFACE: portal
+      VITE_API_URL: ${OMNI_PORTAL_API_URL:-http://development.localhost:8000/api/method}
+    ports:
+      - "${OMNI_PORTAL_PORT:-5175}:5175"
+    volumes:
+      - ./client-web:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5175"]

@@ -1,0 +1,16 @@
+{
+  "imei": "868373075775991",
+  "vehicle_id": "11111111-2222-3333-4444-555555555555",
+  "hub_id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+  "hardware_type": "tracker",
+  "model": "FMC920",
+  "verifier": "verifier.lee@omni.test",
+  "assigned_by": "verifier.lee@omni.test",
+  "requested_by": "tech.sam@omni.test",
+  "technician": "tech.sam@omni.test",
+  "status": "rejected",
+  "notes": "Photo missing",
+  "verification_note": "Need wiring photo",
+  "installation_timestamp": "2025-11-28T10:25:00Z",
+  "photos": []
+}

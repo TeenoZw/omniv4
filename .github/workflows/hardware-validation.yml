@@ -1,0 +1,48 @@
+name: Hardware Service Validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - backend/**
+      - docs/HARDWARE_VALIDATION_STEPS.md
+      - .github/workflows/hardware-validation.yml
+  pull_request:
+    paths:
+      - backend/**
+      - docs/HARDWARE_VALIDATION_STEPS.md
+      - .github/workflows/hardware-validation.yml
+
+jobs:
+  validate-hardware:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev
+        working-directory: .
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run hardware service unit tests
+        run: pytest app/tests/services/test_hardware.py -q
+
+      - name: Run backend regression smoke
+        run: pytest --maxfail=1 --disable-warnings -q

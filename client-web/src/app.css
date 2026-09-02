@@ -1,0 +1,335 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 212.7 26.8% 83.9%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer components {
+  .marketing-grid {
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(circle at center, black 25%, transparent 78%);
+  }
+
+  .dark .marketing-grid {
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  }
+
+  .marketing-reveal {
+    animation: marketing-rise 0.75s ease-out both;
+  }
+
+  .marketing-card {
+    @apply rounded-[1.25rem] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 dark:border-slate-800 dark:bg-slate-900/70;
+  }
+
+  .marketing-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .marketing-pill {
+    @apply inline-flex items-center rounded-full border border-cyan-200/70 bg-cyan-50/80 px-3 py-1 text-xs font-semibold uppercase text-cyan-700 dark:border-cyan-500/20 dark:bg-cyan-500/10 dark:text-cyan-300;
+    letter-spacing: 0.08em;
+  }
+
+  .marketing-pill-dark {
+    @apply border-cyan-300/20 bg-cyan-300/10 text-cyan-100;
+  }
+
+  .marketing-hero img {
+    animation: marketing-hero-drift 18s ease-in-out infinite alternate;
+  }
+
+  .marketing-flow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .marketing-flow::after {
+    position: absolute;
+    inset: 0;
+    width: 45%;
+    content: "";
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(103, 232, 249, 0), rgba(103, 232, 249, 0.95), rgba(103, 232, 249, 0));
+    animation: marketing-flow 2.6s ease-in-out infinite;
+  }
+}
+
+@keyframes marketing-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes marketing-hero-drift {
+  from {
+    transform: scale(1.01) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.06) translate3d(-1.5%, -1%, 0);
+  }
+}
+
+@keyframes marketing-flow {
+  from {
+    transform: translateX(-110%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-reveal,
+  .marketing-hero img,
+  .marketing-flow::after {
+    animation: none;
+  }
+}
+
+@keyframes omni-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes omni-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer components {
+  .omni-shell-bg {
+    background-image:
+      radial-gradient(circle at top left, rgba(34, 211, 238, 0.16), transparent 28%),
+      radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 24%),
+      linear-gradient(180deg, rgba(248, 250, 252, 1) 0%, rgba(241, 245, 249, 1) 100%);
+  }
+
+  .dark .omni-shell-bg {
+    background-image:
+      radial-gradient(circle at top left, rgba(34, 211, 238, 0.16), transparent 28%),
+      radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 22%),
+      linear-gradient(180deg, rgba(7, 15, 29, 1) 0%, rgba(9, 18, 37, 1) 100%);
+  }
+
+  .omni-grid-overlay {
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(circle at center, black 28%, transparent 82%);
+  }
+
+  .dark .omni-grid-overlay {
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  }
+
+  .omni-panel {
+    @apply rounded-[1.75rem] border border-white/70 bg-white/70 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-950/70;
+    animation: omni-rise 0.45s ease-out both;
+  }
+
+  .omni-soft-panel {
+    @apply rounded-[1.35rem] border border-white/70 bg-white/60 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/45;
+  }
+
+  .omni-row-active {
+    @apply bg-cyan-50/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] dark:bg-cyan-500/10;
+  }
+
+  .omni-stat-card {
+    @apply rounded-2xl border border-white/70 bg-white/75 p-5 shadow-lg backdrop-blur dark:border-slate-800 dark:bg-slate-950/70;
+  }
+
+  .omni-kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.24em] text-cyan-700 dark:text-cyan-300;
+  }
+
+  .omni-empty-state {
+    @apply rounded-xl border border-white/60 bg-white/55 px-4 py-8 text-center text-sm text-slate-500 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-400;
+  }
+
+  .omni-inline-state {
+    @apply rounded-xl border border-white/60 bg-white/55 px-4 py-3 text-sm text-slate-500 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-400;
+  }
+
+  .omni-input,
+  .omni-select {
+    @apply w-full rounded-2xl border border-white/70 bg-white/80 px-4 py-3 text-sm text-slate-800 shadow-sm outline-none transition duration-200 placeholder:text-slate-400 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-200/70 dark:border-slate-800 dark:bg-slate-950/55 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-cyan-400 dark:focus:ring-cyan-500/20;
+  }
+
+  .omni-toolbar {
+    @apply flex flex-wrap items-center gap-3;
+  }
+
+  .omni-page-header {
+    @apply flex flex-wrap items-start justify-between gap-4;
+  }
+
+  .omni-page-header-copy {
+    @apply min-w-0 space-y-1;
+  }
+
+  .omni-page-title {
+    @apply text-2xl font-semibold tracking-tight text-slate-950 dark:text-white;
+  }
+
+  .omni-page-subtitle {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .omni-nav-link {
+    @apply flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition duration-200 ease-out;
+  }
+
+  .omni-nav-link-active {
+    @apply border border-cyan-300/70 bg-cyan-50 text-foreground shadow-sm ring-1 ring-cyan-200/60 dark:border-cyan-300/30 dark:bg-cyan-500/10 dark:ring-cyan-500/20;
+    transform: translateX(2px);
+  }
+
+  .omni-nav-link-idle {
+    @apply text-muted-foreground hover:bg-white/70 hover:text-foreground dark:hover:bg-slate-900/60;
+  }
+
+  .omni-animate-fade {
+    animation: omni-fade 0.24s ease-out both;
+  }
+
+  .omni-table-shell {
+    @apply overflow-hidden rounded-[1.4rem] border border-white/70 bg-white/50 dark:border-slate-800 dark:bg-slate-950/35;
+  }
+
+  .omni-table {
+    @apply w-full text-sm;
+  }
+
+  .omni-table thead tr {
+    @apply bg-slate-100/80 text-left text-[11px] uppercase tracking-[0.18em] text-slate-500 dark:bg-white/5 dark:text-slate-400;
+  }
+
+  .omni-table th {
+    @apply px-3 py-3 font-semibold;
+  }
+
+  .omni-table td {
+    @apply px-3 py-3 align-top;
+  }
+
+  .omni-table tbody tr {
+    @apply border-t border-white/50 transition duration-200 dark:border-slate-800;
+  }
+
+  .omni-table tbody tr:hover {
+    @apply bg-cyan-50/70 dark:bg-cyan-500/5;
+  }
+
+  .omni-workspace-hero {
+    @apply relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/75 px-6 py-6 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-950/70;
+  }
+
+  .omni-tab-rail {
+    @apply inline-flex flex-wrap items-center gap-1 rounded-[1.25rem] border border-white/70 bg-white/70 p-1.5 backdrop-blur dark:border-slate-800 dark:bg-slate-950/50;
+  }
+
+  .omni-tab-rail > * {
+    @apply transition duration-200 ease-out;
+  }
+
+  .omni-tab-rail > *:hover {
+    transform: translateY(-1px);
+  }
+}

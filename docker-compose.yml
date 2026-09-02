@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: omni-postgres
+    environment:
+      POSTGRES_USER: omni_user
+      POSTGRES_PASSWORD: omni_password
+      POSTGRES_DB: omni_logistics
+    ports:
+      - "15432:5432"
+    volumes:
+      - omni_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U omni_user -d omni_logistics"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+    container_name: omni-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://omni_user:omni_password@postgres:5432/omni_logistics
+      SECRET_KEY: ${SECRET_KEY:-replace-with-a-strong-64-char-secret-key-before-production}
+      DEBUG: "False"
+      AUTO_CREATE_SCHEMA: "True"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      REFRESH_TOKEN_EXPIRE_DAYS: "30"
+      REFRESH_TOKEN_ENTROPY_BYTES: "64"
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-tino@omnilogistics.co.zw}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-Omni@2025}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+
+  admin-web:
+    build:
+      context: ./admin-web
+    container_name: omni-admin-web
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:8000/api/v1
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./admin-web:/app
+      - /app/node_modules
+
+  client-web:
+    build:
+      context: ./client-web
+    container_name: omni-client-web
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: http://localhost:8000/api/v1
+    ports:
+      - "5174:5174"
+    volumes:
+      - ./client-web:/app
+      - /app/node_modules
+
+volumes:
+  omni_postgres_data:
