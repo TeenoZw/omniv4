@@ -84,6 +84,7 @@ Useful Frappe commands are captured in:
 - `docs/39_zimra_fdms_api_execution_plan.md` - ZIMRA fiscalisation plan
 - `docs/40_omniv4_consolidation_execution_plan.md` - current consolidation plan
 - `docs/42_omniv4_developer_runbook.md` - local development and verification commands
+- `docs/45_render_staging_runbook.md` - Render staging plan for the Frappe/ERPNext admin app
 
 ## Current Development Priority
 
@@ -101,4 +102,3 @@ Useful Frappe commands are captured in:
 Build Omni-specific workflows on top of ERPNext's reliable business engine.
 
 Do not duplicate accounting, customers, invoices, items, warehouses, or payments unless there is a clear reason ERPNext cannot serve the requirement.
-

@@ -9,7 +9,8 @@ This checklist tracks the remaining work needed before Omni v4 can move from loc
 1. Finish real telematics provider validation.
 2. Complete live ZIMRA onboarding and fiscalisation certification.
 3. Rehearse the final v3 migration from a fresh export.
-4. Harden production deployment, backups, monitoring, and access control.
+4. Prove Render staging for Frappe/ERPNext admin.
+5. Harden production deployment, backups, monitoring, and access control.
 
 ## Telematics
 
@@ -98,7 +99,8 @@ Target domains:
 
 Still required:
 
-- Choose production hosting target.
+- Create Render staging services for Frappe web, workers, scheduler, MariaDB, and Redis.
+- Point `admin-v4.omnilogistics.co.zw` to Render once the staging app is healthy.
 - Pin supported MariaDB, Redis, Python, Node, Frappe, and ERPNext versions.
 - Configure HTTPS, domain, email, file storage, backups, and restore drills.
 - Configure host-based routing so the admin Desk is only presented on `admin.omnilogistics.co.zw`.
@@ -116,6 +118,8 @@ Acceptance:
 - Backups are automated and a restore has been tested.
 - Scheduler and background workers are healthy.
 - No sample data or shared test passwords remain.
+
+Render staging acceptance is tracked in `docs/45_render_staging_runbook.md`.
 
 ## UI Readiness
 

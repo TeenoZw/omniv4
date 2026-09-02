@@ -63,10 +63,45 @@ Created on 2026-09-02:
 Current cutover notes:
 
 - `www.omnilogistics.co.zw` still points to the old `omniv3.pages.dev` Pages project until final cutover.
-- `admin.omnilogistics.co.zw` still points to the old `admin-web-erz.pages.dev` Pages project until the Oracle/Frappe server is ready.
+- `admin.omnilogistics.co.zw` still points to the old `admin-web-erz.pages.dev` Pages project until the Frappe admin cutover is ready.
 - `api.omnilogistics.co.zw` still points to the old Render API until the Frappe API is live.
-- Do not move `www`, `admin`, or `api` until the Oracle server, Frappe site, backups, and customer portal API checks are complete.
+- Render staging will use `admin-v4.omnilogistics.co.zw` for Frappe/ERPNext validation before production cutover.
+- Do not move `www`, `admin`, or `api` until the Render staging site, Frappe backups, and customer portal API checks are complete.
 - `portal-v4.omnilogistics.co.zw` is a safe preview hostname. The production portal hostname or `/portal` path should be assigned only after the Frappe API is live.
+- The v4 Cloudflare Pages preview projects currently point API/admin links at `https://admin-v4.omnilogistics.co.zw`; this hostname will become active after Render staging is created and DNS is added.
+
+## Render Staging Decision
+
+The current infrastructure decision is:
+
+- Cloudflare Pages hosts the public v4 preview and customer portal preview.
+- Render is used as a staging home for the Frappe/ERPNext admin app.
+- Render staging is not treated as final production until the full Frappe stack proves reliable with backups, workers, scheduler, MariaDB persistence, and real portal API traffic.
+
+Recommended staging hostname:
+
+```text
+admin-v4.omnilogistics.co.zw -> Render Frappe/ERPNext staging service
+```
+
+Expected Render services:
+
+1. Frappe web service running the admin app.
+2. Frappe worker service for queues.
+3. Frappe scheduler service.
+4. MariaDB service with persistent disk.
+5. Redis service.
+6. Persistent storage for Frappe public/private files, or an external object storage decision before production.
+
+Render staging acceptance:
+
+- `admin-v4.omnilogistics.co.zw` loads Frappe Desk over HTTPS.
+- `omni_operations` is installed and migrated.
+- Scheduler and workers are running.
+- MariaDB data persists across service restarts.
+- A database backup and restore rehearsal is completed.
+- Customer portal API smoke checks pass against the Render-hosted Frappe API.
+- No v3 live DNS records are changed until these checks pass.
 
 ## Local Development
 
