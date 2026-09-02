@@ -43,14 +43,22 @@ Decision:
 
 Created on 2026-09-02:
 
-- Cloudflare Pages project: `omniv4-web`
-- Source repo: `TeenoZw/omniv4`
-- Source branch: `main`
-- Build root: `client-web`
-- Build command: `npm run build`
-- Build output: `.svelte-kit/cloudflare`
-- Pages URL: `https://omniv4-web.pages.dev`
-- Preview custom domain: `https://v4.omnilogistics.co.zw`
+- Public Cloudflare Pages project: `omniv4-web`
+  - Source repo: `TeenoZw/omniv4`
+  - Source branch: `main`
+  - Build root: `client-web`
+  - Build command: `npm run build`
+  - Build output: `.svelte-kit/cloudflare`
+  - Pages URL: `https://omniv4-web.pages.dev`
+  - Preview custom domain: `https://v4.omnilogistics.co.zw`
+- Customer portal Cloudflare Pages project: `omniv4-portal`
+  - Source repo: `TeenoZw/omniv4`
+  - Source branch: `main`
+  - Build root: `client-web`
+  - Build command: `npm run build`
+  - Build output: `.svelte-kit/cloudflare`
+  - Pages URL: `https://omniv4-portal.pages.dev`
+  - Preview custom domain: `https://portal-v4.omnilogistics.co.zw`
 
 Current cutover notes:
 
@@ -58,6 +66,7 @@ Current cutover notes:
 - `admin.omnilogistics.co.zw` still points to the old `admin-web-erz.pages.dev` Pages project until the Oracle/Frappe server is ready.
 - `api.omnilogistics.co.zw` still points to the old Render API until the Frappe API is live.
 - Do not move `www`, `admin`, or `api` until the Oracle server, Frappe site, backups, and customer portal API checks are complete.
+- `portal-v4.omnilogistics.co.zw` is a safe preview hostname. The production portal hostname or `/portal` path should be assigned only after the Frappe API is live.
 
 ## Local Development
 

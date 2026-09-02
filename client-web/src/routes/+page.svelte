@@ -7,7 +7,16 @@
 </svelte:head>
 
 <script lang="ts">
+  import { browser } from "$app/environment";
+  import { goto } from "$app/navigation";
+  import { onMount } from "svelte";
   import MarketingShell from "$lib/marketing/MarketingShell.svelte";
+
+  onMount(() => {
+    if (browser && import.meta.env.VITE_OMNI_SURFACE === "portal") {
+      goto("/portal", { replaceState: true });
+    }
+  });
 
   const measures = [
     { value: "24/7", label: "fleet visibility" },
