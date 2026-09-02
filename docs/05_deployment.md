@@ -39,6 +39,26 @@ Decision:
 - Prefer `www.omnilogistics.co.zw/portal` for customers because the portal should feel like an extension of the public website.
 - Keep `admin.omnilogistics.co.zw` reserved for directors and staff.
 
+## Current Cloudflare Setup
+
+Created on 2026-09-02:
+
+- Cloudflare Pages project: `omniv4-web`
+- Source repo: `TeenoZw/omniv4`
+- Source branch: `main`
+- Build root: `client-web`
+- Build command: `npm run build`
+- Build output: `.svelte-kit/cloudflare`
+- Pages URL: `https://omniv4-web.pages.dev`
+- Preview custom domain: `https://v4.omnilogistics.co.zw`
+
+Current cutover notes:
+
+- `www.omnilogistics.co.zw` still points to the old `omniv3.pages.dev` Pages project until final cutover.
+- `admin.omnilogistics.co.zw` still points to the old `admin-web-erz.pages.dev` Pages project until the Oracle/Frappe server is ready.
+- `api.omnilogistics.co.zw` still points to the old Render API until the Frappe API is live.
+- Do not move `www`, `admin`, or `api` until the Oracle server, Frappe site, backups, and customer portal API checks are complete.
+
 ## Local Development
 
 Start the Svelte public and portal surfaces:
@@ -177,4 +197,3 @@ Current production blockers are tracked in:
 docs/38_omniv4_production_readiness.md
 docs/40_omniv4_consolidation_execution_plan.md
 ```
-
