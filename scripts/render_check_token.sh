@@ -1,22 +1,40 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ "$#" -ne 1 ]; then
-	echo "Usage: scripts/render_check_token.sh /absolute/path/to/render-token-file" >&2
+if [ "$#" -gt 1 ]; then
+	echo "Usage: scripts/render_check_token.sh [/absolute/path/to/render-token-or-env-file]" >&2
 	exit 64
 fi
 
-TOKEN_FILE="$1"
+TOKEN_FILE="${1:-}"
+TOKEN="${RENDER_API_TOKEN:-}"
 
-if [ ! -f "$TOKEN_FILE" ]; then
-	echo "Render token file not found: $TOKEN_FILE" >&2
-	exit 66
+if [ -n "$TOKEN_FILE" ]; then
+	if [ ! -f "$TOKEN_FILE" ]; then
+		echo "Render token file not found: $TOKEN_FILE" >&2
+		exit 66
+	fi
+
+	if grep -q '^RENDER_API_TOKEN=' "$TOKEN_FILE"; then
+		TOKEN="$(python3 - "$TOKEN_FILE" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+value = ""
+for line in path.read_text().splitlines():
+    if line.startswith("RENDER_API_TOKEN="):
+        value = line.split("=", 1)[1].strip().strip("\"'")
+print(value.strip())
+PY
+)"
+	else
+		TOKEN="$(tr -d '\r\n[:space:]' < "$TOKEN_FILE")"
+	fi
 fi
 
-TOKEN="$(tr -d '\r\n[:space:]' < "$TOKEN_FILE")"
-
 if [ -z "$TOKEN" ]; then
-	echo "Render token file is empty." >&2
+	echo "Render token is empty. Set RENDER_API_TOKEN or pass a token/env file path." >&2
 	exit 65
 fi
 
