@@ -5,6 +5,7 @@ services:
   - type: web
     name: omniv4-frappe-staging
     runtime: docker
+    repo: https://github.com/TeenoZw/omniv4
     plan: starter
     dockerfilePath: ./deploy/render/frappe.Dockerfile
     dockerContext: .
@@ -45,7 +46,7 @@ services:
 
   - type: pserv
     name: omniv4-mariadb
-    runtime: docker
+    runtime: image
     plan: starter
     image:
       url: mariadb:11.4
@@ -64,3 +65,4 @@ services:
     name: omniv4-redis
     plan: 256mb
     maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
