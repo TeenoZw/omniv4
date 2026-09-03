@@ -85,6 +85,8 @@ Useful Frappe commands are captured in:
 - `docs/40_omniv4_consolidation_execution_plan.md` - current consolidation plan
 - `docs/42_omniv4_developer_runbook.md` - local development and verification commands
 - `docs/45_render_staging_runbook.md` - Render staging plan for the Frappe/ERPNext admin app
+- `deploy/render/` - Render Blueprint, Frappe staging Dockerfile, and startup script
+- `scripts/render_check_token.sh` - token-safe Render API access check
 
 ## Current Development Priority
 

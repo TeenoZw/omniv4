@@ -77,6 +77,8 @@ The current infrastructure decision is:
 - Cloudflare Pages hosts the public v4 preview and customer portal preview.
 - Render is used as a staging home for the Frappe/ERPNext admin app.
 - Render staging is not treated as final production until the full Frappe stack proves reliable with backups, workers, scheduler, MariaDB persistence, and real portal API traffic.
+- The current Render staging implementation uses an all-in-one Frappe container so Desk, API, workers, scheduler, assets, and site files share one persistent `sites` disk.
+- Render deployment assets live in `deploy/render/`.
 
 Recommended staging hostname:
 
@@ -86,12 +88,10 @@ admin-v4.omnilogistics.co.zw -> Render Frappe/ERPNext staging service
 
 Expected Render services:
 
-1. Frappe web service running the admin app.
-2. Frappe worker service for queues.
-3. Frappe scheduler service.
-4. MariaDB service with persistent disk.
-5. Redis service.
-6. Persistent storage for Frappe public/private files, or an external object storage decision before production.
+1. `omniv4-frappe-staging` web service running the admin app, queue worker, scheduler, and websocket process for staging.
+2. `omniv4-mariadb` private service with persistent disk.
+3. `omniv4-redis` Redis service.
+4. Persistent storage for Frappe public/private files through the staging service disk, or an external object storage decision before production.
 
 Render staging acceptance:
 

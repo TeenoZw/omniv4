@@ -1,0 +1,66 @@
+# Render Blueprint for Omni v4 Frappe/ERPNext staging.
+# Keep production cutover on hold until this staging stack passes the runbook checks.
+
+services:
+  - type: web
+    name: omniv4-frappe-staging
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./deploy/render/frappe.Dockerfile
+    dockerContext: .
+    branch: main
+    healthCheckPath: /api/method/ping
+    disk:
+      name: omniv4-frappe-sites
+      mountPath: /home/frappe/frappe-bench/sites
+      sizeGB: 10
+    envVars:
+      - key: FRAPPE_SITE_NAME
+        value: admin-v4.omnilogistics.co.zw
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: omniv4-mariadb
+          property: host
+      - key: DB_PORT
+        value: "3306"
+      - key: REDIS_CACHE
+        fromService:
+          type: keyvalue
+          name: omniv4-redis
+          property: connectionString
+      - key: REDIS_QUEUE
+        fromService:
+          type: keyvalue
+          name: omniv4-redis
+          property: connectionString
+      - key: SOCKETIO_PORT
+        value: "9000"
+      - key: MYSQL_ROOT_PASSWORD
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: TELEMATICS_PROVIDER_TOKEN
+        sync: false
+
+  - type: pserv
+    name: omniv4-mariadb
+    runtime: docker
+    plan: starter
+    image:
+      url: mariadb:11.4
+    disk:
+      name: omniv4-mariadb-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        sync: false
+      - key: MARIADB_ROOT_PASSWORD
+        sync: false
+    dockerCommand: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --skip-character-set-client-handshake
+
+  - type: keyvalue
+    name: omniv4-redis
+    plan: 256mb
+    maxmemoryPolicy: allkeys-lru

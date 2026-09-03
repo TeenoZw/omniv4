@@ -22,22 +22,33 @@ Cloudflare DNS
 
 ## Render Services
 
-Create the Render staging stack as separate services, not as one all-in-one process.
+Use a compact all-in-one Frappe staging service first. This is intentional for Render because Frappe web, workers, scheduler, generated assets, and private/public files all need a shared `sites` path. Render disks are attached to one service at a time, so splitting Frappe into several services before external file storage is chosen would make the staging setup fragile.
 
 | Service | Render type | Purpose |
 | --- | --- | --- |
-| `omniv4-frappe-web` | Web Service | Frappe HTTP app for Desk and API. |
-| `omniv4-frappe-worker` | Background Worker | Long-running Frappe queue workers. |
-| `omniv4-frappe-scheduler` | Background Worker or Cron-backed worker | Frappe scheduled tasks. |
+| `omniv4-frappe-staging` | Web Service | Frappe Desk/API plus staging workers and scheduler in one container. |
 | `omniv4-mariadb` | Private Service with persistent disk | Frappe/ERPNext database. |
-| `omniv4-redis-cache` | Redis / Key Value | Cache and realtime support. |
-| `omniv4-redis-queue` | Redis / Key Value | Queue backend. |
+| `omniv4-redis` | Redis / Key Value | Cache, queue, and realtime support for staging. |
+
+The Blueprint template lives at:
+
+```text
+deploy/render/render.yaml
+```
+
+The Frappe image and startup entrypoint live at:
+
+```text
+deploy/render/frappe.Dockerfile
+deploy/render/start-frappe-staging.sh
+```
 
 ## Minimum Staging Requirements
 
 - Use paid Render services for anything that must stay awake.
 - MariaDB must have a persistent disk.
 - Frappe private/public files must have persistent storage before real customer documents are uploaded.
+- Treat the all-in-one Frappe process as staging only. Before production, either move to a VPS/container host that supports shared volumes between services or move Frappe file storage to object storage and split web, workers, scheduler, and websocket cleanly.
 - Do not store production secrets in GitHub.
 - Do not use the old FastAPI `backend` as the v4 API. Customer portal API calls should go to Frappe methods.
 
@@ -47,13 +58,13 @@ Use Render environment variables or secret files for:
 
 ```text
 FRAPPE_SITE_NAME=admin-v4.omnilogistics.co.zw
-ERPNEXT_VERSION=version-15
-FRAPPE_VERSION=version-15
+PORT=8000
 MYSQL_ROOT_PASSWORD=<secret>
-MYSQL_PASSWORD=<secret>
 ADMIN_PASSWORD=<secret>
-REDIS_CACHE_URL=<render-private-url>
-REDIS_QUEUE_URL=<render-private-url>
+DB_HOST=<render-private-mariadb-host>
+DB_PORT=3306
+REDIS_CACHE=<render-redis-connection-string>
+REDIS_QUEUE=<render-redis-connection-string>
 SOCKETIO_PORT=9000
 ```
 
@@ -87,11 +98,24 @@ until staging acceptance passes.
 
 ## Deployment Steps
 
-1. Create the Render services.
-2. Build or select a Frappe/ERPNext Docker image that includes `omni_operations`.
-3. Create the Frappe site `admin-v4.omnilogistics.co.zw`.
-4. Install ERPNext and `omni_operations`.
-5. Run migrations.
+1. Confirm the Render API token works:
+
+```bash
+scripts/render_check_token.sh /absolute/path/to/render-token-file
+```
+
+2. Create the Render Blueprint from `deploy/render/render.yaml`.
+3. Enter the required secret values in Render:
+
+```text
+MYSQL_ROOT_PASSWORD
+MARIADB_ROOT_PASSWORD
+ADMIN_PASSWORD
+TELEMATICS_PROVIDER_TOKEN
+```
+
+4. Deploy `omniv4-frappe-staging`.
+5. Confirm the startup script creates the site `admin-v4.omnilogistics.co.zw`, installs ERPNext, installs `omni_operations`, and runs migrations.
 6. Configure Omni setup fixtures, roles, workspaces, warehouses, and defaults.
 7. Confirm Frappe Desk loads on the Render service URL.
 8. Point `admin-v4.omnilogistics.co.zw` to Render through Cloudflare.
