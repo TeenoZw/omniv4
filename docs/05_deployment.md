@@ -79,6 +79,7 @@ The current infrastructure decision is:
 - Render staging is not treated as final production until the full Frappe stack proves reliable with backups, workers, scheduler, MariaDB persistence, and real portal API traffic.
 - The current Render staging implementation uses an all-in-one Frappe container so Desk, API, workers, scheduler, assets, and site files share one persistent `sites` disk.
 - Render deployment assets live in `deploy/render/`.
+- Render Hobby is acceptable as the workspace/account plan, but free service instances are not suitable for Frappe staging because persistent disks are required.
 
 Recommended staging hostname:
 

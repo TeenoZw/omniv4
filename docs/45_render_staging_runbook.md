@@ -45,7 +45,9 @@ deploy/render/start-frappe-staging.sh
 
 ## Minimum Staging Requirements
 
+- A Render Hobby workspace is acceptable for staging, but the services still need billing/payment information enabled because Frappe requires paid resources for persistent disks.
 - Use paid Render services for anything that must stay awake.
+- Do not use free Render services for Frappe staging; free services cannot attach the persistent disks needed for Frappe `sites` files and MariaDB data.
 - MariaDB must have a persistent disk.
 - Frappe private/public files must have persistent storage before real customer documents are uploaded.
 - Treat the all-in-one Frappe process as staging only. Before production, either move to a VPS/container host that supports shared volumes between services or move Frappe file storage to object storage and split web, workers, scheduler, and websocket cleanly.
