@@ -93,13 +93,18 @@
 
   onMount(() => {
     const updateLogoTheme = () => {
+      const colorMode = document.documentElement.classList.contains("dark") ? "dark" : "light";
       const x = Math.min(Math.max(window.innerWidth * 0.12, 64), 220);
       const y = 80;
       const themedElement = document
         .elementsFromPoint(x, y)
         .map((element) => element.closest("[data-logo-theme]"))
         .find(Boolean) as HTMLElement | undefined;
-      logoTheme = themedElement?.dataset.logoTheme === "dark" ? "dark" : "light";
+      const theme =
+        colorMode === "dark"
+          ? themedElement?.dataset.logoThemeDark ?? themedElement?.dataset.logoTheme
+          : themedElement?.dataset.logoThemeLight ?? themedElement?.dataset.logoTheme;
+      logoTheme = theme === "dark" ? "dark" : "light";
     };
 
     const handleScroll = () => {
@@ -109,6 +114,8 @@
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", updateLogoTheme);
+    const themeObserver = new MutationObserver(updateLogoTheme);
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
     const factTimer = window.setInterval(() => {
       factIndex = (factIndex + 1) % didYouKnowFacts.length;
@@ -117,6 +124,7 @@
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", updateLogoTheme);
+      themeObserver.disconnect();
       window.clearInterval(factTimer);
     };
   });
@@ -240,12 +248,12 @@
       </div>
     </section>
 
-    <div data-logo-theme="light">
+    <div data-logo-theme="light" data-logo-theme-dark="dark">
       <slot />
     </div>
   </main>
 
-  <footer data-logo-theme="light" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+  <footer data-logo-theme="light" data-logo-theme-dark="dark" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
     <div class="rounded-[1.25rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 sm:p-8">
       <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <div>
