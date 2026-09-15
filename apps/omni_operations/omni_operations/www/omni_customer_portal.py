@@ -1,5 +1,6 @@
 import frappe
 
+from omni_operations.customer_portal.api import _legal_status
 from omni_operations.fleet.customer_360 import get_customer_fleet_360, get_customer_for_user
 
 
@@ -27,9 +28,17 @@ def get_context(context):
 	if not customer:
 		frappe.throw("No customer account is linked to this portal user.", frappe.PermissionError)
 
+	legal = _legal_status(customer)
+	is_internal = bool(set(frappe.get_roles(frappe.session.user)).intersection(INTERNAL_ROLES))
+
 	context.no_cache = 1
 	context.title = "Omni Customer Portal"
 	context.customer = customer
+	context.legal = legal
+	context.legal_required = not is_internal and not legal.get("accepted")
+	if context.legal_required:
+		return context
+
 	context.data = get_customer_fleet_360(customer)
 	context.priorities = ["Low", "Medium", "High", "Urgent"]
 	return context

@@ -1,6 +1,51 @@
 {% extends "templates/web.html" %}
 
 {% block page_content %}
+{% if legal_required %}
+<div class="container my-5 omni-portal" data-customer="{{ customer }}">
+	<nav class="omni-portal-nav mb-4" aria-label="Customer portal">
+		<a class="omni-portal-brand" href="/">
+			<span class="omni-portal-brand-mark" aria-hidden="true">O</span>
+			<span>Omni Logistics</span>
+		</a>
+		<div class="omni-portal-nav-actions">
+			<a href="/">Website</a>
+			<a href="{{ legal.terms_url }}" target="_blank" rel="noreferrer">Terms</a>
+			<a href="{{ legal.privacy_policy_url }}" target="_blank" rel="noreferrer">Privacy</a>
+		</div>
+	</nav>
+
+	<section class="omni-portal-hero mb-4">
+		<div>
+			<div class="text-muted small text-uppercase">Before you continue</div>
+			<h1 class="h3 mb-2">Accept Omni portal terms</h1>
+			<p class="text-muted mb-0">
+				Please confirm that you have read and accepted the current Omni Logistics Terms & Conditions and Privacy Policy
+				before accessing customer fleet, billing, support, and document records.
+			</p>
+		</div>
+	</section>
+
+	<section class="omni-support-form">
+		<div class="mb-3">
+			<div class="fw-semibold">{{ customer }}</div>
+			<div class="small text-muted">Terms v{{ legal.terms_version }} · Privacy Policy v{{ legal.privacy_policy_version }}</div>
+		</div>
+		<div class="d-flex flex-column gap-2 mb-3">
+			<label class="d-flex gap-2 align-items-start">
+				<input class="mt-1" type="checkbox" name="accepted_terms">
+				<span>I have read and agree to the <a href="{{ legal.terms_url }}" target="_blank" rel="noreferrer">Omni Logistics Terms & Conditions</a>.</span>
+			</label>
+			<label class="d-flex gap-2 align-items-start">
+				<input class="mt-1" type="checkbox" name="accepted_privacy_policy">
+				<span>I have read and agree to the <a href="{{ legal.privacy_policy_url }}" target="_blank" rel="noreferrer">Privacy Policy</a>.</span>
+			</label>
+		</div>
+		<button class="btn btn-primary" type="button" data-accept-legal disabled>Accept and Continue</button>
+		<div class="small text-muted mt-3" data-legal-message></div>
+	</section>
+</div>
+{% else %}
 {% set vehicle_count = data.summary.vehicle_count %}
 {% set tracker_count = data.summary.tracker_count %}
 {% set ticket_count = data.summary.open_ticket_count %}
@@ -311,6 +356,7 @@
 		</div>
 	</div>
 </div>
+{% endif %}
 
 <style>
 	.omni-portal-nav,
@@ -436,6 +482,42 @@
 
 <script>
 	frappe.ready(() => {
+		const acceptButton = document.querySelector("[data-accept-legal]");
+		if (acceptButton) {
+			const terms = document.querySelector("[name='accepted_terms']");
+			const privacy = document.querySelector("[name='accepted_privacy_policy']");
+			const message = document.querySelector("[data-legal-message]");
+			const updateState = () => {
+				acceptButton.disabled = !(terms.checked && privacy.checked);
+			};
+			terms.addEventListener("change", updateState);
+			privacy.addEventListener("change", updateState);
+			acceptButton.addEventListener("click", () => {
+				acceptButton.disabled = true;
+				if (message) message.textContent = "Recording acceptance...";
+				frappe.call({
+					method: "omni_operations.customer_portal.api.accept_legal_terms",
+					args: {
+						accepted_terms: terms.checked ? 1 : 0,
+						accepted_privacy_policy: privacy.checked ? 1 : 0,
+					},
+					callback(response) {
+						if (response.message && response.message.accepted) {
+							window.location.reload();
+						}
+					},
+					error() {
+						if (message) message.textContent = "Unable to record acceptance. Please try again.";
+					},
+					always() {
+						updateState();
+					},
+				});
+			});
+			updateState();
+			return;
+		}
+
 		const form = document.querySelector(".omni-support-form");
 		if (!form) return;
 

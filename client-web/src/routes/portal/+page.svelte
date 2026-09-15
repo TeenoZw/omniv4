@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import {
+    acceptPortalLegalTerms,
     createPortalSupportTicket,
     fetchPortalCurrentCustomer,
     fetchPortalDashboardSummary,
@@ -25,9 +26,11 @@
 
   let loading = true;
   let signingIn = false;
+  let acceptingLegal = false;
   let submittingTicket = false;
   let errorMessage = "";
   let loginMessage = "";
+  let legalMessage = "";
   let ticketMessage = "";
   let loginEmail = "";
   let loginPassword = "";
@@ -43,6 +46,8 @@
   let selectedVehicle: PortalVehicleDetail | null = null;
   let selectedTicket: PortalTicketDetail | null = null;
   let detailLoading = "";
+  let termsAccepted = false;
+  let privacyAccepted = false;
 
   $: signInUrl = `${adminUrl.replace(/\/$/, "")}/login`;
   $: isSignedOut =
@@ -86,6 +91,19 @@
     errorMessage = "";
     try {
       const customerResponse = await fetchPortalCurrentCustomer();
+      currentCustomer = customerResponse;
+
+      if (!customerResponse.legal.accepted) {
+        summary = null;
+        vehicles = [];
+        invoices = [];
+        documents = [];
+        tickets = [];
+        selectedVehicle = null;
+        selectedTicket = null;
+        return;
+      }
+
       const [summaryResponse, vehicleResponse, invoiceResponse, documentResponse, ticketResponse] = await Promise.all([
         fetchPortalDashboardSummary(),
         fetchPortalVehicles(),
@@ -94,7 +112,6 @@
         fetchPortalSupportTickets(),
       ]);
 
-      currentCustomer = customerResponse;
       summary = summaryResponse;
       vehicles = vehicleResponse.vehicles;
       invoices = invoiceResponse.invoices;
@@ -106,6 +123,26 @@
       errorMessage = error instanceof Error ? error.message : "Unable to load the customer portal.";
     } finally {
       loading = false;
+    }
+  }
+
+  async function acceptLegalTerms() {
+    if (acceptingLegal || !termsAccepted || !privacyAccepted) return;
+    acceptingLegal = true;
+    legalMessage = "";
+    try {
+      const legal = await acceptPortalLegalTerms({
+        accepted_terms: termsAccepted,
+        accepted_privacy_policy: privacyAccepted,
+      });
+      if (currentCustomer) {
+        currentCustomer = { ...currentCustomer, legal };
+      }
+      await loadPortal();
+    } catch (error) {
+      legalMessage = cleanError(error instanceof Error ? error.message : "Unable to record legal acceptance.");
+    } finally {
+      acceptingLegal = false;
     }
   }
 
@@ -314,6 +351,65 @@
             </div>
           {/if}
         </div>
+      </div>
+    {:else if currentCustomer && !currentCustomer.legal.accepted}
+      <div class="grid min-h-[60vh] place-items-center">
+        <section class="w-full max-w-2xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">Before you continue</p>
+          <h1 class="mt-3 text-2xl font-bold text-slate-950">Accept Omni portal terms</h1>
+          <p class="mt-3 text-sm leading-6 text-slate-600">
+            To protect your account and fleet information, please confirm that you have read and accepted the current
+            Omni Logistics Terms & Conditions and Privacy Policy before accessing the customer portal.
+          </p>
+
+          <div class="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+            <p class="font-semibold text-slate-950">{currentCustomer.customer.display_name}</p>
+            <p class="mt-1">{currentCustomer.user.full_name || currentCustomer.user.email}</p>
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+              <a href={currentCustomer.legal.terms_url} target="_blank" rel="noreferrer" class="rounded-md border border-slate-300 bg-white px-4 py-3 font-semibold text-slate-800 transition hover:border-cyan-500 hover:text-cyan-700">
+                Read Terms v{currentCustomer.legal.terms_version}
+              </a>
+              <a href={currentCustomer.legal.privacy_policy_url} target="_blank" rel="noreferrer" class="rounded-md border border-slate-300 bg-white px-4 py-3 font-semibold text-slate-800 transition hover:border-cyan-500 hover:text-cyan-700">
+                Read Privacy Policy v{currentCustomer.legal.privacy_policy_version}
+              </a>
+            </div>
+          </div>
+
+          <div class="mt-5 space-y-3 text-sm text-slate-600">
+            <label class="flex items-start gap-3">
+              <input bind:checked={termsAccepted} type="checkbox" class="mt-1 rounded border-slate-300" />
+              <span>
+                I have read and agree to the Omni Logistics Terms & Conditions, including the rules for customer accounts,
+                tracking services, hardware, installation, support, billing, and authorised use.
+              </span>
+            </label>
+            <label class="flex items-start gap-3">
+              <input bind:checked={privacyAccepted} type="checkbox" class="mt-1 rounded border-slate-300" />
+              <span>
+                I have read and agree to the Privacy Policy, including how Omni processes customer, user, vehicle,
+                telematics, billing, support, and portal activity information.
+              </span>
+            </label>
+          </div>
+
+          {#if legalMessage}
+            <p class="mt-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">{legalMessage}</p>
+          {/if}
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              disabled={acceptingLegal || !termsAccepted || !privacyAccepted}
+              class="rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:opacity-50"
+              on:click={acceptLegalTerms}
+            >
+              {acceptingLegal ? "Recording acceptance..." : "Accept and Continue"}
+            </button>
+            <a href="/" class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-500">
+              Back to Website
+            </a>
+          </div>
+        </section>
       </div>
     {:else}
       <div class="space-y-6">

@@ -4,6 +4,11 @@ from omni_operations.fleet.customer_360 import get_customer_fleet_360, get_custo
 from omni_operations.fleet.vehicle_360 import get_vehicle_360
 from omni_operations.omni_security.access import INTERNAL_ROLES, PORTAL_ROLE
 
+CURRENT_TERMS_VERSION = "2026-09-01"
+CURRENT_PRIVACY_POLICY_VERSION = "2026-09-15"
+TERMS_URL = "/terms"
+PRIVACY_POLICY_URL = "/privacy"
+
 
 def _require_portal_user():
 	if frappe.session.user == "Guest":
@@ -56,6 +61,55 @@ def _validate_ticket_access(ticket, customer):
 
 def _doctype_has_field(doctype, fieldname):
 	return frappe.get_meta(doctype).has_field(fieldname)
+
+
+def _legal_status(customer, user=None):
+	user = user or frappe.session.user
+	accepted = frappe.db.exists(
+		"Omni Legal Acceptance",
+		{
+			"customer": customer,
+			"user": user,
+			"accepted_terms": 1,
+			"terms_version": CURRENT_TERMS_VERSION,
+			"accepted_privacy_policy": 1,
+			"privacy_policy_version": CURRENT_PRIVACY_POLICY_VERSION,
+		},
+	)
+	return {
+		"accepted": bool(accepted),
+		"terms_version": CURRENT_TERMS_VERSION,
+		"privacy_policy_version": CURRENT_PRIVACY_POLICY_VERSION,
+		"terms_url": TERMS_URL,
+		"privacy_policy_url": PRIVACY_POLICY_URL,
+		"accepted_record": accepted,
+	}
+
+
+def _require_legal_acceptance(customer):
+	if _is_internal_user():
+		return
+	status = _legal_status(customer)
+	if not status["accepted"]:
+		frappe.throw("Please accept the current Terms and Privacy Policy before using the customer portal.", frappe.PermissionError)
+
+
+def _request_ip():
+	request = getattr(frappe.local, "request", None)
+	if not request:
+		return None
+	for header in ("X-Forwarded-For", "X-Real-IP"):
+		value = request.headers.get(header)
+		if value:
+			return value.split(",")[0].strip()
+	return request.remote_addr
+
+
+def _request_user_agent():
+	request = getattr(frappe.local, "request", None)
+	if not request:
+		return None
+	return request.headers.get("User-Agent")
 
 
 def _first_unit_link_by_vehicle(customer):
@@ -136,6 +190,9 @@ def get_current_customer(customer=None):
 	customer = _get_request_customer(customer)
 	user = frappe.get_doc("User", frappe.session.user)
 	roles = frappe.get_roles(frappe.session.user)
+	legal_status = _legal_status(customer)
+	if _is_internal_user():
+		legal_status["accepted"] = True
 
 	return {
 		"user": {
@@ -147,12 +204,49 @@ def get_current_customer(customer=None):
 			"display_name": _customer_display(customer),
 		},
 		"roles": [role for role in roles if role in {PORTAL_ROLE, *INTERNAL_ROLES}],
+		"legal": legal_status,
 	}
+
+
+@frappe.whitelist()
+def accept_legal_terms(customer=None, accepted_terms=0, accepted_privacy_policy=0):
+	customer = _get_request_customer(customer)
+	if _is_internal_user():
+		frappe.throw("Internal users do not need to accept customer portal terms.", frappe.PermissionError)
+
+	if not int(accepted_terms or 0) or not int(accepted_privacy_policy or 0):
+		frappe.throw("You must accept both the Terms and Privacy Policy to continue.")
+
+	status = _legal_status(customer)
+	if status["accepted"]:
+		return status
+
+	doc = frappe.get_doc(
+		{
+			"doctype": "Omni Legal Acceptance",
+			"customer": customer,
+			"user": frappe.session.user,
+			"accepted_on": frappe.utils.now_datetime(),
+			"accepted_terms": 1,
+			"terms_version": CURRENT_TERMS_VERSION,
+			"terms_url": TERMS_URL,
+			"accepted_privacy_policy": 1,
+			"privacy_policy_version": CURRENT_PRIVACY_POLICY_VERSION,
+			"privacy_policy_url": PRIVACY_POLICY_URL,
+			"ip_address": _request_ip(),
+			"user_agent": _request_user_agent(),
+			"source": "Customer Portal",
+		}
+	)
+	doc.insert(ignore_permissions=True)
+	frappe.db.commit()
+	return _legal_status(customer)
 
 
 @frappe.whitelist()
 def get_dashboard_summary(customer=None):
 	customer = _get_request_customer(customer)
+	_require_legal_acceptance(customer)
 	data = get_customer_fleet_360(customer)
 
 	return {
@@ -188,6 +282,7 @@ def get_dashboard_summary(customer=None):
 @frappe.whitelist()
 def get_vehicles(customer=None):
 	customer = _get_request_customer(customer)
+	_require_legal_acceptance(customer)
 	links_by_vehicle = _first_unit_link_by_vehicle(customer)
 	vehicles = frappe.get_all(
 		"Fleet Vehicle",
@@ -228,6 +323,7 @@ def get_vehicles(customer=None):
 @frappe.whitelist()
 def get_vehicle_detail(vehicle, customer=None):
 	customer = _get_request_customer(customer)
+	_require_legal_acceptance(customer)
 	_validate_vehicle_access(vehicle, customer)
 	return _sanitize_vehicle_detail_for_portal(get_vehicle_360(vehicle))
 
@@ -235,6 +331,7 @@ def get_vehicle_detail(vehicle, customer=None):
 @frappe.whitelist()
 def get_invoices(customer=None):
 	customer = _get_request_customer(customer)
+	_require_legal_acceptance(customer)
 	fields = ["name", "posting_date", "due_date", "status", "grand_total", "outstanding_amount"]
 	if _doctype_has_field("Sales Invoice", "fiscalisation_status"):
 		fields.append("fiscalisation_status")
@@ -253,6 +350,7 @@ def get_invoices(customer=None):
 @frappe.whitelist()
 def get_documents(customer=None):
 	customer = _get_request_customer(customer)
+	_require_legal_acceptance(customer)
 	documents = frappe.get_all(
 		"Fleet Document",
 		filters={"customer": customer, "portal_visible": 1, "status": ["!=", "Archived"]},
@@ -292,6 +390,7 @@ def get_documents(customer=None):
 @frappe.whitelist()
 def get_support_tickets(customer=None):
 	customer = _get_request_customer(customer)
+	_require_legal_acceptance(customer)
 	tickets = frappe.get_all(
 		"Issue",
 		filters={"customer": customer},
@@ -318,6 +417,7 @@ def get_support_tickets(customer=None):
 @frappe.whitelist()
 def get_support_ticket_detail(ticket, customer=None):
 	customer = _get_request_customer(customer)
+	_require_legal_acceptance(customer)
 	_validate_ticket_access(ticket, customer)
 	fields = [
 		"name",
@@ -354,6 +454,7 @@ def get_support_ticket_detail(ticket, customer=None):
 @frappe.whitelist()
 def create_support_ticket(subject, description=None, priority="Medium", customer=None):
 	customer = _get_request_customer(customer)
+	_require_legal_acceptance(customer)
 
 	subject = (subject or "").strip()
 	if not subject:

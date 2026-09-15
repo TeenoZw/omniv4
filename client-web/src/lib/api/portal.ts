@@ -12,6 +12,16 @@ export type PortalCurrentCustomer = {
     display_name: string;
   };
   roles: string[];
+  legal: PortalLegalStatus;
+};
+
+export type PortalLegalStatus = {
+  accepted: boolean;
+  terms_version: string;
+  privacy_policy_version: string;
+  terms_url: string;
+  privacy_policy_url: string;
+  accepted_record?: string | null;
 };
 
 export type PortalDashboardSummary = {
@@ -163,6 +173,16 @@ export type PortalTicketDetail = PortalTicket & {
 
 export async function fetchPortalCurrentCustomer() {
   return frappeCall<PortalCurrentCustomer>(`${PORTAL_API}.get_current_customer`);
+}
+
+export async function acceptPortalLegalTerms(payload: {
+  accepted_terms: boolean;
+  accepted_privacy_policy: boolean;
+}) {
+  return frappeCall<PortalLegalStatus>(`${PORTAL_API}.accept_legal_terms`, {
+    method: "POST",
+    body: payload,
+  });
 }
 
 export async function fetchPortalDashboardSummary() {
