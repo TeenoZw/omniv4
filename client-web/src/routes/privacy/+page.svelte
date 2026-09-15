@@ -1,5 +1,5 @@
 <svelte:head>
-  <title>Omni Logistics · Privacy Notice</title>
+  <title>Omni Logistics · Privacy Policy</title>
 </svelte:head>
 
 <section class="mx-auto mt-6 max-w-4xl rounded-3xl border border-slate-100 bg-white/90 p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-950/90 sm:p-8">
@@ -7,7 +7,7 @@
     <a href="/" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white">
       ← Back to home
     </a>
-    <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Privacy Notice</h1>
+    <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Privacy Policy</h1>
     <p class="text-sm text-slate-600 dark:text-slate-300">
       Last updated: September 1, 2026
     </p>
@@ -18,11 +18,11 @@
       <h2 class="text-lg font-semibold text-slate-900 dark:text-white">1. Scope</h2>
       <p class="mt-2">
         Omni Logistics provides fleet tracking, telematics, asset monitoring, device installation, SIM management, and related support services.
-        This notice explains how we collect, use, store, disclose, and protect personal information in connection with those services.
+        This policy explains how we collect, use, store, disclose, and protect personal information in connection with those services.
       </p>
       <p class="mt-2">
         Omni Logistics is a trading division of Omni Industrial Solutions (Private) Limited, a company registered in Zimbabwe.
-        This notice is prepared with reference to Zimbabwe's Cyber and Data Protection Act, other applicable Zimbabwean laws,
+        This policy is prepared with reference to Zimbabwe's Cyber and Data Protection Act, other applicable Zimbabwean laws,
         and contractual obligations in the jurisdictions where we provide services.
       </p>
     </div>
@@ -150,9 +150,9 @@
     </div>
 
     <div>
-      <h2 class="text-lg font-semibold text-slate-900 dark:text-white">12. Updates to this notice</h2>
+      <h2 class="text-lg font-semibold text-slate-900 dark:text-white">12. Updates to this policy</h2>
       <p class="mt-2">
-        We may update this notice from time to time to reflect legal, operational, or service changes. The most recent version will be
+        We may update this policy from time to time to reflect legal, operational, or service changes. The most recent version will be
         published on this site.
       </p>
     </div>
