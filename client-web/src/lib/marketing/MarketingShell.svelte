@@ -14,6 +14,7 @@
   let mobileOpen = false;
   let scrolled = false;
   let factIndex = 0;
+  let logoTheme: "light" | "dark" = "dark";
 
   const didYouKnowFacts = [
     {
@@ -91,11 +92,23 @@
   $: currentFact = didYouKnowFacts[factIndex];
 
   onMount(() => {
+    const updateLogoTheme = () => {
+      const x = Math.min(Math.max(window.innerWidth * 0.12, 64), 220);
+      const y = 80;
+      const themedElement = document
+        .elementsFromPoint(x, y)
+        .map((element) => element.closest("[data-logo-theme]"))
+        .find(Boolean) as HTMLElement | undefined;
+      logoTheme = themedElement?.dataset.logoTheme === "dark" ? "dark" : "light";
+    };
+
     const handleScroll = () => {
       scrolled = window.scrollY > 12;
+      updateLogoTheme();
     };
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", updateLogoTheme);
 
     const factTimer = window.setInterval(() => {
       factIndex = (factIndex + 1) % didYouKnowFacts.length;
@@ -103,9 +116,12 @@
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", updateLogoTheme);
       window.clearInterval(factTimer);
     };
   });
+
+  $: headerOnDark = !scrolled && logoTheme === "dark";
 </script>
 
 <div class="min-h-screen bg-[#f6f8fb] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
@@ -115,7 +131,7 @@
         <img
           src="/brand/omni-industrial-solutions-logo.png"
           alt="Omni Industrial Solutions"
-          class="h-[7.5rem] w-auto rounded-xl object-contain shadow-sm sm:h-[8.75rem]"
+          class={`h-[7.5rem] w-auto rounded-xl object-contain transition duration-300 sm:h-[8.75rem] ${headerOnDark ? "omni-logo-light-treatment" : "omni-logo-full-color"}`}
         />
       </a>
 
@@ -123,7 +139,7 @@
         {#each marketingNav as item}
           <a
             href={item.href}
-            class={`transition ${currentPath === item.href ? "text-cyan-700 dark:text-cyan-300" : scrolled ? "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white" : "text-white/82 hover:text-white"}`}
+            class={`transition ${currentPath === item.href ? (headerOnDark ? "text-cyan-200" : "text-cyan-700 dark:text-cyan-300") : scrolled ? "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white" : "text-white/82 hover:text-white"}`}
           >
             {item.label}
           </a>
@@ -175,7 +191,7 @@
   </header>
 
   <main class="relative">
-    <section class="marketing-hero relative flex min-h-[92svh] items-end overflow-hidden pb-10 pt-28 sm:pb-12 lg:min-h-[88vh]">
+    <section data-logo-theme="dark" class="marketing-hero relative flex min-h-[92svh] items-end overflow-hidden pb-10 pt-28 sm:pb-12 lg:min-h-[88vh]">
       <img src={image} alt={imageAlt} class="absolute inset-0 h-full w-full object-cover" />
       <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.88),rgba(15,23,42,0.56)_45%,rgba(15,23,42,0.18)),linear-gradient(180deg,rgba(2,6,23,0.35),rgba(2,6,23,0.3)_55%,rgba(246,248,251,1))] dark:bg-[linear-gradient(90deg,rgba(2,6,23,0.92),rgba(15,23,42,0.62)_46%,rgba(15,23,42,0.24)),linear-gradient(180deg,rgba(2,6,23,0.45),rgba(2,6,23,0.36)_55%,rgba(2,6,23,1))]"></div>
       <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#f6f8fb] to-transparent dark:from-slate-950"></div>
@@ -224,10 +240,12 @@
       </div>
     </section>
 
-    <slot />
+    <div data-logo-theme="light">
+      <slot />
+    </div>
   </main>
 
-  <footer class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+  <footer data-logo-theme="light" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
     <div class="rounded-[1.25rem] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 sm:p-8">
       <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <div>
@@ -261,3 +279,15 @@
     </div>
   </footer>
 </div>
+
+<style>
+  .omni-logo-full-color {
+    filter: none;
+    box-shadow: 0 12px 35px rgb(15 23 42 / 0.12);
+  }
+
+  .omni-logo-light-treatment {
+    filter: brightness(0) invert(1) drop-shadow(0 14px 28px rgb(2 6 23 / 0.42));
+    opacity: 0.96;
+  }
+</style>
