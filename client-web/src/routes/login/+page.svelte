@@ -32,7 +32,7 @@
     </div>
 
     <div class="rounded-lg border border-slate-200 bg-slate-50 p-5">
-      <img src="/omni-eye-logo.png" alt="Omni Eye Portal" class="mx-auto h-auto w-full max-w-sm" />
+      <img src="/brand/omni-industrial-solutions-logo.png" alt="Omni Industrial Solutions" class="mx-auto h-auto w-full max-w-sm rounded-xl object-contain shadow-sm" />
       <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
         <div class="rounded-md bg-white p-4 shadow-sm">
           <p class="text-sm font-semibold text-slate-950">Customer-scoped access</p>

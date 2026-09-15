@@ -3,9 +3,9 @@
     <div class="text-center md:text-left">
       <div class="flex items-center justify-center gap-3 md:justify-start">
         <img
-          src="/brand/omni-mark.svg"
+          src="/brand/omni-industrial-solutions-logo.png"
           alt="Omni Industrial Solutions"
-          class="h-[86px] w-[86px] object-contain"
+          class="h-28 w-auto rounded-xl object-contain shadow-sm"
         />
         <span class="sr-only">Omni Logistics</span>
       </div>
