@@ -5,6 +5,22 @@
     value: string;
     label: string;
     fuelMonitoringEligible: boolean;
+    summary: string;
+    recommendedHardware: string[];
+    suitableAddOns: string[];
+  };
+
+  type UseCaseOption = {
+    value: string;
+    label: string;
+    hint: string;
+  };
+
+  type FleetSegment = {
+    id: number;
+    vehicleType: string;
+    count: string;
+    useCase: string;
   };
 
   const hardwareOptions = [
@@ -63,14 +79,103 @@
   const monthlySubscriptionPerVehicle = 10;
 
   const vehicleTypes: VehicleTypeOption[] = [
-    { value: "light_car", label: "Light vehicle / private car", fuelMonitoringEligible: false },
-    { value: "pickup", label: "Pickup / bakkie", fuelMonitoringEligible: false },
-    { value: "minibus", label: "Minibus / commuter vehicle", fuelMonitoringEligible: false },
-    { value: "truck", label: "Truck with external tank", fuelMonitoringEligible: true },
-    { value: "earthmoving", label: "Earthmoving equipment", fuelMonitoringEligible: true },
-    { value: "bus", label: "Bus / coach with accessible tank", fuelMonitoringEligible: true },
-    { value: "generator", label: "Generator / stationary equipment", fuelMonitoringEligible: true },
-    { value: "other_external_tank", label: "Other asset with visible external tank", fuelMonitoringEligible: true },
+    {
+      value: "light_car",
+      label: "Light vehicle / private car",
+      fuelMonitoringEligible: false,
+      summary: "Good fit for standard GPS tracking, route history, driver behaviour review, and lightweight fleet visibility.",
+      recommendedHardware: ["basic_4g", "obd2_tracker"],
+      suitableAddOns: [],
+    },
+    {
+      value: "pickup",
+      label: "Pickup / bakkie",
+      fuelMonitoringEligible: false,
+      summary: "Works well with 4G tracking for sales teams, service teams, and mixed urban or regional operations.",
+      recommendedHardware: ["basic_4g", "professional_tracker"],
+      suitableAddOns: ["driver_ibuttons"],
+    },
+    {
+      value: "minibus",
+      label: "Minibus / commuter vehicle",
+      fuelMonitoringEligible: false,
+      summary: "Best quoted with reliable 4G tracking; driver identification is useful where multiple drivers rotate vehicles.",
+      recommendedHardware: ["basic_4g", "professional_tracker"],
+      suitableAddOns: ["driver_ibuttons"],
+    },
+    {
+      value: "truck",
+      label: "Truck with external tank",
+      fuelMonitoringEligible: true,
+      summary: "Best suited to professional tracking, driver identification, and fuel monitoring after a tank assessment.",
+      recommendedHardware: ["professional_tracker"],
+      suitableAddOns: ["driver_ibuttons", "fuel_monitoring_solutions"],
+    },
+    {
+      value: "earthmoving",
+      label: "Earthmoving equipment",
+      fuelMonitoringEligible: true,
+      summary: "Usually needs professional tracking because installations may involve harsh sites, long idle time, and specialist sensors.",
+      recommendedHardware: ["professional_tracker"],
+      suitableAddOns: ["fuel_monitoring_solutions"],
+    },
+    {
+      value: "bus",
+      label: "Bus / coach with accessible tank",
+      fuelMonitoringEligible: true,
+      summary: "Good candidate for professional tracking, driver identification, route accountability, and fuel monitoring where tanks are accessible.",
+      recommendedHardware: ["professional_tracker"],
+      suitableAddOns: ["driver_ibuttons", "fuel_monitoring_solutions"],
+    },
+    {
+      value: "generator",
+      label: "Generator / stationary equipment",
+      fuelMonitoringEligible: true,
+      summary: "Better handled as an asset-monitoring install, often with professional tracking and fuel monitoring after site inspection.",
+      recommendedHardware: ["professional_tracker"],
+      suitableAddOns: ["fuel_monitoring_solutions"],
+    },
+    {
+      value: "other_external_tank",
+      label: "Other asset with visible external tank",
+      fuelMonitoringEligible: true,
+      summary: "Requires assessment, but professional tracking gives room for sensors, fuel monitoring, and future integrations.",
+      recommendedHardware: ["professional_tracker"],
+      suitableAddOns: ["fuel_monitoring_solutions"],
+    },
+  ];
+
+  const useCases: UseCaseOption[] = [
+    {
+      value: "general_tracking",
+      label: "General GPS tracking",
+      hint: "Good for visibility, trip history, and basic fleet control.",
+    },
+    {
+      value: "pool_vehicles",
+      label: "Pool vehicles / multiple drivers",
+      hint: "Consider Professional trackers with iButton readers so each trip can be tied to a driver.",
+    },
+    {
+      value: "delivery_dispatch",
+      label: "Delivery / dispatch operations",
+      hint: "Reliable 4G tracking helps with route history, response times, and customer updates.",
+    },
+    {
+      value: "passenger_transport",
+      label: "Passenger transport",
+      hint: "Driver identification and route accountability are usually worth considering.",
+    },
+    {
+      value: "heavy_duty_fuel",
+      label: "Heavy-duty fuel control",
+      hint: "Fuel monitoring depends on tank access and should be assessed before quoting.",
+    },
+    {
+      value: "equipment_security",
+      label: "Equipment security / site assets",
+      hint: "Professional hardware gives more flexibility for rugged installs and sensor expansion.",
+    },
   ];
 
   const addOns: AddOn[] = [
@@ -111,8 +216,8 @@
   let email = "";
   let phone = "";
   let companyName = "";
-  let fleetSize = "";
-  let selectedVehicleType = "";
+  let fleetSegments: FleetSegment[] = [{ id: 1, vehicleType: "", count: "1", useCase: "general_tracking" }];
+  let nextFleetSegmentId = 2;
   let operatingArea = "";
   let preferredContactMethod = "email";
   let expectedGoLiveDate = "";
@@ -127,10 +232,22 @@
   let successMessage = "";
   let fieldErrors: Record<string, string> = {};
 
-  $: vehicleCount = Math.max(Number.parseInt(fleetSize, 10) || 1, 1);
-  $: selectedVehicleTypeConfig = vehicleTypes.find((type) => type.value === selectedVehicleType);
-  $: selectedVehicleHasFuelMonitoring = Boolean(selectedVehicleTypeConfig?.fuelMonitoringEligible);
-  $: if (!selectedVehicleHasFuelMonitoring && selectedAddOns.includes("fuel_monitoring_solutions")) {
+  $: completedFleetSegments = fleetSegments.filter(
+    (segment) => segment.vehicleType && Math.max(Number.parseInt(segment.count, 10) || 0, 0) > 0
+  );
+  $: vehicleCount = Math.max(
+    completedFleetSegments.reduce((total, segment) => total + Math.max(Number.parseInt(segment.count, 10) || 0, 0), 0),
+    1
+  );
+  $: selectedVehicleTypeValues = completedFleetSegments.map((segment) => segment.vehicleType);
+  $: fleetHasFuelMonitoringEligibleVehicles = completedFleetSegments.some((segment) => {
+    const match = vehicleTypes.find((type) => type.value === segment.vehicleType);
+    return Boolean(match?.fuelMonitoringEligible);
+  });
+  $: fleetNeedsDriverIdentification = completedFleetSegments.some((segment) =>
+    ["pool_vehicles", "passenger_transport"].includes(segment.useCase)
+  );
+  $: if (!fleetHasFuelMonitoringEligibleVehicles && selectedAddOns.includes("fuel_monitoring_solutions")) {
     selectedAddOns = selectedAddOns.filter((id) => id !== "fuel_monitoring_solutions");
   }
   $: addOnMonthly = selectedAddOns.reduce((total, id) => {
@@ -148,6 +265,7 @@
     return match && (!match.price || !match.priceType);
   }).length;
   $: estimatedMonthly = vehicleCount * monthlySubscriptionPerVehicle + addOnMonthly;
+  $: smartInsights = buildSmartInsights();
 
   function validateEmail(value: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -171,7 +289,15 @@
     } else if (!validatePhone(phone)) {
       errors.phone = "Enter a valid phone number.";
     }
-    if (!selectedVehicleType) errors.vehicleType = "Select the main vehicle or asset type.";
+    if (completedFleetSegments.length === 0) errors.fleetSegments = "Add at least one vehicle or asset group.";
+    fleetSegments.forEach((segment) => {
+      if (!segment.vehicleType) {
+        errors.fleetSegments = "Every fleet group needs a vehicle or asset type.";
+      }
+      if ((Number.parseInt(segment.count, 10) || 0) < 1) {
+        errors.fleetSegments = "Every fleet group needs at least one vehicle or asset.";
+      }
+    });
     if (selectedHardware.length === 0) {
       errors.hardware = "Select at least one tracking hardware option.";
     }
@@ -202,6 +328,80 @@
     selectedHardware = [...selectedHardware, id];
   }
 
+  function addFleetSegment() {
+    fleetSegments = [
+      ...fleetSegments,
+      { id: nextFleetSegmentId, vehicleType: "", count: "1", useCase: "general_tracking" },
+    ];
+    nextFleetSegmentId += 1;
+  }
+
+  function removeFleetSegment(id: number) {
+    fleetSegments = fleetSegments.length === 1 ? fleetSegments : fleetSegments.filter((segment) => segment.id !== id);
+  }
+
+  function updateFleetSegment(id: number, field: keyof Omit<FleetSegment, "id">, value: string) {
+    fleetSegments = fleetSegments.map((segment) => (segment.id === id ? { ...segment, [field]: value } : segment));
+  }
+
+  function getVehicleTypeLabel(value: string) {
+    return vehicleTypes.find((type) => type.value === value)?.label ?? value;
+  }
+
+  function getUseCaseLabel(value: string) {
+    return useCases.find((useCase) => useCase.value === value)?.label ?? value;
+  }
+
+  function buildSmartInsights() {
+    const insights: string[] = [];
+    const selectedTypeConfigs = completedFleetSegments
+      .map((segment) => vehicleTypes.find((type) => type.value === segment.vehicleType))
+      .filter((type): type is VehicleTypeOption => Boolean(type));
+
+    if (completedFleetSegments.length === 0) {
+      return [
+        "Choose the vehicle or asset groups in your fleet and the form will suggest suitable tracker types and add-ons.",
+      ];
+    }
+
+    const uniqueTypes = Array.from(new Set(selectedTypeConfigs.map((type) => type.value)));
+    if (uniqueTypes.length > 1) {
+      insights.push("Mixed fleets are best quoted in groups, because light vehicles, trucks, equipment, and generators may need different hardware.");
+    }
+
+    selectedTypeConfigs.forEach((type) => {
+      insights.push(`${type.label}: ${type.summary}`);
+      if (type.recommendedHardware.length) {
+        insights.push(
+          `${type.label} tracker fit: ${type.recommendedHardware
+            .map((id) => hardwareOptions.find((hardware) => hardware.id === id)?.name ?? id)
+            .join(", ")}.`
+        );
+      }
+      if (type.suitableAddOns.length) {
+        insights.push(
+          `${type.label} add-ons to consider: ${type.suitableAddOns
+            .map((id) => addOns.find((addon) => addon.id === id)?.name ?? id)
+            .join(", ")}.`
+        );
+      }
+    });
+
+    if (fleetNeedsDriverIdentification) {
+      insights.push("Pool vehicles and passenger fleets can benefit from 1-Wire iButton readers, especially when vehicles are shared by several drivers.");
+    }
+
+    if (fleetHasFuelMonitoringEligibleVehicles) {
+      insights.push("Fuel monitoring is practical only after confirming tank access, tank shape, mounting position, and expected site conditions.");
+    }
+
+    if (selectedHardware.includes("obd2_tracker") && fleetHasFuelMonitoringEligibleVehicles) {
+      insights.push("OBD2 trackers are convenient for light vehicles, but heavy-duty fuel monitoring normally needs a Professional tracker.");
+    }
+
+    return Array.from(new Set(insights)).slice(0, 6);
+  }
+
   function toggleAddOn(id: string) {
     const next = new Set(selectedAddOns);
     const target = addOns.find((addon) => addon.id === id);
@@ -218,7 +418,7 @@
       if (target?.requiresHardware && !selectedHardware.some((item) => target.requiresHardware?.includes(item))) {
         return;
       }
-      if (target?.eligibleVehicleTypes && !target.eligibleVehicleTypes.includes(selectedVehicleType)) {
+      if (target?.eligibleVehicleTypes && !selectedVehicleTypeValues.some((type) => target.eligibleVehicleTypes?.includes(type))) {
         return;
       }
       if (target?.unavailable) {
@@ -265,13 +465,21 @@
         email,
         phone,
         company_name: companyName || null,
-        fleet_size: fleetSize || null,
+        fleet_size: String(vehicleCount),
         operating_area: operatingArea || null,
         preferred_contact_method: preferredContactMethod || null,
         expected_go_live_date: expectedGoLiveDate || null,
         tracking_use_case:
           [
-            selectedVehicleTypeConfig?.label ? `Vehicle/asset type: ${selectedVehicleTypeConfig.label}` : "",
+            completedFleetSegments.length
+              ? `Fleet mix:\n${completedFleetSegments
+                  .map(
+                    (segment) =>
+                      `- ${segment.count} x ${getVehicleTypeLabel(segment.vehicleType)} (${getUseCaseLabel(segment.useCase)})`
+                  )
+                  .join("\n")}`
+              : "",
+            smartInsights.length ? `Smart recommendations:\n${smartInsights.map((item) => `- ${item}`).join("\n")}` : "",
             trackingUseCase ? `Use case: ${trackingUseCase}` : "",
           ]
             .filter(Boolean)
@@ -287,8 +495,8 @@
       email = "";
       phone = "";
       companyName = "";
-      fleetSize = "";
-      selectedVehicleType = "";
+      fleetSegments = [{ id: 1, vehicleType: "", count: "1", useCase: "general_tracking" }];
+      nextFleetSegmentId = 2;
       operatingArea = "";
       preferredContactMethod = "email";
       expectedGoLiveDate = "";
@@ -350,7 +558,7 @@
     </div>
 
     <form class="space-y-5 sm:space-y-6" on:submit|preventDefault={handleSubmit}>
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="grid gap-4">
         <label class="block text-sm font-medium text-slate-700">
           Company / hub name (optional)
           <input
@@ -360,23 +568,99 @@
             bind:value={companyName}
           />
         </label>
-        <label class="block text-sm font-medium text-slate-700">
-          Main vehicle / asset type
-          <select
-            class={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm focus:outline-none dark:bg-slate-900 dark:text-slate-100 ${
-              fieldErrors.vehicleType
-                ? "border-red-300 focus:border-red-400 dark:border-red-500/50"
-                : "border-slate-200 focus:border-slate-900 dark:border-slate-700"
-            }`}
-            bind:value={selectedVehicleType}
+      </div>
+
+      <div class="space-y-4 rounded-3xl border border-slate-200 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/60 sm:p-5">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm font-semibold text-slate-900 dark:text-white">Fleet mix</p>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Add each vehicle or asset group so we can recommend suitable trackers and add-ons.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 dark:border-slate-700 dark:text-slate-200"
+            on:click={addFleetSegment}
           >
-            <option value="">Select vehicle or asset type</option>
-            {#each vehicleTypes as type}
-              <option value={type.value}>{type.label}</option>
+            Add another group
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          {#each fleetSegments as segment, index (segment.id)}
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+              <div class="mb-3 flex items-center justify-between gap-3">
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Group {index + 1}</p>
+                {#if fleetSegments.length > 1}
+                  <button
+                    type="button"
+                    class="text-xs font-semibold text-slate-500 underline-offset-4 hover:text-red-600 hover:underline"
+                    on:click={() => removeFleetSegment(segment.id)}
+                  >
+                    Remove
+                  </button>
+                {/if}
+              </div>
+              <div class="grid gap-3 sm:grid-cols-[1.4fr_0.7fr_1.2fr]">
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Vehicle / asset type
+                  <select
+                    class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    value={segment.vehicleType}
+                    on:change={(event) => updateFleetSegment(segment.id, "vehicleType", event.currentTarget.value)}
+                  >
+                    <option value="">Select type</option>
+                    {#each vehicleTypes as type}
+                      <option value={type.value}>{type.label}</option>
+                    {/each}
+                  </select>
+                </label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Quantity
+                  <input
+                    type="number"
+                    min="1"
+                    class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    value={segment.count}
+                    on:input={(event) => updateFleetSegment(segment.id, "count", event.currentTarget.value)}
+                  />
+                </label>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                  Main use
+                  <select
+                    class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                    value={segment.useCase}
+                    on:change={(event) => updateFleetSegment(segment.id, "useCase", event.currentTarget.value)}
+                  >
+                    {#each useCases as useCase}
+                      <option value={useCase.value}>{useCase.label}</option>
+                    {/each}
+                  </select>
+                </label>
+              </div>
+              {#if segment.useCase}
+                <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                  {useCases.find((useCase) => useCase.value === segment.useCase)?.hint}
+                </p>
+              {/if}
+            </div>
+          {/each}
+        </div>
+
+        {#if fieldErrors.fleetSegments}<p class="text-xs text-red-600">{fieldErrors.fleetSegments}</p>{/if}
+
+        <div class="rounded-2xl border border-cyan-100 bg-cyan-50/70 p-4 dark:border-cyan-900/60 dark:bg-cyan-950/20">
+          <p class="text-sm font-semibold text-slate-900 dark:text-white">Smart guidance based on your fleet</p>
+          <ul class="mt-3 space-y-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+            {#each smartInsights as insight}
+              <li class="flex gap-2">
+                <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-500"></span>
+                <span>{insight}</span>
+              </li>
             {/each}
-          </select>
-          {#if fieldErrors.vehicleType}<span class="mt-2 block text-xs text-red-600">{fieldErrors.vehicleType}</span>{/if}
-        </label>
+          </ul>
+        </div>
       </div>
 
       <div class="grid gap-4 sm:grid-cols-2">
@@ -430,16 +714,6 @@
 
       <div class="grid gap-4 sm:grid-cols-2">
         <label class="block text-sm font-medium text-slate-700">
-          Number of vehicles / assets
-          <input
-            type="number"
-            min="1"
-            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            placeholder="e.g., 12"
-            bind:value={fleetSize}
-          />
-        </label>
-        <label class="block text-sm font-medium text-slate-700">
           Operating area
           <input
             type="text"
@@ -447,20 +721,6 @@
             placeholder="Harare, Bulawayo, SADC region"
             bind:value={operatingArea}
           />
-        </label>
-      </div>
-
-      <div class="grid gap-4 sm:grid-cols-2">
-        <label class="block text-sm font-medium text-slate-700">
-          Preferred contact
-          <select
-            class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            bind:value={preferredContactMethod}
-          >
-            <option value="email">Email</option>
-            <option value="phone">Phone call</option>
-            <option value="whatsapp">WhatsApp</option>
-          </select>
         </label>
         <label class="block text-sm font-medium text-slate-700">
           Expected go-live date (optional)
@@ -477,15 +737,28 @@
         </label>
       </div>
 
-      <label class="block text-sm font-medium text-slate-700">
-        Tracking use case
-        <input
-          type="text"
-          class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-          placeholder="Logistics, school transport, mining, etc."
-          bind:value={trackingUseCase}
-        />
-      </label>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="block text-sm font-medium text-slate-700">
+          Preferred contact
+          <select
+            class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            bind:value={preferredContactMethod}
+          >
+            <option value="email">Email</option>
+            <option value="phone">Phone call</option>
+            <option value="whatsapp">WhatsApp</option>
+          </select>
+        </label>
+        <label class="block text-sm font-medium text-slate-700">
+          Other use case notes (optional)
+          <input
+            type="text"
+            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            placeholder="Any special routes, sites, or reporting needs"
+            bind:value={trackingUseCase}
+          />
+        </label>
+      </div>
 
       <div class="space-y-3">
         <p class="text-sm font-semibold text-slate-900 dark:text-white">Select tracking hardware</p>
@@ -527,7 +800,7 @@
             {@const eligibleVehicleTypes = addon.eligibleVehicleTypes ?? []}
             {@const hasRequiredHardware = requiresHardware.length === 0 || selectedHardware.some((id) => requiresHardware.includes(id))}
             {@const hasRequiredAddOns = requiresAddOns.length === 0 || requiresAddOns.every((id) => selectedAddOns.includes(id))}
-            {@const hasEligibleVehicleType = eligibleVehicleTypes.length === 0 || eligibleVehicleTypes.includes(selectedVehicleType)}
+            {@const hasEligibleVehicleType = eligibleVehicleTypes.length === 0 || selectedVehicleTypeValues.some((type) => eligibleVehicleTypes.includes(type))}
             {@const allSelectedIncompatible =
               incompatibleHardware.length > 0 && selectedHardware.length > 0 && selectedHardware.every((id) => incompatibleHardware.includes(id))}
             {@const isDisabled = Boolean(addon.unavailable) || !hasRequiredHardware || !hasRequiredAddOns || !hasEligibleVehicleType || allSelectedIncompatible}
