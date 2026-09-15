@@ -121,11 +121,11 @@
     };
   });
 
-  $: headerOnDark = !scrolled && logoTheme === "dark";
+  $: headerOnDark = logoTheme === "dark";
 </script>
 
 <div class="min-h-screen bg-[#f6f8fb] text-slate-950 dark:bg-slate-950 dark:text-slate-50">
-  <header class={`fixed left-0 right-0 top-0 z-40 transition-all duration-300 ${scrolled ? "border-b border-white/55 bg-white/86 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/78" : "bg-transparent"}`}>
+  <header class={`fixed left-0 right-0 top-0 z-40 transition-all duration-300 ${headerOnDark ? (scrolled ? "border-b border-white/10 bg-slate-950/18 shadow-sm backdrop-blur-2xl" : "bg-transparent") : "border-b border-white/55 bg-white/86 shadow-sm backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/78"}`}>
     <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
       <a href="/" class="flex items-center gap-3" aria-label="Omni Logistics home">
         <img
@@ -139,7 +139,7 @@
         {#each marketingNav as item}
           <a
             href={item.href}
-            class={`transition ${currentPath === item.href ? (headerOnDark ? "text-cyan-200" : "text-cyan-700 dark:text-cyan-300") : scrolled ? "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white" : "text-white/82 hover:text-white"}`}
+            class={`transition ${currentPath === item.href ? (headerOnDark ? "text-cyan-200" : "text-cyan-700 dark:text-cyan-300") : headerOnDark ? "text-white/82 hover:text-white" : "text-slate-600 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"}`}
           >
             {item.label}
           </a>
@@ -147,7 +147,7 @@
       </nav>
 
       <div class="hidden items-center gap-3 lg:flex">
-        <a href={secondaryAction.href} class={`rounded-full border px-4 py-2 text-sm font-medium transition ${scrolled ? "border-slate-300/70 text-slate-700 hover:border-slate-500 hover:text-slate-950 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white" : "border-white/35 bg-white/8 text-white backdrop-blur hover:bg-white/14"}`}>
+        <a href={secondaryAction.href} class={`rounded-full border px-4 py-2 text-sm font-medium transition ${headerOnDark ? "border-white/35 bg-white/8 text-white backdrop-blur hover:bg-white/14" : "border-slate-300/70 text-slate-700 hover:border-slate-500 hover:text-slate-950 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white"}`}>
           {secondaryAction.label}
         </a>
         <a href={primaryAction.href} class="rounded-full bg-cyan-300 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-sm transition hover:bg-white">
@@ -157,7 +157,7 @@
 
       <button
         type="button"
-        class={`inline-flex h-11 w-11 items-center justify-center rounded-full border backdrop-blur lg:hidden ${scrolled ? "border-slate-300/70 bg-white/70 text-slate-900 dark:border-slate-700 dark:bg-slate-900/70 dark:text-white" : "border-white/35 bg-white/10 text-white"}`}
+        class={`inline-flex h-11 w-11 items-center justify-center rounded-full border backdrop-blur lg:hidden ${headerOnDark ? "border-white/35 bg-white/10 text-white" : "border-slate-300/70 bg-white/70 text-slate-900 dark:border-slate-700 dark:bg-slate-900/70 dark:text-white"}`}
         onclick={() => (mobileOpen = !mobileOpen)}
         aria-label="Toggle menu"
       >
