@@ -6,14 +6,18 @@
     fetchPortalDashboardSummary,
     fetchPortalDocuments,
     fetchPortalInvoices,
+    fetchPortalSupportTicketDetail,
     fetchPortalSupportTickets,
+    fetchPortalVehicleDetail,
     fetchPortalVehicles,
     type PortalCurrentCustomer,
     type PortalDashboardSummary,
     type PortalDocument,
     type PortalInvoice,
     type PortalTicket,
+    type PortalTicketDetail,
     type PortalVehicle,
+    type PortalVehicleDetail,
   } from "$lib/api/portal";
   import { frappeLogin } from "$lib/api/frappe";
 
@@ -36,6 +40,9 @@
   let supportSubject = "";
   let supportDescription = "";
   let supportPriority: "Low" | "Medium" | "High" | "Urgent" = "Medium";
+  let selectedVehicle: PortalVehicleDetail | null = null;
+  let selectedTicket: PortalTicketDetail | null = null;
+  let detailLoading = "";
 
   $: signInUrl = `${adminUrl.replace(/\/$/, "")}/login`;
   $: isSignedOut =
@@ -93,10 +100,36 @@
       invoices = invoiceResponse.invoices;
       documents = documentResponse.documents;
       tickets = ticketResponse.tickets;
+      selectedVehicle = null;
+      selectedTicket = null;
     } catch (error) {
       errorMessage = error instanceof Error ? error.message : "Unable to load the customer portal.";
     } finally {
       loading = false;
+    }
+  }
+
+  async function openVehicleDetail(vehicle: PortalVehicle) {
+    detailLoading = `vehicle:${vehicle.name}`;
+    selectedTicket = null;
+    try {
+      selectedVehicle = await fetchPortalVehicleDetail(vehicle.name);
+    } catch (error) {
+      ticketMessage = error instanceof Error ? cleanError(error.message) : "Unable to load vehicle details.";
+    } finally {
+      detailLoading = "";
+    }
+  }
+
+  async function openTicketDetail(ticket: PortalTicket) {
+    detailLoading = `ticket:${ticket.name}`;
+    selectedVehicle = null;
+    try {
+      selectedTicket = await fetchPortalSupportTicketDetail(ticket.name);
+    } catch (error) {
+      ticketMessage = error instanceof Error ? cleanError(error.message) : "Unable to load support ticket.";
+    } finally {
+      detailLoading = "";
     }
   }
 
@@ -178,6 +211,11 @@
 
   function vehicleLabel(vehicle: PortalVehicle) {
     return vehicle.display_name || vehicle.registration_number || vehicle.name;
+  }
+
+  function detailVehicleLabel(vehicle?: PortalVehicleDetail["vehicle"] | null) {
+    if (!vehicle) return "Vehicle";
+    return vehicle.vehicle_name || vehicle.registration_number || vehicle.name;
   }
 
   function formatDate(value?: string | null) {
@@ -334,6 +372,13 @@
                         {:else}
                           <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">Not linked</span>
                         {/if}
+                        <button
+                          type="button"
+                          class="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-cyan-600 hover:text-cyan-700"
+                          on:click={() => openVehicleDetail(vehicle)}
+                        >
+                          {detailLoading === `vehicle:${vehicle.name}` ? "Loading..." : "View details"}
+                        </button>
                       </div>
                     </div>
                   {/each}
@@ -342,6 +387,74 @@
                 {/if}
               </div>
             </article>
+
+            {#if selectedVehicle}
+              <article class="rounded-lg border border-cyan-200 bg-white shadow-sm">
+                <div class="flex flex-wrap items-start justify-between gap-3 border-b border-cyan-100 px-5 py-4">
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Vehicle Detail</p>
+                    <h2 class="mt-1 text-lg font-bold text-slate-950">{detailVehicleLabel(selectedVehicle.vehicle)}</h2>
+                    <p class="mt-1 text-sm text-slate-500">
+                      {selectedVehicle.vehicle.registration_number || "Registration not set"} · {selectedVehicle.vehicle.status || "Status pending"}
+                    </p>
+                  </div>
+                  <button type="button" class="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-slate-500" on:click={() => (selectedVehicle = null)}>
+                    Close
+                  </button>
+                </div>
+                <div class="grid gap-4 p-5 md:grid-cols-3">
+                  <div class="rounded-md bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Tracker</p>
+                    <p class="mt-2 text-sm font-semibold text-slate-950">{selectedVehicle.tracker?.tracker_name || selectedVehicle.tracker?.name || "Not assigned"}</p>
+                    <p class="mt-1 text-xs text-slate-500">{selectedVehicle.tracker?.status || "No tracker status"}</p>
+                  </div>
+                  <div class="rounded-md bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">SIM</p>
+                    <p class="mt-2 text-sm font-semibold text-slate-950">{selectedVehicle.sim?.carrier || selectedVehicle.sim?.name || "Not assigned"}</p>
+                    <p class="mt-1 text-xs text-slate-500">{selectedVehicle.sim?.status || "No SIM status"}</p>
+                  </div>
+                  <div class="rounded-md bg-slate-50 p-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Latest Invoice</p>
+                    <p class="mt-2 text-sm font-semibold text-slate-950">{selectedVehicle.latest_invoice?.name || "No invoice"}</p>
+                    <p class="mt-1 text-xs text-slate-500">
+                      {selectedVehicle.latest_invoice ? `${money(selectedVehicle.latest_invoice.outstanding_amount ?? 0)} outstanding` : "Nothing due"}
+                    </p>
+                  </div>
+                </div>
+                <div class="grid gap-4 border-t border-slate-100 p-5 md:grid-cols-2">
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-950">Telematics</h3>
+                    {#if selectedVehicle.telematics?.links?.length}
+                      <div class="mt-3 space-y-2">
+                        {#each selectedVehicle.telematics.links as link}
+                          <div class="rounded-md border border-slate-200 p-3">
+                            <p class="text-sm font-semibold text-slate-950">{link.external_unit_name || link.name}</p>
+                            <p class="mt-1 text-xs text-slate-500">{link.provider || "Provider"} · {link.last_sync_status || "Not synced"} · {formatDate(link.last_sync_datetime)}</p>
+                          </div>
+                        {/each}
+                      </div>
+                    {:else}
+                      <p class="mt-2 text-sm text-slate-500">No telematics link is visible for this vehicle yet.</p>
+                    {/if}
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-950">Installation History</h3>
+                    {#if selectedVehicle.installations?.length}
+                      <div class="mt-3 space-y-2">
+                        {#each selectedVehicle.installations as installation}
+                          <div class="rounded-md border border-slate-200 p-3">
+                            <p class="text-sm font-semibold text-slate-950">{installation.name}</p>
+                            <p class="mt-1 text-xs text-slate-500">{installation.status || "Status pending"} · {formatDate(installation.completed_date)}</p>
+                          </div>
+                        {/each}
+                      </div>
+                    {:else}
+                      <p class="mt-2 text-sm text-slate-500">No installation history is visible yet.</p>
+                    {/if}
+                  </div>
+                </div>
+              </article>
+            {/if}
 
             <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
               <div class="border-b border-slate-200 px-5 py-4">
@@ -402,10 +515,12 @@
                 {#if tickets.length}
                   <div class="space-y-3">
                     {#each tickets.slice(0, 4) as ticket}
-                      <div>
+                      <button type="button" class="block w-full rounded-md p-2 text-left transition hover:bg-slate-50" on:click={() => openTicketDetail(ticket)}>
                         <p class="text-sm font-semibold text-slate-950">{ticket.subject}</p>
-                        <p class="text-xs text-slate-500">{ticket.status || "Open"} · {ticket.priority || "Medium"}</p>
-                      </div>
+                        <p class="text-xs text-slate-500">
+                          {ticket.status || "Open"} · {ticket.priority || "Medium"} · {detailLoading === `ticket:${ticket.name}` ? "Loading..." : "View history"}
+                        </p>
+                      </button>
                     {/each}
                   </div>
                 {:else}
@@ -413,6 +528,35 @@
                 {/if}
               </div>
             </article>
+
+            {#if selectedTicket}
+              <article class="rounded-lg border border-cyan-200 bg-white shadow-sm">
+                <div class="flex flex-wrap items-start justify-between gap-3 border-b border-cyan-100 px-5 py-4">
+                  <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700">Support Ticket</p>
+                    <h2 class="mt-1 text-lg font-bold text-slate-950">{selectedTicket.subject}</h2>
+                    <p class="mt-1 text-sm text-slate-500">{selectedTicket.status || "Open"} · {selectedTicket.priority || "Medium"} · {formatDate(selectedTicket.modified)}</p>
+                  </div>
+                  <button type="button" class="rounded-full border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-slate-500" on:click={() => (selectedTicket = null)}>
+                    Close
+                  </button>
+                </div>
+                <div class="space-y-4 p-5">
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-950">Request</h3>
+                    <p class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{stripHtml(selectedTicket.description || selectedTicket.content || "No description was captured.")}</p>
+                  </div>
+                  {#if selectedTicket.resolution_details}
+                    <div class="rounded-md bg-emerald-50 p-4">
+                      <h3 class="text-sm font-bold text-emerald-950">Resolution</h3>
+                      <p class="mt-2 whitespace-pre-line text-sm leading-6 text-emerald-800">{stripHtml(selectedTicket.resolution_details)}</p>
+                    </div>
+                  {:else}
+                    <p class="rounded-md bg-slate-50 p-4 text-sm text-slate-600">Omni Support will update this ticket as work progresses.</p>
+                  {/if}
+                </div>
+              </article>
+            {/if}
 
             <article class="rounded-lg border border-slate-200 bg-white shadow-sm">
               <div class="border-b border-slate-200 px-5 py-4">

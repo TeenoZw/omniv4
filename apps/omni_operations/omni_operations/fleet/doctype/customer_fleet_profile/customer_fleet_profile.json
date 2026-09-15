@@ -1,0 +1,308 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:customer",
+ "creation": "2026-08-16 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "customer",
+  "company",
+  "status",
+  "account_manager",
+  "summary_section",
+  "total_vehicles",
+  "active_trackers",
+  "installed_sims",
+  "open_support_tickets",
+  "summary_column_break",
+  "last_installation",
+  "latest_sales_invoice",
+  "latest_support_ticket",
+  "primary_vehicle",
+  "commercial_section",
+  "invoice_status",
+  "invoice_grand_total",
+  "invoice_outstanding_amount",
+  "latest_payment_entry",
+  "commercial_column_break",
+  "last_payment_amount",
+  "last_payment_date",
+  "operations_section",
+  "primary_tracker",
+  "primary_sim",
+  "primary_driver",
+  "vehicle_assignment",
+  "operations_column_break",
+  "maintenance_notes",
+  "contract_notes",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "no_copy": 1,
+   "options": "Customer",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Active\nOn Hold\nInactive",
+   "reqd": 1
+  },
+  {
+   "fieldname": "account_manager",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Account Manager",
+   "options": "User"
+  },
+  {
+   "fieldname": "summary_section",
+   "fieldtype": "Section Break",
+   "label": "Fleet Summary"
+  },
+  {
+   "default": "0",
+   "fieldname": "total_vehicles",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Total Vehicles"
+  },
+  {
+   "default": "0",
+   "fieldname": "active_trackers",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Active Trackers"
+  },
+  {
+   "default": "0",
+   "fieldname": "installed_sims",
+   "fieldtype": "Int",
+   "label": "Installed SIMs"
+  },
+  {
+   "default": "0",
+   "fieldname": "open_support_tickets",
+   "fieldtype": "Int",
+   "label": "Open Support Tickets"
+  },
+  {
+   "fieldname": "summary_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_installation",
+   "fieldtype": "Link",
+   "label": "Last Installation",
+   "options": "Tracker Installation"
+  },
+  {
+   "fieldname": "latest_sales_invoice",
+   "fieldtype": "Link",
+   "label": "Latest Sales Invoice",
+   "options": "Sales Invoice"
+  },
+  {
+   "fieldname": "latest_support_ticket",
+   "fieldtype": "Link",
+   "label": "Latest Support Ticket",
+   "options": "Issue"
+  },
+  {
+   "fieldname": "primary_vehicle",
+   "fieldtype": "Link",
+   "label": "Primary Vehicle",
+   "options": "Fleet Vehicle"
+  },
+  {
+   "fieldname": "commercial_section",
+   "fieldtype": "Section Break",
+   "label": "Commercial Health"
+  },
+  {
+   "fieldname": "invoice_status",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Invoice Status",
+   "read_only": 1
+  },
+  {
+   "fieldname": "invoice_grand_total",
+   "fieldtype": "Currency",
+   "label": "Invoice Grand Total",
+   "read_only": 1
+  },
+  {
+   "fieldname": "invoice_outstanding_amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Outstanding Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "latest_payment_entry",
+   "fieldtype": "Link",
+   "label": "Latest Payment",
+   "options": "Payment Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "commercial_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_payment_amount",
+   "fieldtype": "Currency",
+   "label": "Last Payment Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_payment_date",
+   "fieldtype": "Date",
+   "label": "Last Payment Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "operations_section",
+   "fieldtype": "Section Break",
+   "label": "Operational References"
+  },
+  {
+   "fieldname": "primary_tracker",
+   "fieldtype": "Link",
+   "label": "Primary Tracker",
+   "options": "Tracker Profile"
+  },
+  {
+   "fieldname": "primary_sim",
+   "fieldtype": "Link",
+   "label": "Primary SIM",
+   "options": "SIM Profile"
+  },
+  {
+   "fieldname": "primary_driver",
+   "fieldtype": "Link",
+   "label": "Primary Driver",
+   "options": "Fleet Driver"
+  },
+  {
+   "fieldname": "vehicle_assignment",
+   "fieldtype": "Link",
+   "label": "Vehicle Assignment",
+   "options": "Vehicle Assignment"
+  },
+  {
+   "fieldname": "operations_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "maintenance_notes",
+   "fieldtype": "Small Text",
+   "label": "Maintenance Notes"
+  },
+  {
+   "fieldname": "contract_notes",
+   "fieldtype": "Small Text",
+   "label": "Contract Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-16 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Fleet",
+ "name": "Customer Fleet Profile",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Omni Operations Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Fleet Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Installation Coordinator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Technician",
+   "share": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

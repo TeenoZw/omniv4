@@ -1,0 +1,280 @@
+:root {
+	--omni-v3-ink: #0f172a;
+	--omni-v3-text: #17202f;
+	--omni-v3-muted: #64748b;
+	--omni-v3-line: rgba(226, 232, 240, 0.88);
+	--omni-v3-glass: rgba(255, 255, 255, 0.74);
+	--omni-v3-soft: rgba(248, 250, 252, 0.86);
+	--omni-v3-cyan: #0891b2;
+	--omni-v3-blue: #2563eb;
+	--omni-v3-green: #059669;
+	--omni-v3-amber: #d97706;
+}
+
+.navbar .app-logo {
+	border-radius: 8px;
+	height: 30px;
+	max-height: 30px;
+	object-fit: contain;
+	width: 30px;
+}
+
+.page-card-head .app-logo {
+	border-radius: 18px;
+	height: 88px;
+	margin-bottom: 18px;
+	object-fit: contain;
+	width: 88px;
+}
+
+.splash img {
+	border-radius: 18px;
+	object-fit: contain;
+}
+
+body[data-route^="omni_customer_portal"],
+body[data-path^="omni_customer_portal"],
+body[data-route="Workspaces/Omni Operations"],
+.omni-portal {
+	background: linear-gradient(180deg, #f8fbff 0%, #f3f6fa 46%, #ffffff 100%);
+}
+
+.omni-portal {
+	border-radius: 28px;
+	color: var(--omni-v3-text);
+	margin-bottom: 42px !important;
+	margin-top: 24px !important;
+	max-width: 1180px;
+	padding: 22px;
+	position: relative;
+}
+
+.omni-portal::before {
+	background-image:
+		linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+	background-size: 44px 44px;
+	content: "";
+	inset: 0;
+	opacity: 0.25;
+	pointer-events: none;
+	position: fixed;
+	z-index: -1;
+}
+
+.omni-portal-nav,
+.omni-portal-hero,
+.omni-alert-strip,
+.omni-portal .omni-metric,
+.omni-row,
+.omni-portal .omni-empty,
+.omni-portal .omni-support-form {
+	backdrop-filter: blur(18px);
+	background: var(--omni-v3-glass);
+	border: 1px solid rgba(255, 255, 255, 0.78);
+	box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+}
+
+.omni-portal-nav {
+	border-radius: 28px;
+	margin-bottom: 18px !important;
+	padding: 14px 16px;
+}
+
+.omni-portal-brand {
+	color: var(--omni-v3-ink) !important;
+	font-weight: 800 !important;
+}
+
+.omni-portal-brand-mark {
+	background: var(--omni-v3-ink) !important;
+	border-radius: 10px !important;
+	color: #fff !important;
+}
+
+.omni-portal-nav-actions a {
+	border-radius: 999px;
+	color: #475569 !important;
+	font-weight: 700 !important;
+	padding: 8px 11px;
+}
+
+.omni-portal-nav-actions a:hover {
+	background: rgba(255, 255, 255, 0.74);
+	color: var(--omni-v3-ink) !important;
+	text-decoration: none;
+}
+
+.omni-portal-hero {
+	border-radius: 30px;
+	margin-bottom: 18px !important;
+	padding: 24px !important;
+}
+
+.omni-portal-hero .text-uppercase,
+.omni-portal h2 {
+	letter-spacing: 0;
+}
+
+.omni-portal-hero h1 {
+	color: var(--omni-v3-ink);
+	font-size: 2rem;
+	font-weight: 850;
+}
+
+.omni-status-pill,
+.omni-portal .omni-badge {
+	background: rgba(236, 253, 245, 0.84) !important;
+	border-color: rgba(16, 185, 129, 0.28) !important;
+	color: #047857 !important;
+	font-weight: 800 !important;
+}
+
+.omni-alert-strip {
+	border-left: 0 !important;
+	border-radius: 26px !important;
+}
+
+.omni-portal .omni-metric {
+	border-radius: 24px !important;
+	min-height: 118px;
+}
+
+.omni-portal .omni-metric .h4 {
+	color: var(--omni-v3-ink);
+	font-size: 2rem;
+	font-weight: 900;
+}
+
+.omni-stack {
+	gap: 0.85rem !important;
+}
+
+.omni-row {
+	border-radius: 22px !important;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.omni-row:hover {
+	border-color: rgba(34, 211, 238, 0.35);
+	box-shadow: 0 22px 50px rgba(15, 23, 42, 0.1);
+	transform: translateY(-1px);
+}
+
+.omni-portal section h2 {
+	color: var(--omni-v3-ink);
+	font-weight: 850;
+}
+
+.omni-portal .text-muted {
+	color: var(--omni-v3-muted) !important;
+}
+
+.omni-portal .btn-primary {
+	background: var(--omni-v3-ink);
+	border-color: var(--omni-v3-ink);
+	border-radius: 999px;
+	font-weight: 800;
+}
+
+.omni-portal .btn-outline-primary {
+	border-color: rgba(37, 99, 235, 0.4);
+	border-radius: 999px;
+	color: var(--omni-v3-blue);
+	font-weight: 800;
+}
+
+.omni-portal .form-control {
+	background: rgba(255, 255, 255, 0.84);
+	border-color: rgba(226, 232, 240, 0.95);
+	border-radius: 16px;
+	min-height: 42px;
+}
+
+.omni-portal .form-control:focus {
+	border-color: rgba(34, 211, 238, 0.7);
+	box-shadow: 0 0 0 0.18rem rgba(34, 211, 238, 0.18);
+}
+
+.omni-portal .omni-empty {
+	border-style: dashed;
+	border-radius: 20px !important;
+	color: var(--omni-v3-muted);
+}
+
+.omni-portal .omni-support-form {
+	border-radius: 24px !important;
+}
+
+.desktop .workspace-sidebar,
+.layout-side-section {
+	background: rgba(255, 255, 255, 0.72);
+	border-right: 1px solid rgba(226, 232, 240, 0.86);
+}
+
+.workspace-page .layout-main-section,
+.desk-page .layout-main-section {
+	background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.workspace-card,
+.shortcut-widget-box,
+.widget,
+.number-widget-box,
+.dashboard-widget-box {
+	border: 1px solid rgba(226, 232, 240, 0.9) !important;
+	border-radius: 14px !important;
+	box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06) !important;
+}
+
+.workspace-card:hover,
+.shortcut-widget-box:hover {
+	border-color: rgba(34, 211, 238, 0.42) !important;
+	box-shadow: 0 12px 28px rgba(15, 23, 42, 0.09) !important;
+}
+
+body[data-route="Workspaces/Omni Operations"] .page-title .title-text {
+	color: var(--omni-v3-ink);
+	font-weight: 850;
+}
+
+body[data-route="Workspaces/Omni Operations"] .widget-head,
+body[data-route="Workspaces/Omni Operations"] .shortcut-widget-box .widget-head {
+	border-bottom: 1px solid rgba(226, 232, 240, 0.72);
+	margin-bottom: 8px;
+	padding-bottom: 8px;
+}
+
+body[data-route="Workspaces/Omni Operations"] .widget-title,
+body[data-route="Workspaces/Omni Operations"] .shortcut-title {
+	color: var(--omni-v3-ink);
+	font-weight: 800;
+	letter-spacing: 0;
+}
+
+.standard-sidebar-item.selected,
+.standard-sidebar-item:hover {
+	background: rgba(236, 254, 255, 0.9) !important;
+	color: var(--omni-v3-ink) !important;
+}
+
+.form-dashboard,
+.list-row-container,
+.frappe-list .result {
+	border-radius: 14px;
+}
+
+@media (max-width: 768px) {
+	.omni-portal {
+		padding: 12px;
+	}
+
+	.omni-portal-nav,
+	.omni-portal-hero {
+		border-radius: 22px;
+	}
+
+	.omni-portal-hero h1 {
+		font-size: 1.55rem;
+	}
+}

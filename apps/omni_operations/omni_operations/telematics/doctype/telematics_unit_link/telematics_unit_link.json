@@ -1,0 +1,305 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-16 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "provider_account",
+  "provider",
+  "status",
+  "customer",
+  "vehicle",
+  "tracker",
+  "sim",
+  "installation",
+  "external_section",
+  "external_unit_id",
+  "external_unit_name",
+  "external_device_id",
+  "external_imei",
+  "external_column_break",
+  "external_group",
+  "timezone",
+  "sync_enabled",
+  "position_section",
+  "last_position_datetime",
+  "latitude",
+  "longitude",
+  "position_column_break",
+  "speed",
+  "ignition",
+  "odometer",
+  "sync_section",
+  "last_sync_datetime",
+  "last_sync_status",
+  "last_error",
+  "notes"
+ ],
+ "fields": [
+  {
+   "default": "TUL-.YYYY.-.####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "TUL-.YYYY.-.####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "provider_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Provider Account",
+   "options": "Telematics Provider Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "provider",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Provider",
+   "read_only": 1
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Active\nInactive\nUnlinked\nError",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "vehicle",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Vehicle",
+   "options": "Fleet Vehicle",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tracker",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tracker",
+   "options": "Tracker Profile"
+  },
+  {
+   "fieldname": "sim",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "SIM",
+   "options": "SIM Profile"
+  },
+  {
+   "fieldname": "installation",
+   "fieldtype": "Link",
+   "label": "Installation",
+   "options": "Tracker Installation"
+  },
+  {
+   "fieldname": "external_section",
+   "fieldtype": "Section Break",
+   "label": "External Unit"
+  },
+  {
+   "fieldname": "external_unit_id",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "External Unit ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "external_unit_name",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "label": "External Unit Name"
+  },
+  {
+   "fieldname": "external_device_id",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "label": "External Device ID"
+  },
+  {
+   "fieldname": "external_imei",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "label": "External IMEI"
+  },
+  {
+   "fieldname": "external_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "external_group",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "External Group"
+  },
+  {
+   "fieldname": "timezone",
+   "fieldtype": "Data",
+   "label": "Timezone"
+  },
+  {
+   "default": "1",
+   "fieldname": "sync_enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Sync Enabled"
+  },
+  {
+   "fieldname": "position_section",
+   "fieldtype": "Section Break",
+   "label": "Latest Position"
+  },
+  {
+   "fieldname": "last_position_datetime",
+   "fieldtype": "Datetime",
+   "in_standard_filter": 1,
+   "label": "Last Position"
+  },
+  {
+   "fieldname": "latitude",
+   "fieldtype": "Float",
+   "label": "Latitude"
+  },
+  {
+   "fieldname": "longitude",
+   "fieldtype": "Float",
+   "label": "Longitude"
+  },
+  {
+   "fieldname": "position_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "speed",
+   "fieldtype": "Float",
+   "label": "Speed"
+  },
+  {
+   "default": "0",
+   "fieldname": "ignition",
+   "fieldtype": "Check",
+   "label": "Ignition"
+  },
+  {
+   "fieldname": "odometer",
+   "fieldtype": "Float",
+   "label": "Odometer"
+  },
+  {
+   "fieldname": "sync_section",
+   "fieldtype": "Section Break",
+   "label": "Sync Health"
+  },
+  {
+   "fieldname": "last_sync_datetime",
+   "fieldtype": "Datetime",
+   "in_standard_filter": 1,
+   "label": "Last Sync"
+  },
+  {
+   "default": "Never Synced",
+   "fieldname": "last_sync_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Last Sync Status",
+   "options": "Never Synced\nSuccess\nWarning\nFailed"
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last Error"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-16 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Telematics",
+ "name": "Telematics Unit Link",
+ "naming_rule": "By Naming Series",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Omni Operations Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Fleet Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Installation Coordinator",
+   "share": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "external_unit_name",
+ "track_changes": 1
+}

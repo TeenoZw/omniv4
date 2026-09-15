@@ -1,0 +1,43 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-17 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": ["naming_series", "provider_account", "fiscal_device", "company", "day_number", "status", "fdms_status", "operation_id", "opened_datetime", "closed_datetime", "last_receipt_counter", "last_receipt_global_no", "fiscal_day_server_signature", "closing_error_code", "notes"],
+ "fields": [
+  {"default": "FDAY-.YYYY.-.####", "fieldname": "naming_series", "fieldtype": "Select", "label": "Series", "options": "FDAY-.YYYY.-.####", "reqd": 1},
+  {"fieldname": "provider_account", "fieldtype": "Link", "label": "Provider Account", "options": "Fiscal Provider Account", "reqd": 1},
+  {"fieldname": "fiscal_device", "fieldtype": "Link", "in_list_view": 1, "label": "Fiscal Device", "options": "Fiscal Device", "reqd": 1},
+  {"fieldname": "company", "fieldtype": "Link", "label": "Company", "options": "Company", "reqd": 1},
+  {"fieldname": "day_number", "fieldtype": "Int", "in_list_view": 1, "label": "Day Number", "reqd": 1},
+  {"default": "Open", "fieldname": "status", "fieldtype": "Select", "in_list_view": 1, "label": "Status", "options": "Open\nClosed\nFailed", "reqd": 1},
+  {"fieldname": "fdms_status", "fieldtype": "Select", "label": "FDMS Status", "options": "\nFiscalDayClosed\nFiscalDayOpened\nFiscalDayCloseInitiated\nFiscalDayCloseFailed"},
+  {"fieldname": "operation_id", "fieldtype": "Data", "label": "FDMS Operation ID", "read_only": 1},
+  {"fieldname": "opened_datetime", "fieldtype": "Datetime", "label": "Opened"},
+  {"fieldname": "closed_datetime", "fieldtype": "Datetime", "label": "Closed"},
+  {"default": "0", "fieldname": "last_receipt_counter", "fieldtype": "Int", "label": "Last Receipt Counter"},
+  {"default": "0", "fieldname": "last_receipt_global_no", "fieldtype": "Int", "label": "Last Receipt Global No"},
+  {"fieldname": "fiscal_day_server_signature", "fieldtype": "Long Text", "label": "Fiscal Day Server Signature", "read_only": 1},
+  {"fieldname": "closing_error_code", "fieldtype": "Data", "label": "Closing Error Code", "read_only": 1},
+  {"fieldname": "notes", "fieldtype": "Small Text", "label": "Notes"}
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-17 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Fiscalisation",
+ "name": "Fiscal Day",
+ "naming_rule": "By Naming Series",
+ "owner": "Administrator",
+ "permissions": [
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1},
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Omni Operations Admin", "share": 1, "write": 1}
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

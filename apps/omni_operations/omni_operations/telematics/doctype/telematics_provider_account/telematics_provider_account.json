@@ -1,0 +1,259 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:account_name",
+ "creation": "2026-08-16 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "account_name",
+  "provider",
+  "account_scope",
+  "status",
+  "company",
+  "customer",
+  "hierarchy_section",
+  "external_account_name",
+  "parent_provider_account",
+  "region",
+  "credentials_section",
+  "api_base_url",
+  "auth_type",
+  "username",
+  "credentials_column_break",
+  "access_token",
+  "password",
+  "provider_account_id",
+  "sync_section",
+  "sync_enabled",
+  "ignored_external_unit_ids",
+  "last_sync_datetime",
+  "last_sync_status",
+  "last_error",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "account_name",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Account Name",
+   "no_copy": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "Other",
+   "fieldname": "provider",
+   "fieldtype": "Select",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Provider",
+   "options": "Other\nWialon\nTraccar\nNavixy\nRuptela\nTeltonika Telematics\nCustom API",
+   "reqd": 1
+  },
+  {
+   "default": "Customer Hub",
+   "fieldname": "account_scope",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Account Scope",
+   "options": "System-wide\nRegional Admin\nCustomer Hub",
+   "reqd": 1
+  },
+  {
+   "default": "Testing",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Testing\nActive\nInactive\nSuspended",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "hierarchy_section",
+   "fieldtype": "Section Break",
+   "label": "Provider Hierarchy"
+  },
+  {
+   "fieldname": "external_account_name",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "label": "External Account/User Name"
+  },
+  {
+   "fieldname": "parent_provider_account",
+   "fieldtype": "Link",
+   "label": "Parent Provider Account",
+   "options": "Telematics Provider Account"
+  },
+  {
+   "fieldname": "region",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "Region"
+  },
+  {
+   "fieldname": "credentials_section",
+   "fieldtype": "Section Break",
+   "label": "Connection"
+  },
+  {
+   "fieldname": "api_base_url",
+   "fieldtype": "Data",
+   "in_standard_filter": 1,
+   "label": "API Base URL"
+  },
+  {
+   "default": "API Token",
+   "fieldname": "auth_type",
+   "fieldtype": "Select",
+   "label": "Auth Type",
+   "options": "API Token\nUsername and Password\nOAuth\nNone\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "username",
+   "fieldtype": "Data",
+   "label": "Username"
+  },
+  {
+   "fieldname": "credentials_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "access_token",
+   "fieldtype": "Password",
+   "label": "Access Token"
+  },
+  {
+   "fieldname": "password",
+   "fieldtype": "Password",
+   "label": "Password"
+  },
+  {
+   "fieldname": "provider_account_id",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "label": "Provider Account ID"
+  },
+  {
+   "fieldname": "sync_section",
+   "fieldtype": "Section Break",
+   "label": "Sync Health"
+  },
+  {
+   "default": "1",
+   "fieldname": "sync_enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Sync Enabled"
+  },
+  {
+   "description": "One external unit ID per line. Ignored units are skipped during provider sync and do not create unmatched-unit warnings.",
+   "fieldname": "ignored_external_unit_ids",
+   "fieldtype": "Small Text",
+   "label": "Ignored External Unit IDs"
+  },
+  {
+   "fieldname": "last_sync_datetime",
+   "fieldtype": "Datetime",
+   "in_standard_filter": 1,
+   "label": "Last Sync"
+  },
+  {
+   "default": "Never Synced",
+   "fieldname": "last_sync_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Last Sync Status",
+   "options": "Never Synced\nSuccess\nWarning\nFailed"
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last Error"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-16 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Telematics",
+ "name": "Telematics Provider Account",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Omni Operations Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Fleet Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "account_name",
+ "track_changes": 1
+}

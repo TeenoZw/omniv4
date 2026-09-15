@@ -1,0 +1,221 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-28 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "status",
+  "slot",
+  "tracker",
+  "sim",
+  "source_installation",
+  "assignment_section",
+  "customer",
+  "vehicle",
+  "assignment_column_break",
+  "assigned_technician",
+  "prepared_date",
+  "assigned_date",
+  "installed_date",
+  "removed_date",
+  "notes"
+ ],
+ "fields": [
+  {
+   "default": "TSA-.YYYY.-.####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Naming Series",
+   "options": "TSA-.YYYY.-.####"
+  },
+  {
+   "default": "Prepared",
+   "description": "Prepared = tracker and SIM are paired before a customer is known. Reserved = held for a customer/job. Assigned = linked to a customer and vehicle. Installed = fitted and active on the vehicle.",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Prepared\nReserved\nAssigned\nInstalled\nRemoved\nCancelled",
+   "reqd": 1
+  },
+  {
+   "default": "Primary",
+   "description": "Use Primary for normal trackers. Secondary/SIM 2 supports future dual-SIM devices without changing the workflow.",
+   "fieldname": "slot",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "SIM Slot",
+   "options": "Primary\nSecondary\nSIM 1\nSIM 2",
+   "reqd": 1
+  },
+  {
+   "description": "Hardware device being paired with this SIM.",
+   "fieldname": "tracker",
+   "fieldtype": "Link",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tracker",
+   "options": "Tracker Profile",
+   "reqd": 1
+  },
+  {
+   "description": "SIM card being paired, reserved, assigned or installed.",
+   "fieldname": "sim",
+   "fieldtype": "Link",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "SIM",
+   "options": "SIM Profile",
+   "reqd": 1
+  },
+  {
+   "fieldname": "source_installation",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Source Installation",
+   "options": "Tracker Installation"
+  },
+  {
+   "fieldname": "assignment_section",
+   "fieldtype": "Section Break",
+   "label": "Assignment Context"
+  },
+  {
+   "description": "Customer hub. Optional while Prepared, required once assigned or installed.",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "description": "Vehicle receiving this kit. Optional while Prepared, required once assigned or installed.",
+   "fieldname": "vehicle",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Vehicle",
+   "options": "Fleet Vehicle"
+  },
+  {
+   "fieldname": "assignment_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "assigned_technician",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Assigned Technician",
+   "options": "User"
+  },
+  {
+   "fieldname": "prepared_date",
+   "fieldtype": "Datetime",
+   "label": "Prepared Date"
+  },
+  {
+   "fieldname": "assigned_date",
+   "fieldtype": "Datetime",
+   "label": "Assigned Date"
+  },
+  {
+   "fieldname": "installed_date",
+   "fieldtype": "Datetime",
+   "label": "Installed Date"
+  },
+  {
+   "fieldname": "removed_date",
+   "fieldtype": "Datetime",
+   "label": "Removed Date"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-28 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Tracker Inventory",
+ "name": "Tracker SIM Assignment",
+ "naming_rule": "By Naming Series",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Omni Operations Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Fleet Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Installation Coordinator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Technician",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "sim",
+ "track_changes": 1
+}

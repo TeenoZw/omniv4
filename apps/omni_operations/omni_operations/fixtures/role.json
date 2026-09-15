@@ -1,0 +1,67 @@
+[
+ {
+  "desk_access": 1,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Role",
+  "home_page": null,
+  "is_custom": 0,
+  "modified": "2026-09-01 21:18:52.632655",
+  "name": "Omni Operations Admin",
+  "restrict_to_domain": null,
+  "role_name": "Omni Operations Admin",
+  "two_factor_auth": 0
+ },
+ {
+  "desk_access": 1,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Role",
+  "home_page": null,
+  "is_custom": 0,
+  "modified": "2026-09-01 21:18:52.640795",
+  "name": "Installation Coordinator",
+  "restrict_to_domain": null,
+  "role_name": "Installation Coordinator",
+  "two_factor_auth": 0
+ },
+ {
+  "desk_access": 1,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Role",
+  "home_page": null,
+  "is_custom": 0,
+  "modified": "2026-09-01 21:18:52.650793",
+  "name": "Technician",
+  "restrict_to_domain": null,
+  "role_name": "Technician",
+  "two_factor_auth": 0
+ },
+ {
+  "desk_access": 1,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Role",
+  "home_page": null,
+  "is_custom": 0,
+  "modified": "2026-09-01 21:18:52.658981",
+  "name": "Fleet Manager",
+  "restrict_to_domain": null,
+  "role_name": "Fleet Manager",
+  "two_factor_auth": 0
+ },
+ {
+  "desk_access": 0,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Role",
+  "home_page": null,
+  "is_custom": 0,
+  "modified": "2026-09-01 21:18:52.666170",
+  "name": "Customer Portal User",
+  "restrict_to_domain": null,
+  "role_name": "Customer Portal User",
+  "two_factor_auth": 0
+ }
+]

@@ -1,0 +1,469 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+{% set vehicle_count = data.summary.vehicle_count %}
+{% set tracker_count = data.summary.tracker_count %}
+{% set ticket_count = data.summary.open_ticket_count %}
+{% set outstanding_amount = data.profile.invoice_outstanding_amount or 0 %}
+<div class="container my-5 omni-portal" data-customer="{{ customer }}">
+	<nav class="omni-portal-nav mb-4" aria-label="Customer portal">
+		<a class="omni-portal-brand" href="/">
+			<span class="omni-portal-brand-mark" aria-hidden="true">O</span>
+			<span>Omni Logistics</span>
+		</a>
+		<div class="omni-portal-nav-actions">
+			<a href="/">Website</a>
+			<a href="/portal">Portal</a>
+			<a href="/?contact=demo">Support</a>
+		</div>
+	</nav>
+	<div class="omni-portal-hero d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+		<div>
+			<div class="text-muted small text-uppercase">Customer Portal</div>
+			<h1 class="h3 mb-1">{{ customer }}</h1>
+			<div class="text-muted">Fleet, billing, support, and maintenance.</div>
+		</div>
+		<div class="text-lg-end">
+			<div class="omni-status-pill">{{ data.profile.status or "Active" }}</div>
+			<div class="small text-muted mt-2">Latest invoice {{ data.profile.latest_sales_invoice or "None" }}</div>
+		</div>
+	</div>
+
+	{% if outstanding_amount or ticket_count or data.summary.open_maintenance_count %}
+	<div class="omni-alert-strip mb-4">
+		{% if outstanding_amount %}
+		<div>
+			<div class="small text-muted">Balance due</div>
+			<div class="fw-semibold">{{ frappe.format(outstanding_amount, {"fieldtype": "Currency"}) }}</div>
+		</div>
+		{% endif %}
+		{% if ticket_count %}
+		<div>
+			<div class="small text-muted">Open support</div>
+			<div class="fw-semibold">{{ ticket_count }} request{{ "s" if ticket_count != 1 else "" }}</div>
+		</div>
+		{% endif %}
+		{% if data.summary.open_maintenance_count %}
+		<div>
+			<div class="small text-muted">Open maintenance</div>
+			<div class="fw-semibold">{{ data.summary.open_maintenance_count }} job{{ "s" if data.summary.open_maintenance_count != 1 else "" }}</div>
+		</div>
+		{% endif %}
+		{% if data.summary.expiring_document_count %}
+		<div>
+			<div class="small text-muted">Documents with dates</div>
+			<div class="fw-semibold">{{ data.summary.expiring_document_count }} visible</div>
+		</div>
+		{% endif %}
+		{% if data.summary.overdue_contract_count %}
+		<div>
+			<div class="small text-muted">Contract billing</div>
+			<div class="fw-semibold">{{ data.summary.overdue_contract_count }} overdue</div>
+		</div>
+		{% endif %}
+	</div>
+	{% endif %}
+
+	<div class="row g-3 mb-4">
+		<div class="col-6 col-lg-3">
+			<div class="omni-metric">
+				<div class="text-muted small">Vehicles</div>
+				<div class="h4 mb-0">{{ vehicle_count }}</div>
+			</div>
+		</div>
+		<div class="col-6 col-lg-3">
+			<div class="omni-metric">
+				<div class="text-muted small">Active Trackers</div>
+				<div class="h4 mb-0">{{ tracker_count }}</div>
+				<div class="small text-muted">{{ data.summary.live_telematics_count }} live · {{ data.summary.staged_telematics_count }} staged</div>
+			</div>
+		</div>
+		<div class="col-6 col-lg-3">
+			<div class="omni-metric">
+				<div class="text-muted small">Contracts</div>
+				<div class="h4 mb-0">{{ data.summary.active_contract_count }}</div>
+				<div class="small text-muted">Active</div>
+			</div>
+		</div>
+		<div class="col-6 col-lg-3">
+			<div class="omni-metric">
+				<div class="text-muted small">Outstanding</div>
+				<div class="h4 mb-0">{{ frappe.format(outstanding_amount, {"fieldtype": "Currency"}) }}</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row g-4">
+		<div class="col-xl-8">
+			<section class="mb-4">
+				<div class="d-flex justify-content-between align-items-center mb-2">
+					<h2 class="h5 mb-0">Vehicles</h2>
+					<span class="small text-muted">{{ data.vehicles | length }} shown</span>
+				</div>
+				<div class="omni-stack">
+					{% for vehicle in data.vehicles %}
+					<div class="omni-row">
+						<div class="d-flex justify-content-between gap-3 omni-row-main">
+							<div>
+								<div class="fw-semibold">{{ vehicle.vehicle_name or vehicle.name }}</div>
+								<div class="small text-muted">
+									{{ vehicle.name }}
+									{% if vehicle.vehicle_type %} · {{ vehicle.vehicle_type }}{% endif %}
+									{% if vehicle.make or vehicle.model %} · {{ vehicle.make or "" }} {{ vehicle.model or "" }}{% endif %}
+								</div>
+								<div class="small text-muted mt-1">
+									{{ vehicle.telematics_unit or "No unit" }}
+									{% if vehicle.last_position_datetime %} · Last position {{ vehicle.last_position_datetime }}{% endif %}
+								</div>
+							</div>
+							<div class="omni-row-actions">
+								<span class="badge omni-badge">{{ vehicle.status }}</span>
+								<span class="badge omni-badge">{{ vehicle.telematics_label }}</span>
+							</div>
+						</div>
+					</div>
+					{% else %}
+					<div class="omni-empty">No vehicles have been linked to this account yet.</div>
+					{% endfor %}
+				</div>
+			</section>
+
+			<section class="mb-4">
+				<div class="d-flex justify-content-between align-items-center mb-2">
+					<h2 class="h5 mb-0">Maintenance</h2>
+					<span class="small text-muted">{{ data.maintenance | length }} recent</span>
+				</div>
+				<div class="omni-stack">
+					{% for work_order in data.maintenance %}
+					<div class="omni-row">
+						<div class="d-flex justify-content-between gap-3 omni-row-main">
+							<div>
+								<div class="fw-semibold">{{ work_order.name }}</div>
+								<div class="small text-muted">
+									{{ work_order.vehicle }}
+									{% if work_order.scheduled_date %} · Scheduled {{ work_order.scheduled_date }}{% endif %}
+									{% if work_order.billing_status %} · {{ work_order.billing_status }}{% endif %}
+								</div>
+							</div>
+							<span class="badge omni-badge align-self-start">{{ work_order.status }}</span>
+						</div>
+					</div>
+					{% else %}
+					<div class="omni-empty">No recent maintenance records.</div>
+					{% endfor %}
+				</div>
+			</section>
+
+			<section class="mb-4">
+				<div class="d-flex justify-content-between align-items-center mb-2">
+					<h2 class="h5 mb-0">Contracts</h2>
+					<span class="small text-muted">{{ data.contracts | length }} visible</span>
+				</div>
+				<div class="omni-stack">
+					{% for contract in data.contracts %}
+					<div class="omni-row">
+						<div class="d-flex justify-content-between gap-3 omni-row-main">
+							<div>
+								<div class="fw-semibold">{{ contract.contract_title }}</div>
+								<div class="small text-muted">
+									{{ contract.billing_frequency }}
+									{% if contract.vehicle %} · {{ contract.vehicle }}{% endif %}
+									{% if contract.next_billing_date %} · Next billing {{ contract.next_billing_date }}{% endif %}
+								</div>
+								<div class="small text-muted mt-1">
+									{{ frappe.format(contract.monthly_rate or 0, {"fieldtype": "Currency"}) }}
+									{% if contract.latest_sales_invoice %} · Latest invoice {{ contract.latest_sales_invoice }}{% endif %}
+								</div>
+							</div>
+							<div class="omni-row-actions">
+								<span class="badge omni-badge">{{ contract.status }}</span>
+								<span class="badge omni-badge">{{ contract.billing_status }}</span>
+							</div>
+						</div>
+					</div>
+					{% else %}
+					<div class="omni-empty">No active contracts have been published to the portal yet.</div>
+					{% endfor %}
+				</div>
+			</section>
+
+			<section class="mb-4">
+				<div class="d-flex justify-content-between align-items-center mb-2">
+					<h2 class="h5 mb-0">Documents</h2>
+					<span class="small text-muted">{{ data.documents | length }} visible</span>
+				</div>
+				<div class="omni-stack">
+					{% for document in data.documents %}
+					<div class="omni-row">
+						<div class="d-flex justify-content-between gap-3 omni-row-main">
+							<div>
+								<div class="fw-semibold">{{ document.title }}</div>
+								<div class="small text-muted">
+									{{ document.document_type }}
+									{% if document.vehicle %} · {{ document.vehicle }}{% endif %}
+									{% if document.expiry_date %} · Expires {{ document.expiry_date }}{% endif %}
+								</div>
+							</div>
+							<div class="omni-row-actions">
+								<span class="badge omni-badge">{{ document.status }}</span>
+								{% if document.attachment %}
+								<a class="btn btn-sm btn-outline-primary" href="{{ document.attachment }}" target="_blank" rel="noopener">Open</a>
+								{% endif %}
+							</div>
+						</div>
+					</div>
+					{% else %}
+					<div class="omni-empty">No documents have been published to the portal yet.</div>
+					{% endfor %}
+				</div>
+			</section>
+		</div>
+
+		<div class="col-xl-4">
+			<section class="mb-4">
+				<h2 class="h5 mb-2">Telematics</h2>
+				<div class="omni-stack">
+					{% for link in data.telematics %}
+					<div class="omni-row">
+						<div class="d-flex justify-content-between gap-3">
+							<div>
+								<div class="fw-semibold">{{ link.external_unit_name or link.external_unit_id or link.name }}</div>
+								<div class="small text-muted">
+									{{ link.vehicle or "Unassigned vehicle" }} · {{ link.provider or "Provider" }}
+									{% if link.last_position_datetime %} · {{ link.last_position_datetime }}{% endif %}
+								</div>
+							</div>
+							<span class="badge omni-badge align-self-start">{{ "Sync Off" if not link.sync_enabled else link.last_sync_status or "Never Synced" }}</span>
+						</div>
+					</div>
+					{% else %}
+					<div class="omni-empty">No telematics links have been published to the portal yet.</div>
+					{% endfor %}
+				</div>
+			</section>
+
+			<section class="mb-4">
+				<h2 class="h5 mb-2">Invoices</h2>
+				<div class="omni-stack">
+					{% for invoice in data.invoices %}
+					<div class="omni-row">
+						<div class="d-flex justify-content-between gap-3">
+							<div>
+								<div class="fw-semibold">{{ invoice.name }}</div>
+								<div class="small text-muted">{{ invoice.status }}{% if invoice.due_date %} · Due {{ invoice.due_date }}{% endif %}</div>
+							</div>
+							<div class="text-end">
+								<div>{{ frappe.format(invoice.grand_total, {"fieldtype": "Currency"}) }}</div>
+								<div class="small text-muted">Open {{ frappe.format(invoice.outstanding_amount, {"fieldtype": "Currency"}) }}</div>
+							</div>
+						</div>
+					</div>
+					{% else %}
+					<div class="omni-empty">No posted invoices found.</div>
+					{% endfor %}
+				</div>
+			</section>
+
+			<section>
+				<div class="d-flex justify-content-between align-items-center mb-2">
+					<h2 class="h5 mb-0">Support</h2>
+					<button class="btn btn-sm btn-primary" type="button" data-toggle="collapse" data-target="#new-support-ticket" data-bs-toggle="collapse" data-bs-target="#new-support-ticket" aria-expanded="false">
+						New Request
+					</button>
+				</div>
+				<div class="collapse mb-3" id="new-support-ticket">
+					<form class="omni-support-form">
+						<div class="mb-2">
+							<label class="form-label small text-muted" for="support-subject">Subject</label>
+							<input class="form-control" id="support-subject" name="subject" maxlength="140" required>
+						</div>
+						<div class="mb-2">
+							<label class="form-label small text-muted" for="support-priority">Priority</label>
+							<select class="form-control" id="support-priority" name="priority">
+								{% for priority in priorities %}
+								<option value="{{ priority }}" {% if priority == "Medium" %}selected{% endif %}>{{ priority }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="mb-3">
+							<label class="form-label small text-muted" for="support-description">Details</label>
+							<textarea class="form-control" id="support-description" name="description" rows="4"></textarea>
+						</div>
+						<button class="btn btn-primary w-100" type="submit">Submit Request</button>
+					</form>
+				</div>
+				<div class="omni-stack">
+					{% for ticket in data.support_tickets %}
+					<div class="omni-row">
+						<div class="d-flex justify-content-between gap-3">
+							<div>
+								<div class="fw-semibold">{{ ticket.subject or ticket.name }}</div>
+								<div class="small text-muted">{{ ticket.name }}{% if ticket.priority %} · {{ ticket.priority }}{% endif %}</div>
+							</div>
+							<span class="badge omni-badge align-self-start">{{ ticket.status }}</span>
+						</div>
+					</div>
+					{% else %}
+					<div class="omni-empty">No support tickets are currently open.</div>
+					{% endfor %}
+				</div>
+			</section>
+		</div>
+	</div>
+</div>
+
+<style>
+	.omni-portal-nav,
+	.omni-portal-brand,
+	.omni-portal-nav-actions {
+		align-items: center;
+		display: flex;
+	}
+
+	.omni-portal-nav {
+		justify-content: space-between;
+		gap: 1rem;
+	}
+
+	.omni-portal-brand {
+		color: var(--text-color);
+		font-weight: 700;
+		gap: 0.6rem;
+		text-decoration: none;
+	}
+
+	.omni-portal-brand-mark {
+		align-items: center;
+		background: var(--text-color);
+		border-radius: 6px;
+		color: var(--card-bg);
+		display: inline-flex;
+		height: 30px;
+		justify-content: center;
+		width: 30px;
+	}
+
+	.omni-portal-nav-actions {
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+
+	.omni-portal-nav-actions a {
+		color: var(--text-muted);
+		font-weight: 500;
+		text-decoration: none;
+	}
+
+	.omni-portal-hero {
+		align-items: stretch;
+	}
+
+	.omni-status-pill,
+	.omni-portal .omni-badge {
+		border-radius: 999px;
+		display: inline-flex;
+		font-weight: 500;
+		line-height: 1.2;
+		padding: 0.35rem 0.65rem;
+		white-space: normal;
+	}
+
+	.omni-alert-strip {
+		align-items: center;
+		display: grid;
+		gap: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		padding: 1rem;
+	}
+
+	.omni-portal .omni-metric {
+		padding: 1rem;
+		min-height: 108px;
+	}
+
+	.omni-stack {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.omni-row {
+		padding: 1rem;
+	}
+
+	.omni-row-main {
+		align-items: flex-start;
+	}
+
+	.omni-row-actions {
+		align-items: flex-end;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		min-width: 104px;
+	}
+
+	.omni-portal .omni-empty {
+		padding: 1rem;
+	}
+
+	.omni-portal .omni-support-form {
+		padding: 1rem;
+	}
+
+	@media (max-width: 576px) {
+		.omni-portal-nav {
+			align-items: flex-start;
+			flex-direction: column;
+		}
+
+		.omni-row .d-flex {
+			flex-direction: column;
+		}
+
+		.omni-row-actions {
+			align-items: flex-start;
+			flex-direction: row;
+			flex-wrap: wrap;
+			min-width: 0;
+		}
+
+		.omni-portal .omni-badge {
+			align-self: flex-start !important;
+			text-align: left;
+		}
+	}
+</style>
+
+<script>
+	frappe.ready(() => {
+		const form = document.querySelector(".omni-support-form");
+		if (!form) return;
+
+		form.addEventListener("submit", (event) => {
+			event.preventDefault();
+			const submitButton = form.querySelector("button[type='submit']");
+			const subject = form.querySelector("[name='subject']");
+			const priority = form.querySelector("[name='priority']");
+			const description = form.querySelector("[name='description']");
+			submitButton.disabled = true;
+			frappe.call({
+				method: "omni_operations.customer_portal.api.create_support_ticket",
+				args: {
+					subject: subject.value,
+					priority: priority.value,
+					description: description.value,
+				},
+				callback(response) {
+					if (response.message) {
+						frappe.show_alert({ message: __("Support request created"), indicator: "green" });
+						window.location.reload();
+					}
+				},
+				always() {
+					submitButton.disabled = false;
+				},
+			});
+		});
+	});
+</script>
+{% endblock %}

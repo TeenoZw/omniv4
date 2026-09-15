@@ -2,7 +2,7 @@ FROM frappe/erpnext:v15
 
 USER root
 
-COPY --chown=frappe:frappe erpnext-eval/frappe_docker/development/frappe-bench/apps/omni_operations /home/frappe/frappe-bench/apps/omni_operations
+COPY --chown=frappe:frappe apps/omni_operations /home/frappe/frappe-bench/apps/omni_operations
 COPY --chown=frappe:frappe deploy/render/start-frappe-staging.sh /home/frappe/start-frappe-staging.sh
 
 RUN chmod 755 /home/frappe/start-frappe-staging.sh

@@ -1,0 +1,415 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "naming_series:",
+ "creation": "2026-08-29 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "status",
+  "priority",
+  "source",
+  "prospect_section",
+  "prospect_name",
+  "lead",
+  "opportunity",
+  "quotation",
+  "contact_name",
+  "contact_column_break",
+  "contact_email",
+  "contact_phone",
+  "estimated_vehicles",
+  "customer_section",
+  "customer",
+  "company",
+  "customer_fleet_profile",
+  "fleet_contract",
+  "ownership_column_break",
+  "onboarding_owner",
+  "account_manager",
+  "installation_coordinator",
+  "target_go_live_date",
+  "workflow_section",
+  "progress_percent",
+  "lead_qualified",
+  "quotation_ready",
+  "customer_ready",
+  "vehicles_ready",
+  "workflow_column_break",
+  "installation_ready",
+  "portal_ready",
+  "billing_ready",
+  "completed_on",
+  "references_section",
+  "primary_vehicle",
+  "primary_installation",
+  "portal_user",
+  "first_invoice",
+  "checklist_section",
+  "checklist",
+  "notes_section",
+  "next_action",
+  "notes"
+ ],
+ "fields": [
+  {
+   "default": "ONB-.YYYY.-.####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "ONB-.YYYY.-.####",
+   "reqd": 1
+  },
+  {
+   "default": "New",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "New\nQualification\nQuotation\nCustomer Setup\nVehicle Setup\nInstallation\nPortal Provisioning\nBilling Readiness\nActive\nOn Hold\nLost\nCancelled",
+   "reqd": 1
+  },
+  {
+   "default": "Medium",
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nUrgent",
+   "reqd": 1
+  },
+  {
+   "default": "Website",
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Source",
+   "options": "Website\nDirect Sales\nReferral\nPartner\nMigration\nInternal\nOther"
+  },
+  {
+   "fieldname": "prospect_section",
+   "fieldtype": "Section Break",
+   "label": "Prospect and Sales"
+  },
+  {
+   "description": "Client or hub name from the enquiry. Guided setup will reuse it as-is when it already ends with Hub; otherwise it creates the matching Hub customer.",
+   "fieldname": "prospect_name",
+   "fieldtype": "Data",
+   "in_global_search": 1,
+   "in_list_view": 1,
+   "label": "Prospect Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Lead",
+   "options": "Lead"
+  },
+  {
+   "fieldname": "opportunity",
+   "fieldtype": "Link",
+   "label": "Opportunity",
+   "options": "Opportunity"
+  },
+  {
+   "fieldname": "quotation",
+   "fieldtype": "Link",
+   "label": "Quotation",
+   "options": "Quotation"
+  },
+  {
+   "description": "The client contact who should receive portal access and onboarding communication.",
+   "fieldname": "contact_name",
+   "fieldtype": "Data",
+   "label": "Contact Name"
+  },
+  {
+   "fieldname": "contact_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Required before provisioning a customer portal user.",
+   "fieldname": "contact_email",
+   "fieldtype": "Data",
+   "label": "Contact Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "contact_phone",
+   "fieldtype": "Data",
+   "label": "Contact Phone"
+  },
+  {
+   "default": "0",
+   "fieldname": "estimated_vehicles",
+   "fieldtype": "Int",
+   "label": "Estimated Vehicles"
+  },
+  {
+   "fieldname": "customer_section",
+   "fieldtype": "Section Break",
+   "label": "Customer and Ownership"
+  },
+  {
+   "description": "The hub customer record shared by fleet, billing, support and the customer portal.",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer / Hub",
+   "options": "Customer"
+  },
+  {
+   "description": "Omni accounting company used for billing and stock valuation. The hub itself remains a Customer.",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Accounting Company",
+   "options": "Company"
+  },
+  {
+   "description": "The operational fleet profile for this customer/hub.",
+   "fieldname": "customer_fleet_profile",
+   "fieldtype": "Link",
+   "label": "Customer Fleet Profile",
+   "options": "Customer Fleet Profile"
+  },
+  {
+   "fieldname": "fleet_contract",
+   "fieldtype": "Link",
+   "label": "Fleet Contract",
+   "options": "Fleet Contract"
+  },
+  {
+   "fieldname": "ownership_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "User responsible for keeping this onboarding moving to completion.",
+   "fieldname": "onboarding_owner",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Onboarding Owner",
+   "options": "User"
+  },
+  {
+   "fieldname": "account_manager",
+   "fieldtype": "Link",
+   "label": "Account Manager",
+   "options": "User"
+  },
+  {
+   "fieldname": "installation_coordinator",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Installation Coordinator",
+   "options": "User"
+  },
+  {
+   "fieldname": "target_go_live_date",
+   "fieldtype": "Date",
+   "in_standard_filter": 1,
+   "label": "Target Go-Live Date"
+  },
+  {
+   "fieldname": "workflow_section",
+   "fieldtype": "Section Break",
+   "label": "Workflow Readiness"
+  },
+  {
+   "default": "0",
+   "fieldname": "progress_percent",
+   "fieldtype": "Percent",
+   "in_list_view": 1,
+   "label": "Progress",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "lead_qualified",
+   "fieldtype": "Check",
+   "label": "Lead Qualified"
+  },
+  {
+   "default": "0",
+   "fieldname": "quotation_ready",
+   "fieldtype": "Check",
+   "label": "Quotation Ready"
+  },
+  {
+   "default": "0",
+   "fieldname": "customer_ready",
+   "fieldtype": "Check",
+   "label": "Customer Ready"
+  },
+  {
+   "default": "0",
+   "fieldname": "vehicles_ready",
+   "fieldtype": "Check",
+   "label": "Vehicles Ready"
+  },
+  {
+   "fieldname": "workflow_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "installation_ready",
+   "fieldtype": "Check",
+   "label": "Installation Ready"
+  },
+  {
+   "default": "0",
+   "fieldname": "portal_ready",
+   "fieldtype": "Check",
+   "label": "Portal User Ready"
+  },
+  {
+   "default": "0",
+   "fieldname": "billing_ready",
+   "fieldtype": "Check",
+   "label": "Billing Ready"
+  },
+  {
+   "fieldname": "completed_on",
+   "fieldtype": "Datetime",
+   "label": "Completed On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "references_section",
+   "fieldtype": "Section Break",
+   "label": "Operational References"
+  },
+  {
+   "fieldname": "primary_vehicle",
+   "fieldtype": "Link",
+   "label": "Primary Vehicle",
+   "options": "Fleet Vehicle"
+  },
+  {
+   "fieldname": "primary_installation",
+   "fieldtype": "Link",
+   "label": "Primary Installation",
+   "options": "Tracker Installation"
+  },
+  {
+   "description": "Website user linked to this customer for customer portal access.",
+   "fieldname": "portal_user",
+   "fieldtype": "Link",
+   "label": "Portal User",
+   "options": "User"
+  },
+  {
+   "fieldname": "first_invoice",
+   "fieldtype": "Link",
+   "label": "First Invoice",
+   "options": "Sales Invoice"
+  },
+  {
+   "fieldname": "checklist_section",
+   "fieldtype": "Section Break",
+   "label": "Checklist"
+  },
+  {
+   "fieldname": "checklist",
+   "fieldtype": "Table",
+   "label": "Checklist",
+   "options": "Omni Onboarding Checklist Item"
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break",
+   "label": "Notes and Next Action"
+  },
+  {
+   "description": "The next practical action the owner or coordinator should take.",
+   "fieldname": "next_action",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Next Action"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text Editor",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-29 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Onboarding",
+ "name": "Omni Onboarding Job",
+ "naming_rule": "By Naming Series",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Omni Operations Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Fleet Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Installation Coordinator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Technician"
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

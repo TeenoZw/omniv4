@@ -1,0 +1,1013 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<main class="omni-site">
+	<nav class="omni-site-nav" aria-label="Primary">
+		<a class="omni-brand" href="/" aria-label="Omni Logistics home">
+			<img src="/assets/omni_operations/omni-logo.png" alt="Omni Logistics" />
+		</a>
+		<div class="omni-nav-actions">
+			<a href="#solutions">Solutions</a>
+			<a href="#platform">Platform</a>
+			<a href="#portal">Customer Portal</a>
+			<a href="mailto:{{ enquiry_email }}">Request Quote</a>
+			<a class="omni-nav-admin" href="{{ admin_url }}">Admin</a>
+		</div>
+	</nav>
+
+	<section class="omni-hero">
+		<div class="omni-hero-copy">
+			<p class="omni-hero-pill">Structured. Managed. Accountable.</p>
+			<h1>Fleet intelligence infrastructure for Zimbabwean operations.</h1>
+			<p class="omni-lede">
+				Omni Logistics is not a tracker shop. We provide a managed fleet intelligence service that brings together onboarding,
+				support, billing, governance, telematics access, and the ERP backbone needed to run the operation cleanly.
+			</p>
+			<div class="omni-hero-actions">
+				<a class="omni-button omni-button-primary" href="mailto:{{ enquiry_email }}">Request a Quote</a>
+				<a class="omni-button" href="{{ portal_url }}">Omni Eye Portal</a>
+			</div>
+		</div>
+		<div class="omni-hero-visual" aria-label="Omni managed fleet operations">
+			<div class="omni-hero-image-card">
+				<img src="/assets/omni_operations/landing/omni-fleet-yard.jpg" alt="Fleet yard staged for dispatch" />
+			</div>
+			<div class="omni-hero-stats" aria-label="Omni service summary">
+				<div><span>Service model</span><strong>Managed</strong></div>
+				<div><span>Support ownership</span><strong>Local</strong></div>
+				<div><span>Customer journey</span><strong>Structured</strong></div>
+				<div><span>Sector coverage</span><strong>Multi-industry</strong></div>
+			</div>
+		</div>
+	</section>
+
+	<section class="omni-section omni-intro" id="solutions">
+		<div class="omni-section-heading">
+			<p class="omni-eyebrow">Why Omni</p>
+			<h2>Managed service beats DIY tracking when uptime, control, and accountability matter.</h2>
+			<p>
+				Generic online trackers focus on purchase price. Omni focuses on reliable rollouts, clean installations,
+				connectivity management, support ownership, and operational visibility that business owners can trust.
+			</p>
+		</div>
+		<div class="omni-feature-grid omni-feature-grid-three">
+			<article>
+				<h3>Professional installation</h3>
+				<p>Proper wiring, clean installs, hidden placement, and documented handover reduce tampering and downtime.</p>
+			</article>
+			<article>
+				<h3>Managed connectivity</h3>
+				<p>SIM registration, data usage, and network continuity are managed for customers end to end.</p>
+			</article>
+			<article>
+				<h3>Enterprise fleet insights</h3>
+				<p>Live tracking, geofencing, playback, alerts, and management reporting are tied back to customer operations.</p>
+			</article>
+		</div>
+	</section>
+
+	<section class="omni-section omni-split" id="platform">
+		<div>
+			<p class="omni-eyebrow">Omni Business Platform</p>
+			<h2>One operational record for every customer, vehicle, tracker, invoice, job, and document.</h2>
+			<p>
+				Omni v4 keeps fleet management as the flagship, then connects it to accounting, inventory, sales,
+				purchasing, maintenance, CRM, reports, and administration through a shared ERPNext data model.
+			</p>
+			<div class="omni-flow" aria-label="Omni platform workflow">
+				<span>Customer</span>
+				<span>Vehicle</span>
+				<span>Tracker</span>
+				<span>Maintenance</span>
+				<span>Invoice</span>
+				<span>Payment</span>
+			</div>
+		</div>
+		<img src="/assets/omni_operations/landing/omni-dashboard.png" alt="Omni dashboard and fleet analytics" loading="lazy" />
+	</section>
+
+	<section class="omni-section omni-modules" aria-label="Omni platform modules">
+		<div class="omni-section-heading">
+			<p class="omni-eyebrow">What Omni Connects</p>
+			<h2>Built around operations first, then expanded into a complete business platform.</h2>
+		</div>
+		<div class="omni-feature-grid">
+			<article>
+				<h3>Fleet and Telematics</h3>
+				<p>Vehicles, trackers, SIMs, telematics providers, hub ownership, locations, and operational status.</p>
+			</article>
+			<article>
+				<h3>Maintenance and Field Work</h3>
+				<p>Installations, work orders, technician assignments, parts used, service history, and customer updates.</p>
+			</article>
+			<article>
+				<h3>Accounting and Billing</h3>
+				<p>ERPNext-backed invoices, receipts, payments, customer statements, supplier bills, and ZIMRA-ready fiscalisation.</p>
+			</article>
+			<article>
+				<h3>Inventory and Purchasing</h3>
+				<p>Products, trackers, SIMs, warehouses, stock movements, reorder levels, supplier orders, and goods receipts.</p>
+			</article>
+			<article>
+				<h3>Sales and CRM</h3>
+				<p>Enquiries, leads, quotations, customer onboarding, contracts, tasks, and account follow-up.</p>
+			</article>
+			<article>
+				<h3>Documents and Compliance</h3>
+				<p>Contracts, licences, insurance, registration documents, privacy controls, and audit-ready operating records.</p>
+			</article>
+		</div>
+	</section>
+
+	<section class="omni-section omni-split omni-split-alt" id="portal">
+		<img src="/assets/omni_operations/landing/omni-devices.png" alt="Omni Eye portal on desktop and tablet" loading="lazy" />
+		<div>
+			<p class="omni-eyebrow">Omni Eye Portal</p>
+			<h2>Customer access for onboarding, billing, support, documents, and fleet visibility.</h2>
+			<p>
+				The public website leads customers into the Omni Eye Portal, where they can view their account, vehicles,
+				invoices, support requests, documents, and tracking handoff without seeing internal admin workflows.
+			</p>
+			<ul class="omni-check-list">
+				<li>Subscription status, invoices, and customer contacts in one place.</li>
+				<li>Support requests and hardware notes tracked by Omni support.</li>
+				<li>Secure portal login with a clear route back to live telematics access.</li>
+			</ul>
+			<div class="omni-hero-actions">
+				<a class="omni-button omni-button-primary" href="{{ portal_url }}">Launch Customer Portal</a>
+				<a class="omni-button" href="mailto:{{ enquiry_email }}">Talk to Omni</a>
+			</div>
+		</div>
+	</section>
+
+	<section class="omni-section omni-zimbabwe">
+		<div>
+			<p class="omni-eyebrow">Why Omni in Zimbabwe</p>
+			<h2>Local operations, faster outcomes.</h2>
+			<p>
+				Omni is built around Zimbabwe-specific deployment realities: accountable service ownership,
+				regulatory alignment, local technicians, managed SIM and data operations, and support aligned to local hours.
+			</p>
+		</div>
+		<div class="omni-zimbabwe-grid">
+			<span>On-site installations</span>
+			<span>Managed SIM and data</span>
+			<span>Data protection accountability</span>
+			<span>Local support hours</span>
+		</div>
+	</section>
+
+	<section class="omni-section omni-gallery" aria-label="Omni fleet sectors">
+		<img src="/assets/omni_operations/landing/omni-truck-yard.jpg" alt="Truck yard operations and fleet staging" loading="lazy" />
+		<img src="/assets/omni_operations/landing/omni-mobile.jpg" alt="Mobile tracking in the field" loading="lazy" />
+		<img src="/assets/omni_operations/landing/omni-excavators.jpg" alt="Construction fleet with excavators" loading="lazy" />
+	</section>
+
+	<section class="omni-section omni-contact">
+		<div>
+			<p class="omni-eyebrow">Ready for Omni v4</p>
+			<h2>Start with fleet operations. Grow into a complete business platform.</h2>
+		</div>
+		<div class="omni-contact-actions">
+			<a class="omni-button omni-button-primary" href="mailto:{{ enquiry_email }}">Request a Quote</a>
+			<a class="omni-button" href="{{ portal_url }}">Customer Login</a>
+		</div>
+	</section>
+
+	<footer class="omni-footer">
+		<div>
+			<img src="/assets/omni_operations/omni-logo.png" alt="Omni Logistics" />
+			<p>
+				Omni Logistics delivers structured fleet intelligence infrastructure for operational control,
+				compliance, and performance optimisation across Zimbabwe.
+			</p>
+		</div>
+		<div>
+			<strong>Explore</strong>
+			<a href="#solutions">Solutions</a>
+			<a href="#platform">Platform</a>
+			<a href="#portal">Customer Portal</a>
+		</div>
+		<div>
+			<strong>Contact</strong>
+			<a href="mailto:{{ enquiry_email }}">{{ enquiry_email }}</a>
+			<a href="tel:+263777233814">+263 777 233 814</a>
+		</div>
+	</footer>
+</main>
+
+<style>
+	:root {
+		--omni-ink: #17202f;
+		--omni-muted: #5b6472;
+		--omni-line: #d9dee7;
+		--omni-surface: #ffffff;
+		--omni-soft: #f4f7fb;
+		--omni-blue: #0f6bff;
+		--omni-green: #18a058;
+		--omni-amber: #b7791f;
+		--omni-charcoal: #101827;
+	}
+
+	.navbar,
+	.web-footer {
+		display: none !important;
+	}
+
+	.omni-site {
+		background: var(--omni-surface);
+		color: var(--omni-ink);
+		margin: -1.5rem calc(50% - 50vw) 0;
+	}
+
+	.omni-site-nav,
+	.omni-hero,
+	.omni-section {
+		margin: 0 auto;
+		max-width: 1180px;
+		padding-left: 24px;
+		padding-right: 24px;
+	}
+
+	.omni-site-nav {
+		align-items: center;
+		display: flex;
+		gap: 24px;
+		justify-content: space-between;
+		min-height: 78px;
+	}
+
+	.omni-brand img {
+		display: block;
+		height: 38px;
+		max-width: 170px;
+		object-fit: contain;
+	}
+
+	.omni-nav-actions,
+	.omni-hero-actions,
+	.omni-contact-actions,
+	.omni-flow {
+		align-items: center;
+		display: flex;
+	}
+
+	.omni-nav-actions {
+		font-size: 0.95rem;
+		gap: 22px;
+	}
+
+	.omni-nav-actions a {
+		color: var(--omni-muted);
+		text-decoration: none;
+	}
+
+	.omni-nav-actions a:hover,
+	.omni-nav-actions .omni-nav-admin {
+		color: var(--omni-ink);
+	}
+
+	.omni-nav-actions .omni-nav-admin {
+		font-weight: 700;
+	}
+
+	.omni-hero {
+		display: grid;
+		gap: 18px;
+		grid-template-columns: minmax(0, 1fr) 320px;
+		min-height: calc(100vh - 112px);
+		padding-bottom: 36px;
+	}
+
+	.omni-hero-media {
+		border-radius: 8px;
+		min-height: 620px;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.omni-hero-media img,
+	.omni-split img,
+	.omni-gallery img {
+		display: block;
+		height: 100%;
+		object-fit: cover;
+		width: 100%;
+	}
+
+	.omni-hero-overlay {
+		background: linear-gradient(90deg, rgba(16, 24, 39, 0.88), rgba(16, 24, 39, 0.56) 48%, rgba(16, 24, 39, 0.16));
+		inset: 0;
+		position: absolute;
+	}
+
+	.omni-hero-copy {
+		bottom: 54px;
+		color: #fff;
+		left: 46px;
+		max-width: 770px;
+		position: absolute;
+		right: 46px;
+	}
+
+	.omni-eyebrow {
+		color: var(--omni-blue);
+		font-size: 0.76rem;
+		font-weight: 800;
+		letter-spacing: 0;
+		margin-bottom: 12px;
+		text-transform: uppercase;
+	}
+
+	.omni-hero-copy .omni-eyebrow {
+		color: #8ed6ff;
+	}
+
+	.omni-hero h1,
+	.omni-section h2 {
+		font-weight: 800;
+		letter-spacing: 0;
+		line-height: 1.02;
+	}
+
+	.omni-hero h1 {
+		font-size: 5.35rem;
+		margin-bottom: 22px;
+	}
+
+	.omni-lede,
+	.omni-section-heading p,
+	.omni-split p,
+	.omni-zimbabwe p {
+		line-height: 1.64;
+	}
+
+	.omni-lede {
+		color: rgba(255, 255, 255, 0.86);
+		font-size: 1.12rem;
+		max-width: 720px;
+	}
+
+	.omni-hero-actions,
+	.omni-contact-actions {
+		flex-wrap: wrap;
+		gap: 12px;
+		margin-top: 28px;
+	}
+
+	.omni-button {
+		border: 1px solid var(--omni-line);
+		border-radius: 6px;
+		color: var(--omni-ink);
+		display: inline-flex;
+		font-weight: 800;
+		justify-content: center;
+		min-height: 44px;
+		padding: 11px 18px;
+		text-decoration: none;
+	}
+
+	.omni-button-primary {
+		background: var(--omni-blue);
+		border-color: var(--omni-blue);
+		color: #fff;
+	}
+
+	.omni-button-light {
+		background: rgba(255, 255, 255, 0.12);
+		border-color: rgba(255, 255, 255, 0.38);
+		color: #fff;
+	}
+
+	.omni-hero-status {
+		align-self: stretch;
+		background: var(--omni-charcoal);
+		border-radius: 8px;
+		color: #fff;
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+		justify-content: space-between;
+		padding: 18px;
+	}
+
+	.omni-status-header,
+	.omni-unit-list div,
+	.omni-status-grid div {
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 8px;
+	}
+
+	.omni-status-header {
+		align-items: center;
+		display: flex;
+		justify-content: space-between;
+		padding: 13px;
+	}
+
+	.omni-status-header i {
+		background: var(--omni-green);
+		border-radius: 50%;
+		display: inline-block;
+		height: 8px;
+		margin-right: 8px;
+		width: 8px;
+	}
+
+	.omni-status-grid,
+	.omni-unit-list {
+		display: grid;
+		gap: 10px;
+	}
+
+	.omni-status-grid div,
+	.omni-unit-list div {
+		background: rgba(255, 255, 255, 0.05);
+		padding: 13px;
+	}
+
+	.omni-status-grid span,
+	.omni-unit-list span {
+		color: rgba(255, 255, 255, 0.68);
+		display: block;
+		font-size: 0.82rem;
+	}
+
+	.omni-status-grid strong,
+	.omni-unit-list strong {
+		display: block;
+		font-size: 1.05rem;
+		margin-top: 4px;
+	}
+
+	.omni-section {
+		padding-bottom: 76px;
+		padding-top: 76px;
+	}
+
+	.omni-section-heading {
+		max-width: 790px;
+	}
+
+	.omni-section h2 {
+		font-size: 3.15rem;
+		margin-bottom: 18px;
+	}
+
+	.omni-section-heading p,
+	.omni-split p,
+	.omni-zimbabwe p,
+	.omni-feature-grid p,
+	.omni-check-list {
+		color: var(--omni-muted);
+	}
+
+	.omni-feature-grid {
+		display: grid;
+		gap: 18px;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		margin-top: 30px;
+	}
+
+	.omni-feature-grid-three {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.omni-feature-grid article {
+		background: var(--omni-soft);
+		border: 1px solid var(--omni-line);
+		border-radius: 8px;
+		padding: 22px;
+	}
+
+	.omni-feature-grid h3 {
+		font-size: 1.08rem;
+		margin-bottom: 10px;
+	}
+
+	.omni-split {
+		align-items: center;
+		display: grid;
+		gap: 42px;
+		grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+	}
+
+	.omni-split-alt {
+		grid-template-columns: minmax(360px, 0.9fr) minmax(0, 1fr);
+	}
+
+	.omni-split img {
+		aspect-ratio: 4 / 3;
+		border: 1px solid var(--omni-line);
+		border-radius: 8px;
+		box-shadow: 0 18px 70px rgba(23, 32, 47, 0.11);
+	}
+
+	.omni-flow {
+		flex-wrap: wrap;
+		gap: 10px;
+		margin-top: 28px;
+	}
+
+	.omni-flow span,
+	.omni-zimbabwe-grid span {
+		background: var(--omni-soft);
+		border: 1px solid var(--omni-line);
+		border-radius: 999px;
+		font-weight: 800;
+		padding: 9px 12px;
+	}
+
+	.omni-check-list {
+		list-style: none;
+		margin: 22px 0 0;
+		padding: 0;
+	}
+
+	.omni-check-list li {
+		border-top: 1px solid var(--omni-line);
+		padding: 12px 0;
+	}
+
+	.omni-zimbabwe,
+	.omni-contact {
+		align-items: center;
+		border-top: 1px solid var(--omni-line);
+		display: flex;
+		gap: 32px;
+		justify-content: space-between;
+	}
+
+	.omni-zimbabwe-grid {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px;
+		justify-content: flex-end;
+		max-width: 500px;
+	}
+
+	.omni-gallery {
+		display: grid;
+		gap: 18px;
+		grid-template-columns: 1.1fr 0.9fr 0.9fr;
+		padding-top: 0;
+	}
+
+	.omni-gallery img {
+		aspect-ratio: 4 / 3;
+		border-radius: 8px;
+	}
+
+	.omni-contact {
+		padding-top: 58px;
+	}
+
+	.omni-contact .omni-contact-actions {
+		margin-top: 0;
+	}
+
+	@media (max-width: 940px) {
+		.omni-site-nav {
+			align-items: flex-start;
+			flex-direction: column;
+			padding-top: 18px;
+		}
+
+		.omni-nav-actions {
+			flex-wrap: wrap;
+			gap: 14px;
+		}
+
+		.omni-hero,
+		.omni-split,
+		.omni-split-alt,
+		.omni-gallery {
+			grid-template-columns: 1fr;
+		}
+
+		.omni-hero {
+			min-height: 0;
+		}
+
+		.omni-hero-media {
+			min-height: 600px;
+		}
+
+		.omni-feature-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.omni-zimbabwe,
+		.omni-contact {
+			align-items: stretch;
+			flex-direction: column;
+		}
+
+		.omni-zimbabwe-grid {
+			justify-content: flex-start;
+			max-width: none;
+		}
+	}
+
+	@media (max-width: 580px) {
+		.omni-site-nav,
+		.omni-hero,
+		.omni-section {
+			padding-left: 18px;
+			padding-right: 18px;
+		}
+
+		.omni-hero-media {
+			min-height: 640px;
+		}
+
+		.omni-hero-copy {
+			bottom: 28px;
+			left: 22px;
+			right: 22px;
+		}
+
+		.omni-hero h1 {
+			font-size: 2.5rem;
+		}
+
+		.omni-feature-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	/* Public-site polish: keep the v3 marketing feel while adding the v4 platform story. */
+	.omni-site {
+		background:
+			linear-gradient(180deg, rgba(232, 245, 255, 0.92), rgba(255, 247, 237, 0.72) 42%, rgba(255, 255, 255, 0.98)),
+			#fff;
+		min-height: 100vh;
+		overflow: hidden;
+		position: relative;
+	}
+
+	.omni-site::before {
+		background-image:
+			linear-gradient(rgba(15, 23, 42, 0.055) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(15, 23, 42, 0.055) 1px, transparent 1px);
+		background-size: 42px 42px;
+		content: "";
+		inset: 0;
+		-webkit-mask-image: radial-gradient(circle at center, #000 22%, transparent 76%);
+		mask-image: radial-gradient(circle at center, #000 22%, transparent 76%);
+		opacity: 0.45;
+		pointer-events: none;
+		position: absolute;
+	}
+
+	.omni-site::after {
+		background:
+			radial-gradient(circle at 12% 12%, rgba(34, 211, 238, 0.28), transparent 28%),
+			radial-gradient(circle at 92% 28%, rgba(251, 191, 36, 0.24), transparent 25%);
+		content: "";
+		inset: 0;
+		pointer-events: none;
+		position: absolute;
+	}
+
+	.omni-site > * {
+		position: relative;
+		z-index: 1;
+	}
+
+	.omni-site-nav {
+		backdrop-filter: blur(18px);
+		background: rgba(255, 255, 255, 0.72);
+		border: 1px solid rgba(255, 255, 255, 0.72);
+		border-radius: 0 0 28px 28px;
+		box-shadow: 0 14px 45px rgba(15, 23, 42, 0.07);
+		max-width: none;
+		padding-left: max(24px, calc((100vw - 1180px) / 2 + 24px));
+		padding-right: max(24px, calc((100vw - 1180px) / 2 + 24px));
+		position: sticky;
+		top: 0;
+		z-index: 4;
+	}
+
+	.omni-brand img {
+		height: 64px;
+		max-width: 210px;
+	}
+
+	.omni-nav-actions a {
+		font-weight: 700;
+	}
+
+	.omni-nav-actions .omni-nav-admin {
+		background: #0f172a;
+		border-radius: 999px;
+		color: #fff;
+		padding: 10px 16px;
+	}
+
+	.omni-hero {
+		align-items: center;
+		gap: 48px;
+		grid-template-columns: minmax(0, 1.08fr) minmax(420px, 0.92fr);
+		min-height: auto;
+		padding-bottom: 58px;
+		padding-top: 56px;
+	}
+
+	.omni-hero-copy {
+		bottom: auto;
+		color: var(--omni-ink);
+		left: auto;
+		max-width: 760px;
+		position: static;
+		right: auto;
+	}
+
+	.omni-hero-pill,
+	.marketing-pill,
+	.omni-eyebrow {
+		letter-spacing: 0;
+	}
+
+	.omni-hero-pill {
+		background: rgba(255, 255, 255, 0.76);
+		border: 1px solid rgba(125, 211, 252, 0.72);
+		border-radius: 999px;
+		box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+		color: #08719a;
+		display: inline-flex;
+		font-size: 0.76rem;
+		font-weight: 900;
+		margin-bottom: 22px;
+		padding: 9px 15px;
+		text-transform: uppercase;
+	}
+
+	.omni-hero h1 {
+		color: #0f172a;
+		font-size: 5.15rem;
+		max-width: 900px;
+	}
+
+	.omni-lede {
+		color: #536070;
+		font-size: 1.1rem;
+	}
+
+	.omni-hero-visual {
+		position: relative;
+	}
+
+	.omni-hero-visual::before {
+		background: linear-gradient(135deg, rgba(34, 211, 238, 0.24), rgba(251, 191, 36, 0.2));
+		border-radius: 32px;
+		content: "";
+		filter: blur(22px);
+		inset: 14px;
+		position: absolute;
+	}
+
+	.omni-hero-image-card {
+		backdrop-filter: blur(18px);
+		background: rgba(255, 255, 255, 0.72);
+		border: 1px solid rgba(255, 255, 255, 0.76);
+		border-radius: 32px;
+		box-shadow: 0 24px 70px rgba(15, 23, 42, 0.16);
+		padding: 12px;
+		position: relative;
+	}
+
+	.omni-hero-image-card img {
+		aspect-ratio: 4 / 3.25;
+		border-radius: 24px;
+		display: block;
+		height: auto;
+		object-fit: cover;
+		width: 100%;
+	}
+
+	.omni-hero-stats {
+		display: grid;
+		gap: 14px;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		margin-top: 16px;
+		position: relative;
+	}
+
+	.omni-hero-stats div,
+	.omni-feature-grid article,
+	.omni-split,
+	.omni-zimbabwe,
+	.omni-contact,
+	.omni-footer {
+		backdrop-filter: blur(18px);
+		background: rgba(255, 255, 255, 0.72);
+		border: 1px solid rgba(255, 255, 255, 0.76);
+		box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+	}
+
+	.omni-hero-stats div {
+		border-radius: 24px;
+		padding: 18px;
+	}
+
+	.omni-hero-stats span {
+		color: #64748b;
+		display: block;
+		font-size: 0.78rem;
+		font-weight: 800;
+		text-transform: uppercase;
+	}
+
+	.omni-hero-stats strong {
+		color: #0f172a;
+		display: block;
+		font-size: 1.45rem;
+		line-height: 1.1;
+		margin-top: 7px;
+	}
+
+	.omni-button {
+		border-radius: 999px;
+		min-height: 46px;
+		padding: 12px 20px;
+		transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+	}
+
+	.omni-button:hover {
+		box-shadow: 0 12px 28px rgba(15, 23, 42, 0.13);
+		transform: translateY(-1px);
+	}
+
+	.omni-button-primary {
+		background: #0f172a;
+		border-color: #0f172a;
+	}
+
+	.omni-section {
+		padding-bottom: 42px;
+		padding-top: 42px;
+	}
+
+	.omni-intro {
+		padding-top: 12px;
+	}
+
+	.omni-section-heading {
+		max-width: 850px;
+	}
+
+	.omni-section h2 {
+		color: #0f172a;
+		font-weight: 900;
+	}
+
+	.omni-feature-grid {
+		gap: 20px;
+	}
+
+	.omni-feature-grid article {
+		border-radius: 28px;
+		padding: 26px;
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.omni-feature-grid article:hover {
+		box-shadow: 0 24px 55px rgba(15, 23, 42, 0.12);
+		transform: translateY(-3px);
+	}
+
+	.omni-split,
+	.omni-zimbabwe,
+	.omni-contact {
+		border-radius: 32px;
+		margin-bottom: 34px;
+		margin-top: 34px;
+		padding: 32px;
+	}
+
+	.omni-split img {
+		border-color: rgba(226, 232, 240, 0.92);
+		border-radius: 24px;
+		box-shadow: none;
+	}
+
+	.omni-flow span,
+	.omni-zimbabwe-grid span {
+		background: rgba(248, 250, 252, 0.92);
+	}
+
+	.omni-gallery {
+		gap: 20px;
+		padding-bottom: 34px;
+	}
+
+	.omni-gallery img {
+		border: 1px solid rgba(255, 255, 255, 0.76);
+		border-radius: 28px;
+		box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08);
+	}
+
+	.omni-footer {
+		border-radius: 32px;
+		display: grid;
+		gap: 32px;
+		grid-template-columns: 1.4fr 0.7fr 0.7fr;
+		margin: 30px auto 56px;
+		max-width: 1180px;
+		padding: 32px;
+	}
+
+	.omni-footer img {
+		display: block;
+		height: 74px;
+		object-fit: contain;
+		width: fit-content;
+	}
+
+	.omni-footer p {
+		color: var(--omni-muted);
+		line-height: 1.6;
+		margin-top: 14px;
+		max-width: 460px;
+	}
+
+	.omni-footer strong {
+		color: #64748b;
+		display: block;
+		font-size: 0.78rem;
+		margin-bottom: 14px;
+		text-transform: uppercase;
+	}
+
+	.omni-footer a {
+		color: #334155;
+		display: block;
+		font-weight: 700;
+		margin-top: 10px;
+		text-decoration: none;
+	}
+
+	.omni-hero-media,
+	.omni-hero-overlay,
+	.omni-hero-status,
+	.omni-status-header,
+	.omni-status-grid,
+	.omni-unit-list {
+		all: unset;
+	}
+
+	@media (max-width: 940px) {
+		.omni-site-nav {
+			border-radius: 0 0 22px 22px;
+			padding-left: 18px;
+			padding-right: 18px;
+		}
+
+		.omni-hero {
+			grid-template-columns: 1fr;
+			padding-top: 32px;
+		}
+
+		.omni-hero h1 {
+			font-size: 3.75rem;
+		}
+
+		.omni-section h2 {
+			font-size: 2.5rem;
+		}
+
+		.omni-hero-stats,
+		.omni-footer {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	@media (max-width: 580px) {
+		.omni-brand img {
+			height: 52px;
+		}
+
+		.omni-hero h1 {
+			font-size: 2.55rem;
+		}
+
+		.omni-section h2 {
+			font-size: 2rem;
+		}
+
+		.omni-hero-stats,
+		.omni-footer {
+			grid-template-columns: 1fr;
+		}
+
+		.omni-split,
+		.omni-zimbabwe,
+		.omni-contact,
+		.omni-footer {
+			border-radius: 24px;
+			padding: 22px;
+		}
+	}
+</style>
+{% endblock %}

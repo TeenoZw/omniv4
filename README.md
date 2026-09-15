@@ -14,6 +14,7 @@ The current product direction is:
 | Area | Active implementation | Purpose |
 | --- | --- | --- |
 | Admin app | `erpnext-eval/frappe_docker/development/frappe-bench/apps/omni_operations` | Omni-focused Frappe/ERPNext Desk for directors and staff. |
+| Deployable Frappe app source | `apps/omni_operations` | Tracked `omni_operations` app package used by Docker/production builds. |
 | Public website | `client-web` | Branded public website for `www.omnilogistics.co.zw`. |
 | Customer portal | `client-web` | Customer-facing portal for vehicles, trackers, invoices, documents, and support. |
 | ERP backbone | ERPNext in the Frappe bench | Customers, suppliers, invoices, payments, items, warehouses, accounting, and reports. |
@@ -85,6 +86,7 @@ Useful Frappe commands are captured in:
 - `docs/40_omniv4_consolidation_execution_plan.md` - current consolidation plan
 - `docs/42_omniv4_developer_runbook.md` - local development and verification commands
 - `docs/45_render_staging_runbook.md` - Render staging plan for the Frappe/ERPNext admin app
+- `docs/46_vps_production_runbook.md` - VPS deployment, smoke checks, and backup runbook
 - `deploy/render/` - Render Blueprint, Frappe staging Dockerfile, and startup script
 - `scripts/render_check_token.sh` - token-safe Render API access check
 

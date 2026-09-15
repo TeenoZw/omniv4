@@ -1,0 +1,108 @@
+frappe.ui.form.on("Fleet Vehicle", {
+	refresh(frm) {
+		if (!frm.doc.name || frm.is_new()) {
+			return;
+		}
+
+		frm.trigger("show_telematics_status");
+		frm.trigger("show_maintenance_status");
+		frm.trigger("show_vehicle_360");
+		frm.add_custom_button(
+			__("Sync Telematics"),
+			() => {
+				frappe.call({
+					method: "omni_operations.telematics.sync.sync_vehicle_telematics",
+					args: { vehicle: frm.doc.name },
+					freeze: true,
+					freeze_message: __("Syncing telematics"),
+					callback() {
+						frm.reload_doc();
+					},
+				});
+			},
+			__("Telematics")
+		);
+		frm.add_custom_button(__("Telematics Links"), () => {
+			frappe.set_route("List", "Telematics Unit Link", { vehicle: frm.doc.name });
+		}, __("View"));
+		frm.add_custom_button(__("Maintenance"), () => {
+			frappe.set_route("List", "Fleet Maintenance Work Order", { vehicle: frm.doc.name });
+		}, __("View"));
+		frm.add_custom_button(__("Installations"), () => {
+			frappe.set_route("List", "Tracker Installation", { vehicle: frm.doc.name });
+		}, __("View"));
+		frm.add_custom_button(__("Documents"), () => {
+			frappe.set_route("List", "Fleet Document", { vehicle: frm.doc.name });
+		}, __("View"));
+		frm.add_custom_button(__("Contracts"), () => {
+			frappe.set_route("List", "Fleet Contract", { vehicle: frm.doc.name });
+		}, __("View"));
+	},
+
+	show_vehicle_360(frm) {
+		frappe.call({
+			method: "omni_operations.fleet.vehicle_360.get_vehicle_360",
+			args: { vehicle: frm.doc.name },
+			callback(response) {
+				const data = response.message;
+				if (!data) {
+					return;
+				}
+
+				if (data.latest_invoice) {
+					frm.dashboard.add_indicator(
+						__("Invoice: {0}", [data.latest_invoice.status]),
+						data.latest_invoice.outstanding_amount ? "orange" : "green"
+					);
+				}
+
+				if (data.driver_assignment) {
+					frm.dashboard.add_indicator(__("Driver Assigned"), "blue");
+				}
+			},
+		});
+	},
+
+	show_maintenance_status(frm) {
+		frappe.call({
+			method: "omni_operations.field_service.maintenance.get_vehicle_maintenance_status",
+			args: { vehicle: frm.doc.name },
+			callback(response) {
+				const status = response.message;
+				if (!status) {
+					return;
+				}
+
+				frm.dashboard.add_indicator(
+					__("Maintenance: {0}", [status.status]),
+					status.indicator
+				);
+			},
+		});
+	},
+
+	show_telematics_status(frm) {
+		frappe.call({
+			method: "omni_operations.telematics.status.get_vehicle_telematics_status",
+			args: { vehicle: frm.doc.name },
+			callback(response) {
+				const status = response.message;
+				if (!status) {
+					return;
+				}
+
+				frm.dashboard.add_indicator(
+					__("Telematics: {0}", [status.status]),
+					status.indicator
+				);
+
+				if (status.message) {
+					frm.dashboard.set_headline_alert(
+						__("Telematics: {0}", [status.message]),
+						status.indicator
+					);
+				}
+			},
+		});
+	},
+});

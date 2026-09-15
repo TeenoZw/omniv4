@@ -65,6 +65,62 @@ export type PortalVehicle = {
   } | null;
 };
 
+export type PortalVehicleDetail = {
+  vehicle: {
+    name: string;
+    registration_number?: string | null;
+    vehicle_name?: string | null;
+    status?: string | null;
+    vehicle_type?: string | null;
+    make?: string | null;
+    model?: string | null;
+    year?: number | null;
+    vin?: string | null;
+    odometer?: number | null;
+  };
+  customer: string;
+  tracker?: {
+    name: string;
+    status?: string | null;
+    tracker_name?: string | null;
+  } | null;
+  sim?: {
+    name: string;
+    status?: string | null;
+    carrier?: string | null;
+  } | null;
+  driver_assignment?: {
+    name: string;
+    driver?: string | null;
+    start_datetime?: string | null;
+  } | null;
+  installations: Array<{
+    name: string;
+    status?: string | null;
+    completed_date?: string | null;
+    installation_location?: string | null;
+  }>;
+  latest_invoice?: {
+    name: string;
+    status?: string | null;
+    grand_total?: number | null;
+    outstanding_amount?: number | null;
+  } | null;
+  telematics?: {
+    summary?: Record<string, unknown>;
+    links?: Array<{
+      name: string;
+      provider?: string | null;
+      status?: string | null;
+      external_unit_name?: string | null;
+      last_sync_datetime?: string | null;
+      last_sync_status?: string | null;
+      sync_enabled: boolean;
+    }>;
+  };
+  maintenance?: Record<string, unknown>;
+};
+
 export type PortalInvoice = {
   name: string;
   posting_date?: string | null;
@@ -96,6 +152,15 @@ export type PortalTicket = {
   modified?: string | null;
 };
 
+export type PortalTicketDetail = PortalTicket & {
+  description?: string | null;
+  resolution_details?: string | null;
+  customer?: string | null;
+  raised_by?: string | null;
+  opening_date?: string | null;
+  content?: string | null;
+};
+
 export async function fetchPortalCurrentCustomer() {
   return frappeCall<PortalCurrentCustomer>(`${PORTAL_API}.get_current_customer`);
 }
@@ -108,6 +173,12 @@ export async function fetchPortalVehicles() {
   return frappeCall<{ vehicles: PortalVehicle[] }>(`${PORTAL_API}.get_vehicles`);
 }
 
+export async function fetchPortalVehicleDetail(vehicle: string) {
+  return frappeCall<PortalVehicleDetail>(`${PORTAL_API}.get_vehicle_detail`, {
+    params: { vehicle },
+  });
+}
+
 export async function fetchPortalInvoices() {
   return frappeCall<{ invoices: PortalInvoice[] }>(`${PORTAL_API}.get_invoices`);
 }
@@ -118,6 +189,12 @@ export async function fetchPortalDocuments() {
 
 export async function fetchPortalSupportTickets() {
   return frappeCall<{ tickets: PortalTicket[] }>(`${PORTAL_API}.get_support_tickets`);
+}
+
+export async function fetchPortalSupportTicketDetail(ticket: string) {
+  return frappeCall<PortalTicketDetail>(`${PORTAL_API}.get_support_ticket_detail`, {
+    params: { ticket },
+  });
 }
 
 export async function createPortalSupportTicket(payload: {

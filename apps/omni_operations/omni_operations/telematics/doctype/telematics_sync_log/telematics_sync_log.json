@@ -1,0 +1,213 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 0,
+ "autoname": "naming_series:",
+ "creation": "2026-08-16 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "provider_account",
+  "provider",
+  "unit_link",
+  "sync_type",
+  "status",
+  "timing_section",
+  "started_datetime",
+  "finished_datetime",
+  "duration_seconds",
+  "summary_section",
+  "records_processed",
+  "records_created",
+  "records_updated",
+  "records_failed",
+  "payload_column_break",
+  "request_summary",
+  "response_summary",
+  "error_message",
+  "notes"
+ ],
+ "fields": [
+  {
+   "default": "TSL-.YYYY.-.####",
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "options": "TSL-.YYYY.-.####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "provider_account",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Provider Account",
+   "options": "Telematics Provider Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "provider",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Provider",
+   "read_only": 1
+  },
+  {
+   "fieldname": "unit_link",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Unit Link",
+   "options": "Telematics Unit Link"
+  },
+  {
+   "default": "Unit Metadata",
+   "fieldname": "sync_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Sync Type",
+   "options": "Account Check\nUnit Metadata\nLatest Position\nHistorical Trips\nOdometer\nDiagnostics\nManual Import\nOther",
+   "reqd": 1
+  },
+  {
+   "default": "Success",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Success\nWarning\nFailed",
+   "reqd": 1
+  },
+  {
+   "fieldname": "timing_section",
+   "fieldtype": "Section Break",
+   "label": "Timing"
+  },
+  {
+   "fieldname": "started_datetime",
+   "fieldtype": "Datetime",
+   "in_standard_filter": 1,
+   "label": "Started"
+  },
+  {
+   "fieldname": "finished_datetime",
+   "fieldtype": "Datetime",
+   "in_standard_filter": 1,
+   "label": "Finished"
+  },
+  {
+   "fieldname": "duration_seconds",
+   "fieldtype": "Float",
+   "label": "Duration Seconds"
+  },
+  {
+   "fieldname": "summary_section",
+   "fieldtype": "Section Break",
+   "label": "Summary"
+  },
+  {
+   "default": "0",
+   "fieldname": "records_processed",
+   "fieldtype": "Int",
+   "label": "Records Processed"
+  },
+  {
+   "default": "0",
+   "fieldname": "records_created",
+   "fieldtype": "Int",
+   "label": "Records Created"
+  },
+  {
+   "default": "0",
+   "fieldname": "records_updated",
+   "fieldtype": "Int",
+   "label": "Records Updated"
+  },
+  {
+   "default": "0",
+   "fieldname": "records_failed",
+   "fieldtype": "Int",
+   "label": "Records Failed"
+  },
+  {
+   "fieldname": "payload_column_break",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "request_summary",
+   "fieldtype": "Small Text",
+   "label": "Request Summary"
+  },
+  {
+   "fieldname": "response_summary",
+   "fieldtype": "Small Text",
+   "label": "Response Summary"
+  },
+  {
+   "fieldname": "error_message",
+   "fieldtype": "Small Text",
+   "label": "Error Message"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-16 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Telematics",
+ "name": "Telematics Sync Log",
+ "naming_rule": "By Naming Series",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Omni Operations Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Fleet Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "sync_type",
+ "track_changes": 1
+}
