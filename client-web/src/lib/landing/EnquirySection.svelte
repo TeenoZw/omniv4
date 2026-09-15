@@ -537,17 +537,23 @@
       <div class="space-y-2 text-xs text-slate-500 dark:text-slate-400">
         <label class="flex items-start gap-2">
           <input type="checkbox" class="mt-1 rounded border-slate-300" bind:checked={termsAccepted} />
-          <span>I agree to the Omni Logistics Terms & Conditions.</span>
+          <span>
+            I have read and agree to the
+            <a class="font-semibold text-slate-900 underline transition hover:text-slate-700 dark:text-white dark:hover:text-slate-200" href="/terms" target="_blank" rel="noreferrer">
+              Omni Logistics Terms & Conditions
+            </a>
+            that apply to enquiries, quotations, hardware, installation, and tracking services.
+          </span>
         </label>
         {#if fieldErrors.termsAccepted}<p class="text-xs text-red-600">{fieldErrors.termsAccepted}</p>{/if}
         <label class="flex items-start gap-2">
           <input type="checkbox" class="mt-1 rounded border-slate-300" bind:checked={privacyAccepted} />
           <span>
-            I agree to the
-            <a class="font-semibold text-slate-900 underline transition hover:text-slate-700 dark:text-white dark:hover:text-slate-200" href="/privacy">
+            I have read and agree to the
+            <a class="font-semibold text-slate-900 underline transition hover:text-slate-700 dark:text-white dark:hover:text-slate-200" href="/privacy" target="_blank" rel="noreferrer">
               Privacy Policy
             </a>
-            and data processing terms.
+            and consent to Omni processing my enquiry details to respond and prepare the requested quotation.
           </span>
         </label>
         {#if fieldErrors.privacyAccepted}<p class="text-xs text-red-600">{fieldErrors.privacyAccepted}</p>{/if}
@@ -565,7 +571,7 @@
       <button
         type="submit"
         class="inline-flex w-full items-center justify-center gap-3 rounded-full bg-slate-900 px-6 py-3 text-base font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
-        disabled={loading}
+        disabled={loading || !termsAccepted || !privacyAccepted}
       >
         {#if loading}
           Sending request…
