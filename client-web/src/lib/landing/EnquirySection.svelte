@@ -1,7 +1,11 @@
 <script lang="ts">
   import { submitEnquiry } from "$lib/api/enquiries";
 
-  type CustomerType = "individual" | "business";
+  type VehicleTypeOption = {
+    value: string;
+    label: string;
+    fuelMonitoringEligible: boolean;
+  };
 
   const hardwareOptions = [
     {
@@ -45,29 +49,45 @@
   type AddOn = {
     id: string;
     name: string;
-    price: number;
-    priceType: "one_time" | "monthly";
+    price?: number;
+    priceType?: "one_time" | "monthly";
     description: string;
     requiresHardware?: string[];
     requiresAddOns?: string[];
     incompatibleHardware?: string[];
+    eligibleVehicleTypes?: string[];
+    unavailable?: boolean;
+    unavailableReason?: string;
   };
+
+  const monthlySubscriptionPerVehicle = 10;
+
+  const vehicleTypes: VehicleTypeOption[] = [
+    { value: "light_car", label: "Light vehicle / private car", fuelMonitoringEligible: false },
+    { value: "pickup", label: "Pickup / bakkie", fuelMonitoringEligible: false },
+    { value: "minibus", label: "Minibus / commuter vehicle", fuelMonitoringEligible: false },
+    { value: "truck", label: "Truck with external tank", fuelMonitoringEligible: true },
+    { value: "earthmoving", label: "Earthmoving equipment", fuelMonitoringEligible: true },
+    { value: "bus", label: "Bus / coach with accessible tank", fuelMonitoringEligible: true },
+    { value: "generator", label: "Generator / stationary equipment", fuelMonitoringEligible: true },
+    { value: "other_external_tank", label: "Other asset with visible external tank", fuelMonitoringEligible: true },
+  ];
 
   const addOns: AddOn[] = [
     {
       id: "teltonika_dash_cam",
       name: "Dash Cams",
-      price: 25,
-      priceType: "one_time",
-      description: "Road + cabin video capture with event-triggered recording.",
+      description: "Road and cabin video capture. Planned for a later service phase.",
+      unavailable: true,
+      unavailableReason: "Coming later. Dash cam installations are not part of the current quote workflow.",
     },
     {
-      id: "liquid_level_sensors",
-      name: "Liquid Level Sensors",
-      price: 15,
-      priceType: "one_time",
-      description: "Fuel level monitoring, theft detection, and volume reporting. Best with Basic trackers.",
+      id: "fuel_monitoring_solutions",
+      name: "Fuel monitoring solutions",
+      description:
+        "For trucks, earthmoving equipment, buses, generators, and other assets with visible external tanks. Requires a site/vehicle assessment before pricing.",
       incompatibleHardware: ["obd2_tracker"],
+      eligibleVehicleTypes: vehicleTypes.filter((type) => type.fuelMonitoringEligible).map((type) => type.value),
     },
     {
       id: "driver_ibuttons",
@@ -80,19 +100,19 @@
     {
       id: "dash_cam_remote_monitoring",
       name: "Remote dash cam monitoring",
-      price: 20,
-      priceType: "monthly",
-      description: "Managed SIM data and remote access to dash cam footage.",
+      description: "Managed data and remote access for future dash cam deployments.",
       requiresAddOns: ["teltonika_dash_cam"],
+      unavailable: true,
+      unavailableReason: "Coming later with dash cam support.",
     },
   ];
 
-  let customerType: CustomerType = "business";
   let fullName = "";
   let email = "";
   let phone = "";
   let companyName = "";
   let fleetSize = "";
+  let selectedVehicleType = "";
   let operatingArea = "";
   let preferredContactMethod = "email";
   let expectedGoLiveDate = "";
@@ -107,18 +127,27 @@
   let successMessage = "";
   let fieldErrors: Record<string, string> = {};
 
-  $: baseMonthly = customerType === "business" ? 15 : 10;
+  $: vehicleCount = Math.max(Number.parseInt(fleetSize, 10) || 1, 1);
+  $: selectedVehicleTypeConfig = vehicleTypes.find((type) => type.value === selectedVehicleType);
+  $: selectedVehicleHasFuelMonitoring = Boolean(selectedVehicleTypeConfig?.fuelMonitoringEligible);
+  $: if (!selectedVehicleHasFuelMonitoring && selectedAddOns.includes("fuel_monitoring_solutions")) {
+    selectedAddOns = selectedAddOns.filter((id) => id !== "fuel_monitoring_solutions");
+  }
   $: addOnMonthly = selectedAddOns.reduce((total, id) => {
     const match = addOns.find((item) => item.id === id);
-    if (!match || match.priceType !== "monthly") return total;
+    if (!match || match.priceType !== "monthly" || !match.price) return total;
     return total + (match.price ?? 0);
   }, 0);
   $: addOnOneTime = selectedAddOns.reduce((total, id) => {
     const match = addOns.find((item) => item.id === id);
-    if (!match || match.priceType !== "one_time") return total;
+    if (!match || match.priceType !== "one_time" || !match.price) return total;
     return total + (match.price ?? 0);
   }, 0);
-  $: estimatedMonthly = baseMonthly + addOnMonthly;
+  $: selectedQuoteOnlyAddOns = selectedAddOns.filter((id) => {
+    const match = addOns.find((item) => item.id === id);
+    return match && (!match.price || !match.priceType);
+  }).length;
+  $: estimatedMonthly = vehicleCount * monthlySubscriptionPerVehicle + addOnMonthly;
 
   function validateEmail(value: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
@@ -142,9 +171,7 @@
     } else if (!validatePhone(phone)) {
       errors.phone = "Enter a valid phone number.";
     }
-    if (customerType === "business" && !companyName.trim()) {
-      errors.companyName = "Company name is required for business enquiries.";
-    }
+    if (!selectedVehicleType) errors.vehicleType = "Select the main vehicle or asset type.";
     if (selectedHardware.length === 0) {
       errors.hardware = "Select at least one tracking hardware option.";
     }
@@ -191,6 +218,12 @@
       if (target?.requiresHardware && !selectedHardware.some((item) => target.requiresHardware?.includes(item))) {
         return;
       }
+      if (target?.eligibleVehicleTypes && !target.eligibleVehicleTypes.includes(selectedVehicleType)) {
+        return;
+      }
+      if (target?.unavailable) {
+        return;
+      }
       next.add(id);
     }
     selectedAddOns = Array.from(next);
@@ -200,9 +233,11 @@
   const addOnLabelById = new Map(
     addOns.map((item) => [
       item.id,
-      item.priceType === "monthly"
-        ? `${item.name} (+$${item.price}/mo)`
-        : `${item.name} (+$${item.price} one-time)`,
+      item.price && item.priceType
+        ? item.priceType === "monthly"
+          ? `${item.name} (+$${item.price}/mo)`
+          : `${item.name} (+$${item.price} one-time)`
+        : `${item.name} (quote after assessment)`,
     ])
   );
 
@@ -225,7 +260,7 @@
         .filter(Boolean);
 
       await submitEnquiry({
-        customer_type: customerType,
+        customer_type: "business",
         full_name: fullName,
         email,
         phone,
@@ -234,7 +269,13 @@
         operating_area: operatingArea || null,
         preferred_contact_method: preferredContactMethod || null,
         expected_go_live_date: expectedGoLiveDate || null,
-        tracking_use_case: trackingUseCase || null,
+        tracking_use_case:
+          [
+            selectedVehicleTypeConfig?.label ? `Vehicle/asset type: ${selectedVehicleTypeConfig.label}` : "",
+            trackingUseCase ? `Use case: ${trackingUseCase}` : "",
+          ]
+            .filter(Boolean)
+            .join("\n") || null,
         hardware_choices: hardwareSelection,
         add_ons: addOnSelection,
         message,
@@ -247,6 +288,7 @@
       phone = "";
       companyName = "";
       fleetSize = "";
+      selectedVehicleType = "";
       operatingArea = "";
       preferredContactMethod = "email";
       expectedGoLiveDate = "";
@@ -281,15 +323,14 @@
       <div class="rounded-3xl border border-cyan-100 bg-white/70 p-5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/70 sm:p-6">
         <p class="text-sm font-semibold text-slate-900 dark:text-white">Monthly subscription (tracking access)</p>
         <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          Individuals: <span class="font-semibold text-slate-900">$10 / month</span>
-          <span class="mx-2 text-slate-400">•</span>
-          Businesses: <span class="font-semibold text-slate-900">$15 / month</span>
+          <span class="font-semibold text-slate-900 dark:text-white">$10 / vehicle / month</span>
+          for portal access, tracking visibility, account support, and standard subscription management.
         </p>
         <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-          Add-on pricing below is an estimate. One-time hardware add-ons are billed upfront on the final quote.
+          Hardware, installation, and specialist add-ons are quoted after we review your vehicle type and requirements.
         </p>
         <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
-          Hardware costs are quoted separately after we review your request.
+          The monthly estimate below is based on the number of vehicles you enter.
         </p>
       </div>
       <div class="rounded-3xl border border-slate-800 bg-slate-900/95 p-5 text-sm text-white sm:p-6">
@@ -311,29 +352,30 @@
     <form class="space-y-5 sm:space-y-6" on:submit|preventDefault={handleSubmit}>
       <div class="grid gap-4 sm:grid-cols-2">
         <label class="block text-sm font-medium text-slate-700">
-          Customer type
-          <select
-            class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            bind:value={customerType}
-          >
-            <option value="individual">Individual ($10 / month)</option>
-            <option value="business">Business ($15 / month)</option>
-          </select>
-        </label>
-        <label class="block text-sm font-medium text-slate-700">
-          Company name
+          Company / hub name (optional)
           <input
             type="text"
-            class={`mt-2 w-full rounded-2xl border px-4 py-3 text-sm focus:outline-none dark:bg-slate-900 dark:text-slate-100 ${
-              fieldErrors.companyName
+            class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            placeholder="e.g., H2O Hub"
+            bind:value={companyName}
+          />
+        </label>
+        <label class="block text-sm font-medium text-slate-700">
+          Main vehicle / asset type
+          <select
+            class={`mt-2 w-full rounded-2xl border bg-white px-4 py-3 text-sm focus:outline-none dark:bg-slate-900 dark:text-slate-100 ${
+              fieldErrors.vehicleType
                 ? "border-red-300 focus:border-red-400 dark:border-red-500/50"
                 : "border-slate-200 focus:border-slate-900 dark:border-slate-700"
             }`}
-            placeholder="Omni Logistics Ltd"
-            bind:value={companyName}
-            disabled={customerType !== "business"}
-          />
-          {#if fieldErrors.companyName}<span class="mt-2 block text-xs text-red-600">{fieldErrors.companyName}</span>{/if}
+            bind:value={selectedVehicleType}
+          >
+            <option value="">Select vehicle or asset type</option>
+            {#each vehicleTypes as type}
+              <option value={type.value}>{type.label}</option>
+            {/each}
+          </select>
+          {#if fieldErrors.vehicleType}<span class="mt-2 block text-xs text-red-600">{fieldErrors.vehicleType}</span>{/if}
         </label>
       </div>
 
@@ -388,11 +430,12 @@
 
       <div class="grid gap-4 sm:grid-cols-2">
         <label class="block text-sm font-medium text-slate-700">
-          Fleet size
+          Number of vehicles / assets
           <input
-            type="text"
+            type="number"
+            min="1"
             class="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-            placeholder="e.g., 12 vehicles"
+            placeholder="e.g., 12"
             bind:value={fleetSize}
           />
         </label>
@@ -481,18 +524,24 @@
             {@const requiresHardware = addon.requiresHardware ?? []}
             {@const requiresAddOns = addon.requiresAddOns ?? []}
             {@const incompatibleHardware = addon.incompatibleHardware ?? []}
+            {@const eligibleVehicleTypes = addon.eligibleVehicleTypes ?? []}
             {@const hasRequiredHardware = requiresHardware.length === 0 || selectedHardware.some((id) => requiresHardware.includes(id))}
             {@const hasRequiredAddOns = requiresAddOns.length === 0 || requiresAddOns.every((id) => selectedAddOns.includes(id))}
+            {@const hasEligibleVehicleType = eligibleVehicleTypes.length === 0 || eligibleVehicleTypes.includes(selectedVehicleType)}
             {@const allSelectedIncompatible =
               incompatibleHardware.length > 0 && selectedHardware.length > 0 && selectedHardware.every((id) => incompatibleHardware.includes(id))}
-            {@const isDisabled = !hasRequiredHardware || !hasRequiredAddOns || allSelectedIncompatible}
-            {@const disabledReason = !hasRequiredHardware
-              ? "Requires Professional tracker (1-Wire)."
-              : !hasRequiredAddOns
-                ? "Requires Dash Cams add-on."
-                : allSelectedIncompatible
-                  ? "Not available for OBD2-only selections."
-                  : ""}
+            {@const isDisabled = Boolean(addon.unavailable) || !hasRequiredHardware || !hasRequiredAddOns || !hasEligibleVehicleType || allSelectedIncompatible}
+            {@const disabledReason = addon.unavailable
+              ? addon.unavailableReason ?? "Coming later."
+              : !hasRequiredHardware
+                ? "Requires Professional tracker (1-Wire)."
+                : !hasRequiredAddOns
+                  ? "Requires Dash Cams add-on."
+                  : !hasEligibleVehicleType
+                    ? "Available for trucks, earthmoving equipment, buses, generators, or assets with visible external tanks."
+                    : allSelectedIncompatible
+                      ? "Not available for OBD2-only selections."
+                      : ""}
             <label class={`flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300 ${isDisabled ? "opacity-60" : ""}`}>
               <input
                 type="checkbox"
@@ -503,9 +552,13 @@
               />
               <span>
                 <span class="font-semibold text-slate-900 dark:text-white">{addon.name}</span>
-                <span class="ml-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
-                  {addon.priceType === "monthly" ? `+$${addon.price} / mo` : `+$${addon.price} one-time`}
-                </span>
+                {#if addon.price && addon.priceType}
+                  <span class="ml-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
+                    {addon.priceType === "monthly" ? `+$${addon.price} / mo` : `+$${addon.price} one-time`}
+                  </span>
+                {:else if !addon.unavailable}
+                  <span class="ml-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Quoted after assessment</span>
+                {/if}
                 <span class="block text-xs text-slate-500">{addon.description}</span>
                 {#if isDisabled && disabledReason}
                   <span class="block text-xs text-slate-500">{disabledReason}</span>
@@ -515,12 +568,14 @@
           {/each}
         </div>
         <div class="mt-4 flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3 text-sm dark:bg-slate-900/80">
-          <span class="text-slate-600 dark:text-slate-300">Estimated monthly subscription (monthly add-ons only)</span>
+          <span class="text-slate-600 dark:text-slate-300">Estimated monthly subscription</span>
           <span class="font-semibold text-slate-900 dark:text-white">${estimatedMonthly} / month</span>
         </div>
         <div class="flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3 text-sm dark:bg-slate-900/80">
-          <span class="text-slate-600 dark:text-slate-300">Estimated one-time add-ons</span>
-          <span class="font-semibold text-slate-900 dark:text-white">${addOnOneTime} one-time</span>
+          <span class="text-slate-600 dark:text-slate-300">Specialist add-ons</span>
+          <span class="font-semibold text-slate-900 dark:text-white">
+            {addOnOneTime ? `$${addOnOneTime} one-time` : selectedQuoteOnlyAddOns ? "Quoted after assessment" : "None selected"}
+          </span>
         </div>
       </div>
 
