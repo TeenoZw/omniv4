@@ -118,6 +118,7 @@ OMNI_LINK_GROUPS = [
 		[
 			("Users", "User"),
 			("Roles", "Role"),
+			("Quote Add-ons", "Omni Quote Add-on"),
 			("Company", "Company"),
 			("System Settings", "System Settings"),
 		],

@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { submitEnquiry } from "$lib/api/enquiries";
+  import { getPublicQuoteAddOns, type PublicQuoteAddOn } from "$lib/api/quote-add-ons";
 
   type VehicleTypeOption = {
     value: string;
@@ -145,7 +147,7 @@
       name: "Dash Cams",
       description: "Road and cabin video capture. Planned for a later service phase.",
       unavailable: true,
-      unavailableReason: "Coming later. Dash cam installations are not part of the current quote workflow.",
+      unavailableReason: "Out of stock. Dash cam installations are not available in the current quote workflow.",
     },
     {
       id: "fuel_monitoring_solutions",
@@ -169,7 +171,7 @@
       description: "Managed data and remote access for future dash cam deployments.",
       requiresAddOns: ["teltonika_dash_cam"],
       unavailable: true,
-      unavailableReason: "Coming later with dash cam support.",
+      unavailableReason: "Out of stock. Remote dash cam monitoring will be enabled when dash cam support is available.",
     },
   ];
 
@@ -188,9 +190,19 @@
   let termsAccepted = false;
   let privacyAccepted = false;
   let loading = false;
+  let quoteAddOnSettings: Record<string, PublicQuoteAddOn> = {};
   let errorMessage = "";
   let successMessage = "";
   let fieldErrors: Record<string, string> = {};
+
+  onMount(async () => {
+    try {
+      const settings = await getPublicQuoteAddOns();
+      quoteAddOnSettings = Object.fromEntries(settings.add_ons.map((item) => [item.add_on_id, item]));
+    } catch (error) {
+      console.warn("Unable to load quote add-on settings; using default availability.", error);
+    }
+  });
 
   $: completedFleetSegments = fleetSegments.filter(
     (segment) => segment.vehicleType && Math.max(Number.parseInt(segment.count, 10) || 0, 0) > 0
@@ -355,6 +367,27 @@
     return Array.from(new Set(insights)).slice(0, 6);
   }
 
+  function getQuoteAddOnSetting(id: string) {
+    return quoteAddOnSettings[id];
+  }
+
+  function isAddOnOutOfStock(addon: AddOn) {
+    const setting = getQuoteAddOnSetting(addon.id);
+    if (setting) {
+      return !setting.is_enabled || setting.status !== "Available";
+    }
+    return Boolean(addon.unavailable);
+  }
+
+  function getAddOnStockReason(addon: AddOn) {
+    const setting = getQuoteAddOnSetting(addon.id);
+    if (setting?.public_note) return setting.public_note;
+    if (setting?.status === "Coming Soon") return "Coming soon. This add-on is not available for quoting yet.";
+    if (setting?.status === "Inactive") return "Currently unavailable.";
+    if (setting && (!setting.is_enabled || setting.status === "Out of Stock")) return "Out of stock.";
+    return addon.unavailableReason ?? "Out of stock.";
+  }
+
   function toggleAddOn(id: string) {
     const next = new Set(selectedAddOns);
     const target = addOns.find((addon) => addon.id === id);
@@ -374,7 +407,7 @@
       if (target?.eligibleVehicleTypes && !selectedVehicleTypeValues.some((type) => target.eligibleVehicleTypes?.includes(type))) {
         return;
       }
-      if (target?.unavailable) {
+      if (!target || isAddOnOutOfStock(target)) {
         return;
       }
       next.add(id);
@@ -741,9 +774,10 @@
             {@const hasEligibleVehicleType = eligibleVehicleTypes.length === 0 || selectedVehicleTypeValues.some((type) => eligibleVehicleTypes.includes(type))}
             {@const allSelectedIncompatible =
               incompatibleHardware.length > 0 && selectedHardware.length > 0 && selectedHardware.every((id) => incompatibleHardware.includes(id))}
-            {@const isDisabled = Boolean(addon.unavailable) || !hasRequiredHardware || !hasRequiredAddOns || !hasEligibleVehicleType || allSelectedIncompatible}
-            {@const disabledReason = addon.unavailable
-              ? addon.unavailableReason ?? "Coming later."
+            {@const isOutOfStock = isAddOnOutOfStock(addon)}
+            {@const isDisabled = isOutOfStock || !hasRequiredHardware || !hasRequiredAddOns || !hasEligibleVehicleType || allSelectedIncompatible}
+            {@const disabledReason = isOutOfStock
+              ? getAddOnStockReason(addon)
               : !hasRequiredHardware
                 ? "Requires Professional tracker (1-Wire)."
                 : !hasRequiredAddOns
@@ -763,11 +797,14 @@
               />
               <span>
                 <span class="font-semibold text-slate-900 dark:text-white">{addon.name}</span>
+                {#if isOutOfStock}
+                  <span class="ml-2 text-xs font-semibold uppercase tracking-widest text-red-500 dark:text-red-300">Out of stock</span>
+                {/if}
                 {#if addon.price && addon.priceType}
                   <span class="ml-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
                     {addon.priceType === "monthly" ? `+$${addon.price} / mo` : `+$${addon.price} one-time`}
                   </span>
-                {:else if !addon.unavailable}
+                {:else if !isOutOfStock}
                   <span class="ml-2 text-xs font-semibold uppercase tracking-widest text-slate-400">Quoted after assessment</span>
                 {/if}
                 <span class="block text-xs text-slate-500">{addon.description}</span>
