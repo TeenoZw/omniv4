@@ -29,6 +29,7 @@
     {
       id: "basic_4g",
       name: "Basic (4G) · $70",
+      recommended: true,
       features: [
         "Faster, more reliable connectivity than 2G",
         "Improved coverage and uptime for live tracking",
@@ -702,8 +703,16 @@
               }`}
               on:click={() => toggleHardware(item.id)}
             >
-              <div class="flex items-center justify-between">
-                <h3 class="text-base font-semibold text-slate-900 dark:text-white">{item.name}</h3>
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h3 class="text-base font-semibold text-slate-900 dark:text-white">{item.name}</h3>
+                  {#if item.recommended}
+                    <span class="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-widest text-amber-800 dark:bg-amber-300/15 dark:text-amber-200">
+                      <span aria-hidden="true">★</span>
+                      Most recommended
+                    </span>
+                  {/if}
+                </div>
                 <span class="text-xs font-semibold uppercase tracking-widest text-slate-400">
                   {selectedHardware.includes(item.id) ? "Selected" : "Select"}
                 </span>
