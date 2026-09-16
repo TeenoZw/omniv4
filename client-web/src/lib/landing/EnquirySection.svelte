@@ -135,7 +135,7 @@
       value: "other_external_tank",
       label: "Other asset with visible external tank",
       fuelMonitoringEligible: true,
-      summary: "Requires assessment, but professional tracking gives room for sensors, fuel monitoring, and future integrations.",
+      summary: "Requires assessment, but professional tracking gives room for sensors, fuel monitoring, and specialist integrations.",
       recommendedHardware: ["professional_tracker"],
       suitableAddOns: ["fuel_monitoring_solutions"],
     },
@@ -529,7 +529,7 @@
         <p class="text-xs uppercase tracking-[0.3em] text-cyan-200">Need a faster response?</p>
         <p class="mt-2 text-base font-semibold">Reach Omni Logistics</p>
         <p class="mt-2 text-white/70">
-          We use Zoho Mail for enquiries. Send your request to our team and we will respond with the appropriate next steps.
+          Send your request to our team and we will respond with the appropriate next steps.
         </p>
         <a
           href="mailto:info@omnilogistics.co.zw"

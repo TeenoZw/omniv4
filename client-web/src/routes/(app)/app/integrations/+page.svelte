@@ -27,7 +27,7 @@
         Open tracking portal
       </a>
       <div class="rounded-lg border border-dashed border-muted-foreground/30 p-4 text-sm text-muted-foreground">
-        Additional integrations for ERP, dispatch, and analytics workflows will be introduced in a future release.
+        Manage integrations for ERP, dispatch, analytics, and operational workflows from one controlled workspace.
       </div>
     </CardContent>
   </Card>
