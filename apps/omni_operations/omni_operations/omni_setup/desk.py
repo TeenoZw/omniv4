@@ -75,6 +75,8 @@ OMNI_LINK_GROUPS = [
 		"5. Telematics",
 		[
 			("Provider Accounts", "Telematics Provider Account"),
+			("Discovered Accounts", "Telematics Discovered Account"),
+			("Discovered Users", "Telematics Discovered User"),
 			("Unit Links", "Telematics Unit Link"),
 			("Sync Logs", "Telematics Sync Log"),
 		],

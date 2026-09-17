@@ -83,6 +83,7 @@ doctype_js = {
 	"Tracker SIM Assignment": "public/js/tracker_sim_assignment.js",
 	"Tracker Profile": "public/js/tracker_profile.js",
 	"SIM Profile": "public/js/sim_profile.js",
+	"Telematics Discovered Account": "public/js/telematics_discovered_account.js",
 }
 
 doctype_list_js = {
@@ -94,6 +95,8 @@ doctype_list_js = {
 	"Fleet Maintenance Work Order": "public/js/fleet_maintenance_work_order_list.js",
 	"Fleet Document": "public/js/fleet_document_list.js",
 	"Fleet Contract": "public/js/fleet_contract_list.js",
+	"Telematics Discovered Account": "public/js/telematics_discovered_account_list.js",
+	"Telematics Discovered User": "public/js/telematics_discovered_user_list.js",
 	"Telematics Unit Link": "public/js/telematics_unit_link_list.js",
 }
 
@@ -174,7 +177,7 @@ after_migrate = "omni_operations.omni_setup.bootstrap.after_migrate"
 # ------------------
 # See frappe.core.notifications.get_notification_config
 
-# notification_config = "omni_operations.notifications.get_notification_config"
+notification_config = "omni_operations.notifications.get_notification_config"
 
 permission_query_conditions = {
 	"Omni Onboarding Job": "omni_operations.omni_security.access.omni_onboarding_job_query",

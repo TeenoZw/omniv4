@@ -70,7 +70,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Sync Type",
-   "options": "Account Check\nUnit Metadata\nLatest Position\nHistorical Trips\nOdometer\nDiagnostics\nManual Import\nOther",
+   "options": "Account Check\nAccount Discovery\nUser Discovery\nUnit Discovery\nUnit Metadata\nLatest Position\nHistorical Trips\nOdometer\nDiagnostics\nManual Import\nOther",
    "reqd": 1
   },
   {

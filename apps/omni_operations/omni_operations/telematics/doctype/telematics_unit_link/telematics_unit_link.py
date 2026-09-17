@@ -6,7 +6,19 @@ class TelematicsUnitLink(Document):
 	def validate(self):
 		self.set_provider_from_account()
 		self.set_customer_from_vehicle()
+		self.validate_link_state()
 		self.validate_unique_external_unit()
+
+	def validate_link_state(self):
+		if self.vehicle:
+			if self.status == "Unlinked":
+				self.status = "Active"
+			return
+
+		if self.status != "Unlinked":
+			frappe.throw("Select an Omni vehicle before activating this telematics unit.")
+		self.customer = None
+		self.sync_enabled = 0
 
 	def set_provider_from_account(self):
 		if self.provider_account:

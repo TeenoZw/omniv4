@@ -1,4 +1,5 @@
 import frappe
+from frappe.exceptions import TimestampMismatchError
 
 
 def _split_name(full_name):
@@ -26,17 +27,30 @@ def _ensure_contact_for_customer(customer, email=None, full_name=None, phone=Non
 			}
 		)
 
-	if email and not any(row.email_id == email for row in contact.email_ids):
-		contact.append("email_ids", {"email_id": email, "is_primary": 1})
-	if phone and not any(row.phone == phone for row in contact.phone_nos):
-		contact.append("phone_nos", {"phone": phone, "is_primary_phone": 1})
-	if not any(link.link_doctype == "Customer" and link.link_name == customer for link in contact.links):
-		contact.append("links", {"link_doctype": "Customer", "link_name": customer})
+	def apply_updates():
+		changed = False
+		if email and not any(row.email_id == email for row in contact.email_ids):
+			contact.append("email_ids", {"email_id": email, "is_primary": 1})
+			changed = True
+		if phone and not any(row.phone == phone for row in contact.phone_nos):
+			contact.append("phone_nos", {"phone": phone, "is_primary_phone": 1})
+			changed = True
+		if not any(link.link_doctype == "Customer" and link.link_name == customer for link in contact.links):
+			contact.append("links", {"link_doctype": "Customer", "link_name": customer})
+			changed = True
+		return changed
+
+	changed = apply_updates()
 
 	if contact.is_new():
 		contact.insert(ignore_permissions=True)
-	else:
-		contact.save(ignore_permissions=True)
+	elif changed:
+		try:
+			contact.save(ignore_permissions=True)
+		except TimestampMismatchError:
+			contact.reload()
+			if apply_updates():
+				contact.save(ignore_permissions=True)
 	return contact.name
 
 

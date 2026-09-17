@@ -92,15 +92,42 @@ frappe.ui.form.on("Telematics Provider Account", {
 					frappe.msgprint({
 						title: __("Unit sync {0}", [result.status || "Complete"]),
 						indicator: result.status === "Success" ? "green" : "orange",
-						message: __("Processed {0}; updated {1}; failed {2}.", [
+						message: __("Processed {0}; discovered {1}; updated {2}; failed {3}.", [
 							result.records_processed || 0,
+							result.records_created || 0,
 							result.records_updated || 0,
 							result.records_failed || 0,
 						]),
 					});
 				},
 			});
-		});
+		}, __("Discovery"));
+
+		frm.add_custom_button(__("Discover Hierarchy"), () => {
+			frappe.call({
+				method: "omni_operations.telematics.sync.discover_provider_hierarchy",
+				args: {
+					provider_account_name: frm.doc.name,
+				},
+				freeze: true,
+				freeze_message: __("Discovering provider accounts, users and units..."),
+				callback(response) {
+					const result = response.message || {};
+					const accounts = result.accounts || {};
+					const users = result.users || {};
+					const units = result.units || {};
+					frappe.msgprint({
+						title: __("Provider hierarchy discovery complete"),
+						indicator: [accounts.status, users.status, units.status].includes("Failed") ? "red" : "green",
+						message: __("Accounts: {0} created, {1} updated. Users: {2} created, {3} updated. Units: {4} discovered, {5} updated.", [
+							accounts.records_created || 0, accounts.records_updated || 0,
+							users.records_created || 0, users.records_updated || 0,
+							units.records_created || 0, units.records_updated || 0,
+						]),
+					});
+				},
+			});
+		}, __("Discovery"));
 	},
 
 	account_scope(frm) {

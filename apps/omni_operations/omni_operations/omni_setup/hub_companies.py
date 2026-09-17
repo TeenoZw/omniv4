@@ -12,6 +12,12 @@ def clean(value):
 	return (value or "").strip()
 
 
+def ensure_required_warehouse_types():
+	"""Create ERPNext reference data required during first Company insertion."""
+	if frappe.db.exists("DocType", "Warehouse Type") and not frappe.db.exists("Warehouse Type", "Transit"):
+		frappe.get_doc({"doctype": "Warehouse Type", "name": "Transit"}).insert(ignore_permissions=True)
+
+
 def is_hub_name(value):
 	return bool(clean(value).lower().endswith(" hub"))
 
@@ -70,6 +76,7 @@ def get_or_create_zimbabwe_territory():
 
 
 def ensure_omni_company():
+	ensure_required_warehouse_types()
 	existing = frappe.db.exists("Company", DEFAULT_OMNI_COMPANY) or frappe.defaults.get_global_default("company")
 	if existing:
 		company = frappe.get_doc("Company", existing)

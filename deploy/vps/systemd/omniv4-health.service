@@ -1,0 +1,9 @@
+[Unit]
+Description=Check Omni v4 production services
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/srv/omniv4/app/deploy/vps/healthcheck.sh
+

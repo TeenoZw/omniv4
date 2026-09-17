@@ -59,6 +59,41 @@ Then:
 2. Confirm a successful `Telematics Sync Log` with Sync Type `Account Check`.
 3. Create or import `Telematics Unit Link` records for units that should map to Omni vehicles.
 4. Click `Sync Units`.
+
+## Automatic User and Unit Discovery
+
+Omni discovers provider accounts, their users, and then units. For Wialon, `Discover Hierarchy` uses
+`core/search_items` for all accounts and users visible to the configured token, then records results in
+`Telematics Discovered Account` and
+`Telematics Discovered User` for review. Where the token permits it, Omni stores the external user ID,
+username, creator, account, email, last login, status flags, access mask, measurement system, GUID,
+custom fields, and administrative fields. Wialon can omit individual fields when the token or account
+does not have the relevant access right; omitted data is not treated as an empty value from the provider.
+
+Every newly discovered account starts in `Pending Verification`. The administrator can use
+`Verify and Activate` to create or link the ERPNext Customer, create its customer fleet profile and
+Omni onboarding job, map matching discovered users, and suggest that customer on matching unlinked
+units. This activation does not create an ERPNext Company: customer hubs remain Customers under Omni's
+single accounting company.
+
+Discovery compares customer-hub names with existing ERPNext Customers using a normalized key that
+ignores case, spaces, underscores, hyphens, and punctuation. Exact matches are reused. Possible or
+multiple matches display a Desk notification and a duplicate warning on the discovered account.
+`Resolve Duplicate` lets an administrator choose the Customer to keep, optionally merge another
+Customer into it, and activate the Wialon account. The merge consolidates Omni fleet-profile references
+before Frappe moves the remaining linked records. Activated and ignored accounts are hidden from the
+default discovery inbox but remain available through `Show All`.
+
+Discovered users never become Frappe users and never receive customer portal access automatically.
+An administrator reviews each record and classifies it as a customer hub, regional administrator,
+internal provider user, or ignored user. A customer mapping is required before the record can be marked
+`Mapped to Customer`.
+
+After user discovery, unit synchronization creates every previously unseen provider unit as a disabled
+`Telematics Unit Link` with status `Unlinked`. It does not expose live position data to a customer.
+An administrator must select the correct Omni vehicle; this infers the customer, changes the link to
+`Active`, and allows sync to be enabled. This queue is available from **Telematics > Unit Links** using
+the `Unlinked` status filter.
 5. Confirm matched unit links now show external name/device metadata and latest position data when `Sync Enabled` is on.
 
 ## Automatic Sync
@@ -69,12 +104,14 @@ Omni registers an hourly Frappe scheduler task:
 omni_operations.telematics.scheduled.sync_enabled_provider_accounts
 ```
 
-The task syncs only `Telematics Provider Account` records where:
+The task processes only `Telematics Provider Account` records where:
 
 - `Status` is `Active`
 - `Sync Enabled` is checked
 
-Each run calls the same provider-neutral unit sync service used by the manual `Sync Units` button, so it still creates `Telematics Sync Log` records and updates matched `Telematics Unit Link` rows. Latest position fields update only on unit links where `Sync Enabled` is checked.
+Each run discovers users first and then calls the same provider-neutral unit sync service used by the
+manual `Sync Units` button. Both operations create `Telematics Sync Log` records. New units enter the
+unlinked review queue, while latest position fields update only on linked units where `Sync Enabled` is checked.
 
 Manual run command:
 

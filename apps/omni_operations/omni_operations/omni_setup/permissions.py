@@ -148,6 +148,16 @@ DOCTYPE_PERMISSIONS = {
 		"Omni Operations Admin": FULL_ACCESS,
 		"Fleet Manager": READ_ONLY,
 	},
+	"Telematics Discovered User": {
+		"System Manager": FULL_ACCESS,
+		"Omni Operations Admin": FULL_ACCESS,
+		"Fleet Manager": READ_ONLY,
+	},
+	"Telematics Discovered Account": {
+		"System Manager": FULL_ACCESS,
+		"Omni Operations Admin": FULL_ACCESS,
+		"Fleet Manager": READ_ONLY,
+	},
 	"Telematics Unit Link": {
 		"System Manager": FULL_ACCESS,
 		"Omni Operations Admin": FULL_ACCESS,

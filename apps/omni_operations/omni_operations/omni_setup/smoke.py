@@ -19,6 +19,8 @@ REQUIRED_DOCTYPES = [
 	"Fleet Document",
 	"Fleet Contract",
 	"Telematics Provider Account",
+	"Telematics Discovered Account",
+	"Telematics Discovered User",
 	"Telematics Unit Link",
 	"Telematics Sync Log",
 	"Fiscal Provider Account",
@@ -191,7 +193,7 @@ def run_security_smoke_checks(portal_user="portal-test@omni.local", allowed_cust
 	finally:
 		frappe.set_user(previous_user)
 
-	if results["provisioned_portal_user"]:
+	if results["provisioned_portal_user"] or portal_user.endswith("@omni.local"):
 		_cleanup_security_smoke_artifacts(
 			portal_user=portal_user,
 			allowed_customer=allowed_customer,
@@ -220,6 +222,7 @@ def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_cu
 		"portal_user": portal_user,
 		"allowed_customer": allowed_customer,
 		"provisioned_portal_user": False,
+		"legal_acceptance_ready": False,
 		"current_customer": None,
 		"dashboard_vehicle_total": None,
 		"vehicle_count": None,
@@ -239,6 +242,7 @@ def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_cu
 		results["provisioned_portal_user"] = True
 
 	from omni_operations.customer_portal.api import (
+		accept_legal_terms,
 		get_current_customer,
 		get_dashboard_summary,
 		get_documents,
@@ -252,6 +256,12 @@ def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_cu
 	try:
 		frappe.set_user(portal_user)
 		current_customer = get_current_customer()
+		accept_legal_terms(
+			customer=current_customer["customer"]["name"],
+			accepted_terms=1,
+			accepted_privacy_policy=1,
+		)
+		results["legal_acceptance_ready"] = True
 		dashboard = get_dashboard_summary()
 		vehicles = get_vehicles()["vehicles"]
 		invoices = get_invoices()["invoices"]
@@ -292,6 +302,7 @@ def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_cu
 
 	results["ok"] = all(
 		[
+			results["legal_acceptance_ready"],
 			results["current_customer"] == allowed_customer,
 			results["dashboard_vehicle_total"] == results["vehicle_count"],
 			results["vehicle_count"] is not None,
@@ -389,6 +400,10 @@ def run_onboarding_job_smoke_checks():
 	if results["guided_vehicle"] and frappe.db.exists("Fleet Vehicle", results["guided_vehicle"]):
 		frappe.delete_doc("Fleet Vehicle", results["guided_vehicle"], ignore_permissions=True, force=True)
 	frappe.delete_doc("Lead", lead.name, ignore_permissions=True, force=True)
+	_cleanup_security_smoke_artifacts(
+		portal_user=test_email,
+		allowed_customer=test_customer,
+	)
 	frappe.db.commit()
 
 	results["ok"] = all(
@@ -610,6 +625,13 @@ def _cleanup_security_smoke_artifacts(portal_user, allowed_customer, issue_name=
 			row for row in customer_doc.portal_users if row.user != portal_user
 		]
 		customer_doc.save(ignore_permissions=True)
+
+	for acceptance in frappe.get_all(
+		"Omni Legal Acceptance",
+		filters={"user": portal_user},
+		pluck="name",
+	):
+		frappe.delete_doc("Omni Legal Acceptance", acceptance, ignore_permissions=True, force=True)
 
 	for contact in frappe.get_all(
 		"Contact Email",

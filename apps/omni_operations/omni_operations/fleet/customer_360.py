@@ -125,7 +125,7 @@ def get_customer_fleet_360(customer):
 			"latest_payment_entry": profile.latest_payment_entry,
 		},
 		"summary": {
-			"vehicle_count": profile.total_vehicles or len(vehicles),
+			"vehicle_count": frappe.db.count("Fleet Vehicle", {"customer": customer}),
 			"tracker_count": profile.active_trackers or len(unit_links),
 			"live_telematics_count": len(live_telematics),
 			"staged_telematics_count": len(unit_links) - len(live_telematics),

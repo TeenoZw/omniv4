@@ -1,0 +1,9 @@
+[Unit]
+Description=Encrypted Omni v4 Frappe backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/srv/omniv4/app/deploy/vps/backup.sh
+
