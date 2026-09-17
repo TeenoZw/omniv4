@@ -167,6 +167,18 @@ def get_customer_for_user(user):
 	if not user_email:
 		return None
 
+	portal_customers = frappe.get_all(
+		"Portal User",
+		filters={"user": user_email},
+		pluck="parent",
+		distinct=True,
+		limit=2,
+	)
+	if len(portal_customers) == 1:
+		return portal_customers[0]
+	if len(portal_customers) > 1:
+		return None
+
 	contacts = frappe.get_all(
 		"Contact Email",
 		filters={"email_id": user_email},
@@ -174,17 +186,19 @@ def get_customer_for_user(user):
 		limit=50,
 	)
 
-	for contact in contacts:
-		customer = frappe.db.get_value(
-			"Dynamic Link",
-			{
-				"parent": contact.parent,
-				"parenttype": "Contact",
-				"link_doctype": "Customer",
-			},
-			"link_name",
-		)
-		if customer:
-			return customer
+	contact_names = [contact.parent for contact in contacts]
+	if not contact_names:
+		return None
 
-	return None
+	contact_customers = frappe.get_all(
+		"Dynamic Link",
+		filters={
+			"parent": ["in", contact_names],
+			"parenttype": "Contact",
+			"link_doctype": "Customer",
+		},
+		pluck="link_name",
+		distinct=True,
+		limit=2,
+	)
+	return contact_customers[0] if len(contact_customers) == 1 else None
