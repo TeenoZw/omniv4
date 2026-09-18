@@ -1,6 +1,8 @@
 import frappe
 from frappe.exceptions import TimestampMismatchError
 
+from omni_operations.omni_security.access import INTERNAL_ROLES
+
 
 def _split_name(full_name):
 	full_name = (full_name or "Customer User").strip()
@@ -54,8 +56,18 @@ def _ensure_contact_for_customer(customer, email=None, full_name=None, phone=Non
 	return contact.name
 
 
+def _portal_customers(email):
+	return frappe.get_all(
+		"Portal User",
+		filters={"user": email},
+		pluck="parent",
+		distinct=True,
+		order_by="parent asc",
+	)
+
+
 @frappe.whitelist()
-def create_customer_portal_user(customer, email, full_name=None, phone=None, send_welcome_email=1):
+def create_customer_portal_user(customer, email, full_name=None, phone=None, send_welcome_email=1, reassign=0):
 	if not frappe.has_permission("Customer", "write"):
 		frappe.throw("Not permitted to provision customer portal users.", frappe.PermissionError)
 	if not frappe.db.exists("Customer", customer):
@@ -65,10 +77,28 @@ def create_customer_portal_user(customer, email, full_name=None, phone=None, sen
 	if not email:
 		frappe.throw("Email is required for a customer portal user.")
 
+	existing_customers = [name for name in _portal_customers(email) if name != customer]
+	if existing_customers and not int(reassign or 0):
+		frappe.throw(
+			f"{email} is already linked to {', '.join(existing_customers)}. "
+			"Use Reassign only after confirming that the previous customer access should be removed."
+		)
+	if existing_customers:
+		for existing_customer in existing_customers:
+			existing_doc = frappe.get_doc("Customer", existing_customer)
+			existing_doc.set("portal_users", [row for row in existing_doc.portal_users if row.user != email])
+			existing_doc.save(ignore_permissions=True)
+
 	first_name, last_name = _split_name(full_name or email.split("@", 1)[0])
 	created = False
 	if frappe.db.exists("User", email):
 		user = frappe.get_doc("User", email)
+		internal_roles = sorted(set(role.role for role in user.roles).intersection(INTERNAL_ROLES))
+		if internal_roles:
+			frappe.throw(
+				f"{email} is an internal Omni user ({', '.join(internal_roles)}) and cannot be converted "
+				"to a customer portal account. Use a separate customer email address."
+			)
 	else:
 		user = frappe.get_doc(
 			{
@@ -100,7 +130,63 @@ def create_customer_portal_user(customer, email, full_name=None, phone=None, sen
 		customer_doc.save(ignore_permissions=True)
 
 	frappe.db.commit()
-	return {"user": email, "customer": customer, "contact": contact, "created": created}
+	return {
+		"user": email,
+		"customer": customer,
+		"contact": contact,
+		"created": created,
+		"reassigned_from": existing_customers,
+	}
+
+
+@frappe.whitelist()
+def get_customer_portal_users(customer):
+	if not frappe.has_permission("Customer", "read"):
+		frappe.throw("Not permitted to view customer portal users.", frappe.PermissionError)
+	users = []
+	for email in _portal_customers_for_customer(customer):
+		user = frappe.db.get_value(
+			"User", email, ["name", "full_name", "enabled", "user_type", "last_login"], as_dict=True
+		)
+		if user:
+			users.append(user)
+	return {"customer": customer, "users": users}
+
+
+def _portal_customers_for_customer(customer):
+	return frappe.get_all("Portal User", filters={"parent": customer}, pluck="user", order_by="user asc")
+
+
+@frappe.whitelist()
+def revoke_customer_portal_user(customer, email, disable_user=0):
+	if not frappe.has_permission("Customer", "write"):
+		frappe.throw("Not permitted to revoke customer portal users.", frappe.PermissionError)
+	email = (email or "").strip().lower()
+	customer_doc = frappe.get_doc("Customer", customer)
+	before = len(customer_doc.portal_users)
+	customer_doc.set("portal_users", [row for row in customer_doc.portal_users if row.user != email])
+	if len(customer_doc.portal_users) != before:
+		customer_doc.save(ignore_permissions=True)
+	if int(disable_user or 0) and frappe.db.exists("User", email) and not _portal_customers(email):
+		frappe.db.set_value("User", email, "enabled", 0, update_modified=True)
+	frappe.db.commit()
+	return {"user": email, "customer": customer, "revoked": before != len(customer_doc.portal_users)}
+
+
+@frappe.whitelist()
+def send_portal_password_reset(customer, email):
+	if not frappe.has_permission("Customer", "write"):
+		frappe.throw("Not permitted to manage customer portal users.", frappe.PermissionError)
+	email = (email or "").strip().lower()
+	if customer not in _portal_customers(email):
+		frappe.throw(f"{email} is not linked to {customer}.")
+	user = frappe.get_doc("User", email)
+	if not user.enabled:
+		frappe.throw("Enable this portal user before sending a password reset email.")
+	from frappe.core.doctype.user.user import reset_password
+
+	reset_password(email)
+	return {"user": email, "sent": True}
 
 
 @frappe.whitelist()

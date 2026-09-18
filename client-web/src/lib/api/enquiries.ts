@@ -1,7 +1,6 @@
-import { apiFetch } from "$lib/api/http";
+import { frappeCall } from "$lib/api/frappe";
 
 export type EnquiryPayload = {
-  customer_type: "individual" | "business";
   full_name: string;
   email: string;
   phone: string;
@@ -13,21 +12,15 @@ export type EnquiryPayload = {
   tracking_use_case?: string | null;
   hardware_choices: string[];
   add_ons: string[];
+  fleet_segments: Array<{ vehicle_type: string; label: string; count: number }>;
   message?: string | null;
   terms_accepted: boolean;
   privacy_accepted: boolean;
 };
 
 export async function submitEnquiry(payload: EnquiryPayload) {
-  const response = await apiFetch("/enquiries", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Unable to submit enquiry");
-  }
-
-  return response.json();
+  return frappeCall<{ received: boolean; reference: string; message: string }>(
+    "omni_operations.customer_portal.enquiries.submit_quote_request",
+    { method: "POST", body: payload },
+  );
 }

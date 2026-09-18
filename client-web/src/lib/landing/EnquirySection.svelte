@@ -446,7 +446,6 @@
         .filter(Boolean);
 
       await submitEnquiry({
-        customer_type: "business",
         full_name: fullName,
         email,
         phone,
@@ -471,6 +470,11 @@
             .join("\n") || null,
         hardware_choices: hardwareSelection,
         add_ons: addOnSelection,
+        fleet_segments: completedFleetSegments.map((segment) => ({
+          vehicle_type: segment.vehicleType,
+          label: getVehicleTypeLabel(segment.vehicleType),
+          count: Number.parseInt(segment.count, 10) || 0,
+        })),
         message,
         terms_accepted: termsAccepted,
         privacy_accepted: privacyAccepted,
