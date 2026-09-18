@@ -58,7 +58,7 @@ fixtures = [
 
 # include js, css files in header of desk.html
 app_include_css = "/assets/omni_operations/css/omni_v3_bridge.css"
-# app_include_js = "/assets/omni_operations/js/omni_operations.js"
+app_include_js = "/assets/omni_operations/js/session_idle_timeout.js"
 
 # include js, css files in header of web template
 web_include_css = "/assets/omni_operations/css/omni_v3_bridge.css"

@@ -20,7 +20,7 @@
     type PortalVehicle,
     type PortalVehicleDetail,
   } from "$lib/api/portal";
-  import { frappeLogin } from "$lib/api/frappe";
+  import { frappeLogin, frappeLogout, isFrappeAuthenticationError } from "$lib/api/frappe";
 
   const adminUrl = import.meta.env.VITE_ADMIN_URL || "http://development.localhost:8000";
 
@@ -48,6 +48,12 @@
   let detailLoading = "";
   let termsAccepted = false;
   let privacyAccepted = false;
+  let idleWarning = false;
+  let idleSecondsRemaining = 60;
+  let idleTimeout: ReturnType<typeof setTimeout> | null = null;
+  let idleCountdown: ReturnType<typeof setInterval> | null = null;
+  const idleLimitMs = 15 * 60 * 1000;
+  const idleWarningMs = 60 * 1000;
 
   $: signInUrl = `${adminUrl.replace(/\/$/, "")}/login`;
   $: isSignedOut =
@@ -84,7 +90,59 @@
 
   onMount(() => {
     void loadPortal();
+    const activityEvents = ["pointerdown", "keydown", "scroll", "touchstart"];
+    const recordActivity = () => {
+      if (!idleWarning) resetIdleTimer();
+    };
+    activityEvents.forEach((event) => window.addEventListener(event, recordActivity, { passive: true }));
+    resetIdleTimer();
+    return () => {
+      activityEvents.forEach((event) => window.removeEventListener(event, recordActivity));
+      clearIdleTimers();
+    };
   });
+
+  function clearIdleTimers() {
+    if (idleTimeout) clearTimeout(idleTimeout);
+    if (idleCountdown) clearInterval(idleCountdown);
+    idleTimeout = null;
+    idleCountdown = null;
+  }
+
+  function resetIdleTimer() {
+    if (!currentCustomer) return;
+    clearIdleTimers();
+    idleWarning = false;
+    idleSecondsRemaining = Math.floor(idleWarningMs / 1000);
+    idleTimeout = setTimeout(beginIdleWarning, idleLimitMs - idleWarningMs);
+  }
+
+  function beginIdleWarning() {
+    idleWarning = true;
+    idleSecondsRemaining = Math.floor(idleWarningMs / 1000);
+    idleCountdown = setInterval(() => {
+      idleSecondsRemaining -= 1;
+      if (idleSecondsRemaining <= 0) void signOutForInactivity();
+    }, 1000);
+  }
+
+  async function signOutForInactivity() {
+    clearIdleTimers();
+    idleWarning = false;
+    await frappeLogout();
+    setSignedOut("Your session ended after 15 minutes of inactivity. Please sign in again.");
+  }
+
+  function setSignedOut(message = "Your session has expired. Please sign in again.") {
+    currentCustomer = null;
+    summary = null;
+    vehicles = [];
+    invoices = [];
+    documents = [];
+    tickets = [];
+    errorMessage = message;
+    clearIdleTimers();
+  }
 
   async function loadPortal() {
     loading = true;
@@ -92,6 +150,7 @@
     try {
       const customerResponse = await fetchPortalCurrentCustomer();
       currentCustomer = customerResponse;
+      resetIdleTimer();
 
       if (!customerResponse.legal.accepted) {
         summary = null;
@@ -120,7 +179,11 @@
       selectedVehicle = null;
       selectedTicket = null;
     } catch (error) {
-      errorMessage = error instanceof Error ? error.message : "Unable to load the customer portal.";
+      if (isFrappeAuthenticationError(error)) {
+        setSignedOut();
+      } else {
+        errorMessage = error instanceof Error ? error.message : "Unable to load the customer portal.";
+      }
     } finally {
       loading = false;
     }
@@ -272,6 +335,21 @@
 </svelte:head>
 
 <section class="min-h-screen bg-[#f5f8fb] text-slate-950">
+  {#if idleWarning}
+    <div class="fixed inset-0 z-50 grid place-items-center bg-slate-950/65 p-4" role="dialog" aria-modal="true" aria-labelledby="idle-title">
+      <div class="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-xl">
+        <p class="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">Session security</p>
+        <h2 id="idle-title" class="mt-3 text-2xl font-bold text-slate-950">Still working?</h2>
+        <p class="mt-3 text-sm leading-6 text-slate-600">
+          You will be signed out in {idleSecondsRemaining} seconds because the portal has been inactive.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <button type="button" class="rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700" on:click={resetIdleTimer}>Stay signed in</button>
+          <button type="button" class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700" on:click={signOutForInactivity}>Sign out now</button>
+        </div>
+      </div>
+    </div>
+  {/if}
   <header class="border-b border-slate-200 bg-white">
     <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
       <a href="/" aria-label="Omni Logistics home">

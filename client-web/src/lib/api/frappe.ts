@@ -6,6 +6,28 @@ export type FrappeCallOptions = {
   body?: Record<string, unknown>;
 };
 
+export class FrappeRequestError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "FrappeRequestError";
+    this.status = status;
+  }
+}
+
+export function isFrappeAuthenticationError(error: unknown) {
+  if (!(error instanceof Error)) return false;
+  const message = error.message.toLowerCase();
+  return (
+    (error instanceof FrappeRequestError && [401, 403].includes(error.status) &&
+      (message.includes("log in") || message.includes("login") || message.includes("guest") || message.includes("session"))) ||
+    message.includes("login to access") ||
+    message.includes("please log in") ||
+    message.includes("session expired")
+  );
+}
+
 function buildUrl(methodPath: string, params: FrappeCallOptions["params"] = {}) {
   const normalizedBase = FRAPPE_API_BASE.replace(/\/$/, "");
   const normalizedPath = methodPath.replace(/^\//, "");
@@ -50,7 +72,7 @@ export async function frappeCall<T>(methodPath: string, options: FrappeCallOptio
   });
 
   if (!response.ok) {
-    throw new Error(await readError(response));
+    throw new FrappeRequestError(await readError(response), response.status);
   }
 
   const payload = await response.json();
@@ -74,4 +96,17 @@ export async function frappeLogin(username: string, password: string) {
   }
 
   return response.json();
+}
+
+export async function frappeLogout() {
+  try {
+    await fetch(buildUrl("logout"), {
+      method: "POST",
+      credentials: "include",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+  } finally {
+    // Callers clear their local portal state even if the server session already expired.
+  }
 }
