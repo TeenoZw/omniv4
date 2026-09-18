@@ -32,6 +32,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Registration Number",
+   "description": "Official registration plate. For Wialon-discovered vehicles, use Change Registration Number after the provisional vehicle is created.",
    "no_copy": 1,
    "reqd": 1,
    "unique": 1

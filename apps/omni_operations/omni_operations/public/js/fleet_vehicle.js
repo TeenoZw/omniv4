@@ -1,8 +1,42 @@
 frappe.ui.form.on("Fleet Vehicle", {
 	refresh(frm) {
+		frm.set_df_property("registration_number", "hidden", 0);
+		frm.set_df_property("registration_number", "read_only", frm.is_new() ? 0 : 1);
 		if (!frm.doc.name || frm.is_new()) {
 			return;
 		}
+
+		frm.add_custom_button(__("Change Registration Number"), () => {
+			const dialog = new frappe.ui.Dialog({
+				title: __("Change Vehicle Registration"),
+				fields: [
+					{
+						fieldname: "registration_number",
+						fieldtype: "Data",
+						label: __("Registration Number"),
+						reqd: 1,
+						default: frm.doc.registration_number,
+						description: __("This safely renames the vehicle and updates every linked Omni record."),
+					},
+				],
+				primary_action_label: __("Update Registration"),
+				primary_action(values) {
+					frappe.call({
+						method: "omni_operations.fleet.doctype.fleet_vehicle.fleet_vehicle.change_registration_number",
+						args: { vehicle: frm.doc.name, registration_number: values.registration_number },
+						freeze: true,
+						freeze_message: __("Updating vehicle and linked records..."),
+						callback(response) {
+							const result = response.message || {};
+							dialog.hide();
+							frappe.show_alert({ message: __("Registration updated to {0}", [result.registration_number]), indicator: "green" });
+							frappe.set_route("Form", "Fleet Vehicle", result.vehicle);
+						},
+					});
+				},
+			});
+			dialog.show();
+		}, __("Actions"));
 
 		frm.trigger("show_telematics_status");
 		frm.trigger("show_maintenance_status");
