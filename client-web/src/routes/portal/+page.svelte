@@ -130,13 +130,22 @@
     clearIdleTimers();
     idleWarning = false;
     await frappeLogout();
-    setSignedOut("Your session ended after 15 minutes of inactivity. Please sign in again.");
+    redirectToPortalLogin("expired");
   }
 
   async function signOut() {
     clearIdleTimers();
     await frappeLogout();
-    setSignedOut("You have signed out. Sign in again to access your fleet.");
+    redirectToPortalLogin("signed-out");
+  }
+
+  function redirectToPortalLogin(reason: "expired" | "signed-out") {
+    setSignedOut(
+      reason === "expired"
+        ? "Your session ended after 15 minutes of inactivity. Please sign in again."
+        : "You have signed out. Sign in again to access your fleet.",
+    );
+    window.location.assign(`/portal?reason=${reason}`);
   }
 
   function setSignedOut(message = "Your session has expired. Please sign in again.") {
@@ -153,6 +162,7 @@
   async function loadPortal() {
     loading = true;
     errorMessage = "";
+	const hadAuthenticatedCustomer = Boolean(currentCustomer);
     try {
       const customerResponse = await fetchPortalCurrentCustomer();
       currentCustomer = customerResponse;
@@ -186,7 +196,11 @@
       selectedTicket = null;
     } catch (error) {
       if (isFrappeAuthenticationError(error)) {
-        setSignedOut();
+		if (hadAuthenticatedCustomer) {
+			redirectToPortalLogin("expired");
+			return;
+		}
+		setSignedOut();
       } else {
         errorMessage = error instanceof Error ? error.message : "Unable to load the customer portal.";
       }
@@ -374,7 +388,8 @@
         <a href="/tracking" class="rounded-full px-4 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Tracking</a>
         <a href="mailto:support@omnilogistics.co.zw" class="rounded-full bg-slate-950 px-5 py-2.5 text-white transition hover:bg-cyan-700">Support</a>
         {#if currentCustomer}
-          <button type="button" class="rounded-full border border-slate-300 px-4 py-2 text-slate-700 transition hover:border-slate-500 hover:bg-slate-100" on:click={signOut}>
+		  <span class="hidden text-xs text-slate-500 sm:inline">{currentCustomer.user.full_name || currentCustomer.user.email}</span>
+          <button type="button" class="rounded-full bg-rose-700 px-5 py-2.5 text-white shadow-sm transition hover:bg-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2" on:click={signOut}>
             Sign out
           </button>
         {/if}
