@@ -133,6 +133,12 @@
     setSignedOut("Your session ended after 15 minutes of inactivity. Please sign in again.");
   }
 
+  async function signOut() {
+    clearIdleTimers();
+    await frappeLogout();
+    setSignedOut("You have signed out. Sign in again to access your fleet.");
+  }
+
   function setSignedOut(message = "Your session has expired. Please sign in again.") {
     currentCustomer = null;
     summary = null;
@@ -359,6 +365,11 @@
         <a href="/" class="rounded-full px-4 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Website</a>
         <a href="/tracking" class="rounded-full px-4 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Tracking</a>
         <a href="mailto:support@omnilogistics.co.zw" class="rounded-full bg-slate-950 px-5 py-2.5 text-white transition hover:bg-cyan-700">Support</a>
+        {#if currentCustomer}
+          <button type="button" class="rounded-full border border-slate-300 px-4 py-2 text-slate-700 transition hover:border-slate-500 hover:bg-slate-100" on:click={signOut}>
+            Sign out
+          </button>
+        {/if}
       </nav>
     </div>
   </header>
