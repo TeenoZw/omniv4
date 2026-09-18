@@ -4,7 +4,7 @@ app_publisher = "TeenoZw"
 app_description = "Fleet, telematics, tracker, SIM, maintenance, and customer operations for Omni Business Platform."
 app_email = "admin@omni.local"
 app_license = "gpl-3.0"
-app_logo_url = "/assets/omni_operations/omni-logo.png"
+app_logo_url = "/assets/omni_operations/omni-logo-horizontal.svg"
 
 fixtures = [
 	{

@@ -12,23 +12,26 @@
 }
 
 .navbar .app-logo {
-	border-radius: 8px;
-	height: 30px;
-	max-height: 30px;
+	border-radius: 0;
+	height: 42px;
+	max-height: 42px;
 	object-fit: contain;
-	width: 30px;
+	object-position: left center;
+	width: 132px;
 }
 
 .page-card-head .app-logo {
-	border-radius: 18px;
-	height: 88px;
+	border-radius: 8px;
+	height: auto;
 	margin-bottom: 18px;
 	object-fit: contain;
-	width: 88px;
+	width: min(100%, 300px);
 }
 
 .splash img {
-	border-radius: 18px;
+	border-radius: 8px;
+	max-height: 180px;
+	max-width: 360px;
 	object-fit: contain;
 }
 

@@ -2,7 +2,9 @@ import frappe
 
 
 OMNI_APP_NAME = "Omni Logistics"
-OMNI_LOGO_URL = "/assets/omni_operations/omni-logo.png"
+OMNI_LOGO_URL = "/assets/omni_operations/omni-industrial-solutions-logo.png"
+OMNI_NAVBAR_LOGO_URL = "/assets/omni_operations/omni-logo-horizontal.svg"
+OMNI_FAVICON_URL = "/assets/omni_operations/omni-mark.svg"
 
 
 def apply_omni_branding():
@@ -13,7 +15,7 @@ def apply_omni_branding():
 			"app_name": OMNI_APP_NAME,
 			"app_logo": OMNI_LOGO_URL,
 			"splash_image": OMNI_LOGO_URL,
-			"favicon": OMNI_LOGO_URL,
+			"favicon": OMNI_FAVICON_URL,
 		},
 	)
 	_set_single_values(
@@ -25,7 +27,7 @@ def apply_omni_branding():
 	_set_single_values(
 		"Navbar Settings",
 		{
-			"app_logo": OMNI_LOGO_URL,
+			"app_logo": OMNI_NAVBAR_LOGO_URL,
 		},
 	)
 	frappe.clear_cache()
