@@ -146,7 +146,10 @@ def activate_discovered_account(discovered_account_name):
 
 	account = frappe.get_doc("Telematics Discovered Account", discovered_account_name)
 	if account.activation_status == "Activated" and account.customer:
-		return {"account": account.name, "customer": account.customer, "onboarding_job": account.onboarding_job}
+		vehicle_import = link_approved_account_units(account.name, commit=False)
+		frappe.db.commit()
+		return {"account": account.name, "customer": account.customer, "onboarding_job": account.onboarding_job,
+			"vehicle_import": vehicle_import}
 	if account.activation_status == "Ignored":
 		frappe.throw("Change the account from Ignored to Pending Verification before activating it.")
 	if account.account_type != "Customer Hub":
@@ -216,8 +219,153 @@ def activate_discovered_account(discovered_account_name):
 		frappe.db.set_value(
 			"Telematics Unit Link", unit_link_name, "suggested_customer", customer.name, update_modified=False,
 		)
+	vehicle_import = link_approved_account_units(account.name, commit=False)
 	frappe.db.commit()
-	return {"account": account.name, "customer": customer.name, "fleet_profile": profile, "onboarding_job": job.name}
+	return {"account": account.name, "customer": customer.name, "fleet_profile": profile, "onboarding_job": job.name,
+		"vehicle_import": vehicle_import}
+
+
+@frappe.whitelist()
+def link_approved_account_units(discovered_account_name, commit=True):
+	"""Link units owned by an approved provider account without moving existing ownership."""
+	if not frappe.has_permission("Telematics Discovered Account", "write"):
+		frappe.throw("Not permitted to link provider units.", frappe.PermissionError)
+
+	account = frappe.get_doc("Telematics Discovered Account", discovered_account_name)
+	if account.account_type != "Customer Hub" or account.activation_status != "Activated" or not account.customer:
+		frappe.throw("Activate this Customer Hub before linking its vehicles.")
+
+	company = frappe.db.get_value("Omni Onboarding Job", account.onboarding_job, "company")
+	if not company:
+		from omni_operations.omni_setup.hub_companies import get_default_hub_company
+		company = get_default_hub_company()
+
+	result = {"processed": 0, "created": [], "linked": [], "already_linked": [], "conflicts": []}
+	unit_links = frappe.get_all(
+		"Telematics Unit Link",
+		filters={"provider_account": account.provider_account, "external_account_id": account.external_account_id},
+		fields=["name", "external_unit_id", "external_unit_name", "external_imei", "external_device_id",
+			"vehicle", "customer", "tracker"],
+		order_by="external_unit_name asc",
+	)
+	for row in unit_links:
+		result["processed"] += 1
+		if row.vehicle:
+			owner = frappe.db.get_value("Fleet Vehicle", row.vehicle, "customer")
+			if owner == account.customer:
+				result["already_linked"].append({"unit_link": row.name, "vehicle": row.vehicle})
+			else:
+				result["conflicts"].append(_unit_conflict(row, f"Vehicle belongs to {owner or 'another customer'}"))
+			continue
+
+		tracker = _tracker_for_unit(row)
+		if tracker and tracker.current_customer and tracker.current_customer != account.customer:
+			result["conflicts"].append(_unit_conflict(row, f"Tracker belongs to {tracker.current_customer}"))
+			continue
+
+		vehicle = tracker.current_vehicle if tracker and tracker.current_vehicle else _matching_fleet_vehicle(
+			row.external_unit_name, account.customer
+		)
+		if vehicle:
+			owner = frappe.db.get_value("Fleet Vehicle", vehicle, "customer")
+			if owner and owner != account.customer:
+				result["conflicts"].append(_unit_conflict(row, f"Matched vehicle belongs to {owner}"))
+				continue
+		else:
+			registration = _vehicle_registration_for_unit(row)
+			if frappe.db.exists("Fleet Vehicle", registration):
+				owner = frappe.db.get_value("Fleet Vehicle", registration, "customer")
+				result["conflicts"].append(_unit_conflict(row, f"Registration already belongs to {owner}"))
+				continue
+			vehicle_doc = frappe.get_doc({
+				"doctype": "Fleet Vehicle", "registration_number": registration,
+				"vehicle_name": (row.external_unit_name or registration).strip(), "customer": account.customer,
+				"company": company, "vehicle_type": "Other", "status": "Active",
+				"notes": f"Created from approved telematics unit {row.external_unit_id}.",
+			}).insert(ignore_permissions=True)
+			vehicle = vehicle_doc.name
+			result["created"].append({"unit_link": row.name, "vehicle": vehicle})
+
+		link = frappe.get_doc("Telematics Unit Link", row.name)
+		link.vehicle = vehicle
+		link.customer = account.customer
+		link.suggested_customer = account.customer
+		link.tracker = tracker.name if tracker else link.tracker
+		link.sim = _sim_for_tracker(link.tracker, vehicle) if link.tracker else link.sim
+		link.status = "Active"
+		link.sync_enabled = 1
+		link.last_sync_status = "Success"
+		link.last_error = None
+		link.notes = "Linked automatically after the provider account was approved."
+		link.save(ignore_permissions=True)
+		result["linked"].append({"unit_link": row.name, "vehicle": vehicle})
+
+	_update_discovered_onboarding_vehicle_state(account, result)
+	if commit:
+		frappe.db.commit()
+	return result
+
+
+def _tracker_for_unit(unit):
+	identifiers = [value for value in (unit.external_imei, unit.external_device_id) if value]
+	for identifier in identifiers:
+		tracker = frappe.db.get_value(
+			"Tracker Profile", {"imei": identifier}, ["name", "current_customer", "current_vehicle"], as_dict=True
+		)
+		if tracker:
+			return tracker
+	return None
+
+
+def _matching_fleet_vehicle(unit_name, customer):
+	key = _normalized_vehicle_identifier(unit_name)
+	if not key:
+		return None
+	matches = []
+	for vehicle in frappe.get_all("Fleet Vehicle", fields=["name", "registration_number", "vehicle_name", "customer"]):
+		if key in {_normalized_vehicle_identifier(vehicle.registration_number), _normalized_vehicle_identifier(vehicle.vehicle_name)}:
+			matches.append(vehicle)
+	owned = [vehicle for vehicle in matches if vehicle.customer == customer]
+	if len(owned) == 1:
+		return owned[0].name
+	if not owned and len(matches) == 1:
+		return matches[0].name
+	return None
+
+
+def _vehicle_registration_for_unit(unit):
+	label = re.sub(r"\s+", " ", (unit.external_unit_name or "").strip()).upper()
+	return label or f"TELEMATICS-{unit.external_unit_id}"
+
+
+def _normalized_vehicle_identifier(value):
+	return re.sub(r"[^A-Z0-9]", "", (value or "").upper())
+
+
+def _sim_for_tracker(tracker, vehicle):
+	return frappe.db.get_value("SIM Profile", {"current_tracker": tracker, "current_vehicle": vehicle}, "name")
+
+
+def _unit_conflict(unit, reason):
+	return {"unit_link": unit.name, "unit": unit.external_unit_name or unit.external_unit_id, "reason": reason}
+
+
+def _update_discovered_onboarding_vehicle_state(account, result):
+	if not account.onboarding_job or not result["linked"]:
+		return
+	job = frappe.get_doc("Omni Onboarding Job", account.onboarding_job)
+	job.primary_vehicle = job.primary_vehicle or result["linked"][0]["vehicle"]
+	job.vehicles_ready = 1
+	job.status = "Vehicle Setup"
+	job.next_action = (
+		"Review the imported vehicles and telematics links, then prepare or reserve tracker/SIM kits."
+		if not result["conflicts"] else
+		f"Resolve {len(result['conflicts'])} telematics ownership conflict(s), then prepare tracker/SIM kits."
+	)
+	for item in job.checklist:
+		if item.reference_doctype == "Fleet Vehicle":
+			item.status = "Done"
+	job.save(ignore_permissions=True)
 
 
 @frappe.whitelist()

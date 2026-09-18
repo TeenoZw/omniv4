@@ -16,17 +16,37 @@ frappe.ui.form.on("Telematics Discovered Account", {
 			);
 			frm.add_custom_button(__("Resolve Duplicate"), () => show_duplicate_dialog(frm), __("Onboarding"));
 		}
-		if (["Activated", "Ignored"].includes(frm.doc.activation_status)) return;
+		if (frm.doc.activation_status === "Ignored") return;
+		if (frm.doc.activation_status === "Activated") {
+			frm.add_custom_button(__("Reconcile Wialon Vehicles"), () => frappe.call({
+				method: "omni_operations.telematics.sync.link_approved_account_units",
+				args: { discovered_account_name: frm.doc.name }, freeze: true,
+				freeze_message: __("Matching Wialon units to vehicles..."),
+				callback(response) {
+					const result = response.message || {};
+					frappe.msgprint(__("Processed {0}; linked {1}; created {2}; conflicts {3}.", [
+						result.processed || 0, (result.linked || []).length, (result.created || []).length,
+						(result.conflicts || []).length,
+					]));
+				},
+			}), __("Onboarding"));
+			return;
+		}
 		frm.add_custom_button(__("Verify and Activate"), () => {
 			frappe.confirm(
-				__("Create or link the Omni customer {0}, its fleet profile and onboarding job?", [frm.doc.account_name]),
+				__("Approve {0}, create or link its customer profile, then automatically match or create vehicles for units owned by this Wialon account? Existing vehicle ownership will never be changed automatically.", [frm.doc.account_name]),
 				() => frappe.call({
 					method: "omni_operations.telematics.sync.activate_discovered_account",
 					args: { discovered_account_name: frm.doc.name }, freeze: true,
 					freeze_message: __("Activating Omni customer account..."),
 					callback(response) {
 						const result = response.message || {};
-						frappe.show_alert({ message: __("Customer {0} activated", [result.customer]), indicator: "green" });
+						const imported = result.vehicle_import || {};
+						const message = __("Customer {0} activated. {1} unit(s) linked, {2} vehicle(s) created, {3} conflict(s) held for review.", [
+							result.customer, (imported.linked || []).length, (imported.created || []).length,
+							(imported.conflicts || []).length,
+						]);
+						frappe.msgprint({ title: __("Wialon Account Approved"), message, indicator: (imported.conflicts || []).length ? "orange" : "green" });
 						frm.reload_doc();
 					},
 				})
