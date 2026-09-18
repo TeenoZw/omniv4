@@ -253,6 +253,8 @@ def link_approved_account_units(discovered_account_name, commit=True):
 		if row.vehicle:
 			owner = frappe.db.get_value("Fleet Vehicle", row.vehicle, "customer")
 			if owner == account.customer:
+				_sync_unit_inventory_assignment(row, account.customer, row.vehicle)
+				_ensure_vehicle_hub_assignment(row.vehicle, account.customer, company, row.external_unit_id)
 				result["already_linked"].append({"unit_link": row.name, "vehicle": row.vehicle})
 			else:
 				result["conflicts"].append(_unit_conflict(row, f"Vehicle belongs to {owner or 'another customer'}"))
@@ -298,6 +300,8 @@ def link_approved_account_units(discovered_account_name, commit=True):
 		link.last_error = None
 		link.notes = "Linked automatically after the provider account was approved."
 		link.save(ignore_permissions=True)
+		_sync_unit_inventory_assignment(link, account.customer, vehicle)
+		_ensure_vehicle_hub_assignment(vehicle, account.customer, company, row.external_unit_id)
 		result["linked"].append({"unit_link": row.name, "vehicle": vehicle})
 
 	_update_discovered_onboarding_vehicle_state(account, result)
@@ -343,7 +347,54 @@ def _normalized_vehicle_identifier(value):
 
 
 def _sim_for_tracker(tracker, vehicle):
-	return frappe.db.get_value("SIM Profile", {"current_tracker": tracker, "current_vehicle": vehicle}, "name")
+	assignment = frappe.db.get_value(
+		"Tracker SIM Assignment",
+		{"tracker": tracker, "status": ["in", ["Prepared", "Reserved", "Assigned", "Installed"]]},
+		"sim", order_by="modified desc",
+	)
+	return assignment or frappe.db.get_value("SIM Profile", {"current_tracker": tracker}, "name")
+
+
+def _sync_unit_inventory_assignment(unit, customer, vehicle):
+	matched_tracker = None if unit.tracker else _tracker_for_unit(unit)
+	tracker = unit.tracker or (matched_tracker.name if matched_tracker else None)
+	if not tracker:
+		return
+
+	frappe.db.set_value(
+		"Tracker Profile", tracker,
+		{"status": "Assigned", "current_customer": customer, "current_vehicle": vehicle},
+		update_modified=False,
+	)
+	assignment_name = frappe.db.get_value(
+		"Tracker SIM Assignment",
+		{"tracker": tracker, "status": ["in", ["Prepared", "Reserved", "Assigned", "Installed"]]},
+		"name", order_by="modified desc",
+	)
+	if assignment_name:
+		assignment = frappe.get_doc("Tracker SIM Assignment", assignment_name)
+		assignment.customer = customer
+		assignment.vehicle = vehicle
+		if assignment.status in {"Prepared", "Reserved"}:
+			assignment.status = "Assigned"
+		assignment.notes = "\n".join(filter(None, [assignment.notes, "Assignment context synchronized from Wialon ownership."]))
+		assignment.save(ignore_permissions=True)
+		frappe.db.set_value("Telematics Unit Link", unit.name, "sim", assignment.sim, update_modified=False)
+
+
+def _ensure_vehicle_hub_assignment(vehicle, customer, company, external_unit_id):
+	existing = frappe.db.get_value(
+		"Vehicle Assignment", {"vehicle": vehicle, "customer": customer, "status": "Active"}, "name"
+	)
+	if existing:
+		return existing
+	assignment = frappe.get_doc({
+		"doctype": "Vehicle Assignment", "status": "Active", "company": company,
+		"customer": customer, "vehicle": vehicle, "start_datetime": now_datetime(),
+		"primary_assignment": 1,
+		"notes": f"Hub ownership synchronized from Wialon unit {external_unit_id}.",
+	}).insert(ignore_permissions=True)
+	return assignment.name
 
 
 def _unit_conflict(unit, reason):

@@ -56,8 +56,8 @@ frappe.ui.form.on("Fleet Vehicle", {
 					);
 				}
 
-				if (data.driver_assignment) {
-					frm.dashboard.add_indicator(__("Driver Assigned"), "blue");
+				if (data.hub_assignment) {
+					frm.dashboard.add_indicator(__("Hub: {0}", [data.hub_assignment.customer]), "blue");
 				}
 			},
 		});

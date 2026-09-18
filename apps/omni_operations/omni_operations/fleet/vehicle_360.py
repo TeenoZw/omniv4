@@ -8,10 +8,10 @@ from omni_operations.telematics.status import get_vehicle_telematics_status
 def get_vehicle_360(vehicle):
 	doc = frappe.get_doc("Fleet Vehicle", vehicle)
 	customer_profile = frappe.db.get_value("Customer Fleet Profile", doc.customer, "name")
-	driver_assignment = frappe.get_all(
+	hub_assignment = frappe.get_all(
 		"Vehicle Assignment",
 		filters={"vehicle": vehicle, "status": "Active"},
-		fields=["name", "driver", "start_datetime"],
+		fields=["name", "customer", "start_datetime"],
 		order_by="start_datetime desc",
 		limit=1,
 	)
@@ -59,7 +59,7 @@ def get_vehicle_360(vehicle):
 		},
 		"customer": doc.customer,
 		"customer_fleet_profile": customer_profile,
-		"driver_assignment": driver_assignment[0] if driver_assignment else None,
+		"hub_assignment": hub_assignment[0] if hub_assignment else None,
 		"tracker": tracker[0] if tracker else None,
 		"sim": sim[0] if sim else None,
 		"installations": installations,

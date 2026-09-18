@@ -13,7 +13,6 @@
   "company",
   "customer",
   "vehicle",
-  "driver",
   "assignment_section",
   "start_datetime",
   "end_datetime",
@@ -56,8 +55,9 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Customer",
-   "options": "Customer"
+   "label": "Customer Hub",
+   "options": "Customer",
+   "reqd": 1
   },
   {
    "fieldname": "vehicle",
@@ -71,11 +71,9 @@
   {
    "fieldname": "driver",
    "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Driver",
-   "options": "Fleet Driver",
-   "reqd": 1
+   "hidden": 1,
+   "label": "Legacy Driver",
+   "options": "Fleet Driver"
   },
   {
    "fieldname": "assignment_section",
@@ -87,14 +85,14 @@
    "fieldtype": "Datetime",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Start Datetime",
+   "label": "Effective From",
    "reqd": 1
   },
   {
    "fieldname": "end_datetime",
    "fieldtype": "Datetime",
    "in_standard_filter": 1,
-   "label": "End Datetime"
+   "label": "Effective Until"
   },
   {
    "default": "1",
