@@ -407,38 +407,8 @@ def resolve_discovered_account_duplicate(discovered_account_name, keep_customer,
 
 
 def _prepare_customer_merge(source_customer, target_customer):
-	if not frappe.db.exists("DocType", "Customer Fleet Profile"):
-		return
-	source_profile_name = frappe.db.get_value("Customer Fleet Profile", {"customer": source_customer}, "name")
-	if not source_profile_name:
-		return
-	target_profile_name = frappe.db.get_value("Customer Fleet Profile", {"customer": target_customer}, "name")
-	if not target_profile_name:
-		source_profile = frappe.get_doc("Customer Fleet Profile", source_profile_name)
-		source_profile.customer = target_customer
-		source_profile.save(ignore_permissions=True)
-		if source_profile.name != target_customer:
-			from frappe.model.rename_doc import rename_doc
-			rename_doc(
-				"Customer Fleet Profile", source_profile.name, target_customer,
-				force=True, ignore_permissions=True, show_alert=False,
-			)
-		return
-
-	source_profile = frappe.get_doc("Customer Fleet Profile", source_profile_name)
-	target_profile = frappe.get_doc("Customer Fleet Profile", target_profile_name)
-	for fieldname in (
-		"account_manager", "primary_vehicle", "primary_tracker", "primary_sim", "primary_driver",
-		"vehicle_assignment", "last_installation", "latest_sales_invoice", "latest_support_ticket",
-	):
-		if not target_profile.get(fieldname) and source_profile.get(fieldname):
-			target_profile.set(fieldname, source_profile.get(fieldname))
-	for fieldname in ("maintenance_notes", "contract_notes", "notes"):
-		values = [value for value in (target_profile.get(fieldname), source_profile.get(fieldname)) if value]
-		if values:
-			target_profile.set(fieldname, "\n\n".join(dict.fromkeys(values)))
-	target_profile.save(ignore_permissions=True)
-	frappe.delete_doc("Customer Fleet Profile", source_profile.name, ignore_permissions=True, force=True)
+	from omni_operations.omni_setup.customer_merge import prepare_customer_fleet_profile_merge
+	prepare_customer_fleet_profile_merge(source_customer, target_customer)
 
 
 @frappe.whitelist()

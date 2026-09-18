@@ -76,6 +76,7 @@ web_include_css = "/assets/omni_operations/css/omni_v3_bridge.css"
 
 # include js in doctype views
 doctype_js = {
+	"Customer": "public/js/customer.js",
 	"Omni Onboarding Job": "public/js/omni_onboarding_job.js",
 	"Fleet Vehicle": "public/js/fleet_vehicle.js",
 	"Customer Fleet Profile": "public/js/customer_fleet_profile.js",
