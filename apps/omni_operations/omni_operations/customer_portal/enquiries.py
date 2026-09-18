@@ -3,7 +3,7 @@ import re
 
 import frappe
 from frappe.rate_limiter import rate_limit
-from frappe.utils import cint, get_datetime, now_datetime, validate_email_address
+from frappe.utils import cint, escape_html, get_datetime, now_datetime, validate_email_address
 
 
 ALLOWED_CONTACT_METHODS = {"email", "phone", "whatsapp"}
@@ -95,7 +95,11 @@ def submit_quote_request(**payload):
 		"email_id": email,
 		"mobile_no": phone,
 		"source": "Website",
-		"notes": request_notes,
+		"notes": [{
+			"note": "<br>".join(escape_html(request_notes).splitlines()),
+			"added_by": "Guest",
+			"added_on": now_datetime(),
+		}],
 	}).insert(ignore_permissions=True)
 
 	job = frappe.get_doc({
