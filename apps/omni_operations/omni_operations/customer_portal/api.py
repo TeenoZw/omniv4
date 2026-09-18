@@ -39,6 +39,49 @@ def _customer_display(customer):
 	return frappe.db.get_value("Customer", customer, "customer_name") or customer
 
 
+def _customer_profile(customer, user_email=None):
+	fields = ["name", "customer_name", "customer_group", "territory", "tax_id"]
+	customer_doc = frappe.db.get_value("Customer", customer, fields, as_dict=True) or frappe._dict()
+	contact = None
+	if user_email:
+		contact_name = frappe.db.get_value("Contact Email", {"email_id": user_email}, "parent")
+		if contact_name and frappe.db.exists(
+			"Dynamic Link",
+			{"parent": contact_name, "parenttype": "Contact", "link_doctype": "Customer", "link_name": customer},
+		):
+			contact = frappe.get_doc("Contact", contact_name)
+
+	address = None
+	address_link = frappe.get_all(
+		"Dynamic Link",
+		filters={"parenttype": "Address", "link_doctype": "Customer", "link_name": customer},
+		pluck="parent",
+		order_by="idx asc",
+		limit=1,
+	)
+	if address_link:
+		address_doc = frappe.get_doc("Address", address_link[0])
+		address = {
+			"line1": address_doc.address_line1,
+			"line2": address_doc.address_line2,
+			"city": address_doc.city,
+			"state": address_doc.state,
+			"country": address_doc.country,
+			"postal_code": address_doc.pincode,
+		}
+
+	return {
+		"name": customer_doc.name or customer,
+		"display_name": customer_doc.customer_name or customer,
+		"customer_group": customer_doc.customer_group,
+		"territory": customer_doc.territory,
+		"tax_id": customer_doc.tax_id,
+		"contact_email": next((row.email_id for row in contact.email_ids if row.is_primary), None) if contact else None,
+		"contact_phone": next((row.phone for row in contact.phone_nos if row.is_primary_phone), None) if contact else None,
+		"address": address,
+	}
+
+
 def _get_vehicle_customer(vehicle):
 	return frappe.db.get_value("Fleet Vehicle", vehicle, "customer")
 
@@ -199,10 +242,7 @@ def get_current_customer(customer=None):
 			"email": user.email,
 			"full_name": user.full_name,
 		},
-		"customer": {
-			"name": customer,
-			"display_name": _customer_display(customer),
-		},
+		"customer": _customer_profile(customer, user.email),
 		"roles": [role for role in roles if role in {PORTAL_ROLE, *INTERNAL_ROLES}],
 		"legal": legal_status,
 	}

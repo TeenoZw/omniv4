@@ -334,6 +334,14 @@
       day: "numeric",
     }).format(parsed);
   }
+
+  function customerAddress() {
+    const address = currentCustomer?.customer.address;
+    if (!address) return "No address recorded";
+    return [address.line1, address.line2, address.city, address.state, address.country, address.postal_code]
+      .filter(Boolean)
+      .join(", ") || "No address recorded";
+  }
 </script>
 
 <svelte:head>
@@ -528,6 +536,35 @@
             </article>
           {/each}
         </section>
+
+		<section class="rounded-lg border border-slate-200 bg-white shadow-sm">
+			<div class="border-b border-slate-200 px-5 py-4">
+				<h2 class="text-lg font-bold text-slate-950">Account information</h2>
+				<p class="mt-1 text-sm text-slate-500">Details stored against your Omni customer account.</p>
+			</div>
+			<div class="grid gap-5 px-5 py-5 sm:grid-cols-2 lg:grid-cols-4">
+				<div>
+					<p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Customer</p>
+					<p class="mt-2 text-sm font-semibold text-slate-950">{currentCustomer?.customer.display_name}</p>
+					<p class="mt-1 text-xs text-slate-500">{currentCustomer?.customer.customer_group || "Customer group not set"}</p>
+				</div>
+				<div>
+					<p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Contact</p>
+					<p class="mt-2 text-sm font-semibold text-slate-950">{currentCustomer?.customer.contact_email || currentCustomer?.user.email}</p>
+					<p class="mt-1 text-xs text-slate-500">{currentCustomer?.customer.contact_phone || "Phone number not recorded"}</p>
+				</div>
+				<div>
+					<p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Location</p>
+					<p class="mt-2 text-sm font-semibold text-slate-950">{currentCustomer?.customer.territory || "Territory not set"}</p>
+					<p class="mt-1 text-xs leading-5 text-slate-500">{customerAddress()}</p>
+				</div>
+				<div>
+					<p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Tax ID</p>
+					<p class="mt-2 text-sm font-semibold text-slate-950">{currentCustomer?.customer.tax_id || "Not recorded"}</p>
+					<p class="mt-1 text-xs text-slate-500">Customer reference: {currentCustomer?.customer.name}</p>
+				</div>
+			</div>
+		</section>
 
         <section class="grid gap-6 xl:grid-cols-[1.45fr_0.9fr]">
           <div class="space-y-6">

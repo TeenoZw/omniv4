@@ -10,6 +10,19 @@ export type PortalCurrentCustomer = {
   customer: {
     name: string;
     display_name: string;
+    customer_group?: string | null;
+    territory?: string | null;
+    tax_id?: string | null;
+    contact_email?: string | null;
+    contact_phone?: string | null;
+    address?: {
+      line1?: string | null;
+      line2?: string | null;
+      city?: string | null;
+      state?: string | null;
+      country?: string | null;
+      postal_code?: string | null;
+    } | null;
   };
   roles: string[];
   legal: PortalLegalStatus;
