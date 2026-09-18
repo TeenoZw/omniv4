@@ -56,6 +56,12 @@ def _format_request(payload):
 	return "\n".join(lines)
 
 
+def _ensure_website_lead_source():
+	if not frappe.db.exists("Lead Source", "Website"):
+		frappe.get_doc({"doctype": "Lead Source", "source_name": "Website"}).insert(ignore_permissions=True)
+	return "Website"
+
+
 @frappe.whitelist(allow_guest=True)
 @rate_limit(key="email", limit=5, seconds=60 * 60)
 def submit_quote_request(**payload):
@@ -88,13 +94,14 @@ def submit_quote_request(**payload):
 		get_datetime(target_date)
 
 	request_notes = _format_request(payload)
+	lead_source = _ensure_website_lead_source()
 	lead = frappe.get_doc({
 		"doctype": "Lead",
 		"lead_name": full_name,
 		"company_name": company_name,
 		"email_id": email,
 		"mobile_no": phone,
-		"source": "Website",
+		"source": lead_source,
 		"notes": [{
 			"note": "<br>".join(escape_html(request_notes).splitlines()),
 			"added_by": "Guest",
