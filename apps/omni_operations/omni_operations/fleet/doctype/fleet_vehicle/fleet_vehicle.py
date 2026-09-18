@@ -2,6 +2,7 @@ import re
 
 import frappe
 from frappe.model.document import Document
+from frappe.model.rename_doc import rename_doc
 
 
 class FleetVehicle(Document):
@@ -28,9 +29,9 @@ def change_registration_number(vehicle, registration_number):
 
 	new_name = vehicle
 	if registration_number != vehicle:
-		new_name = frappe.rename_doc(
+		new_name = rename_doc(
 			"Fleet Vehicle", vehicle, registration_number,
-			force=True, ignore_permissions=True, show_alert=False,
+			force=True, show_alert=False,
 		)
 	frappe.db.set_value("Fleet Vehicle", new_name, "registration_number", registration_number)
 	frappe.db.commit()
