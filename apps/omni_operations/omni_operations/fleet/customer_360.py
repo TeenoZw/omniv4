@@ -172,7 +172,9 @@ def get_customer_for_user(user):
 		filters={"user": user_email},
 		pluck="parent",
 		distinct=True,
-		limit=2,
+	)
+	portal_customers = list(
+		dict.fromkeys(customer for customer in portal_customers if frappe.db.exists("Customer", customer))
 	)
 	if len(portal_customers) == 1:
 		return portal_customers[0]
