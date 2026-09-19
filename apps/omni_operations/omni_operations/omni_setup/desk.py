@@ -14,12 +14,13 @@ OMNI_ROLES = [
 ]
 
 OMNI_SHORTCUTS = [
-	("New Client Onboarding", "Omni Onboarding Job", "Cyan"),
-	("Prepare Tracker/SIM Kit", "Tracker SIM Assignment", "Orange"),
-	("Installation Queue", "Tracker Installation", "Orange"),
-	("Customer Fleets", "Customer Fleet Profile", "Blue"),
-	("Invoices", "Sales Invoice", "Purple"),
-	("Support Queue", "Issue", "Red"),
+	("Website Enquiries", "Omni Onboarding Job", "Red", {"source": "Website", "status": "Qualification"}),
+	("New Client Onboarding", "Omni Onboarding Job", "Cyan", None),
+	("Prepare Tracker/SIM Kit", "Tracker SIM Assignment", "Orange", None),
+	("Installation Queue", "Tracker Installation", "Orange", None),
+	("Customer Fleets", "Customer Fleet Profile", "Blue", None),
+	("Invoices", "Sales Invoice", "Purple", None),
+	("Support Queue", "Issue", "Red", None),
 ]
 
 OMNI_LINK_GROUPS = [
@@ -181,7 +182,7 @@ def ensure_omni_workspace():
 	workspace.content = json.dumps(_workspace_content())
 
 	workspace.set("shortcuts", [])
-	for label, doctype, color in OMNI_SHORTCUTS:
+	for label, doctype, color, stats_filter in OMNI_SHORTCUTS:
 		if frappe.db.exists("DocType", doctype):
 			workspace.append(
 				"shortcuts",
@@ -191,6 +192,7 @@ def ensure_omni_workspace():
 					"link_to": doctype,
 					"doc_view": "List",
 					"color": color,
+					"stats_filter": json.dumps(stats_filter) if stats_filter else None,
 				},
 			)
 
@@ -278,7 +280,7 @@ def _workspace_content():
 			"type": "shortcut",
 			"data": {"shortcut_name": label, "col": 4},
 		}
-		for label, _doctype, _color in OMNI_SHORTCUTS
+		for label, _doctype, _color, _stats_filter in OMNI_SHORTCUTS
 	)
 	content.append({"id": "omni_spacer", "type": "spacer", "data": {"col": 12}})
 	content.append(
