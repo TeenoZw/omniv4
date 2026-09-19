@@ -295,6 +295,9 @@
     loginMessage = "";
     errorMessage = "";
     try {
+      // Frappe uses one session cookie per API host. Clear an open Desk session
+      // before authenticating the customer so it cannot leak into the portal.
+      await frappeLogout();
       await frappeLogin(loginEmail.trim(), loginPassword);
       authenticationRequired = false;
       authenticatedSession = true;
