@@ -29,6 +29,7 @@
   let acceptingLegal = false;
   let submittingTicket = false;
   let errorMessage = "";
+  let authenticationRequired = false;
   let loginMessage = "";
   let legalMessage = "";
   let ticketMessage = "";
@@ -56,11 +57,7 @@
   const idleWarningMs = 60 * 1000;
 
   $: signInUrl = `${adminUrl.replace(/\/$/, "")}/login`;
-  $: isSignedOut =
-    errorMessage.toLowerCase().includes("log in") ||
-    errorMessage.toLowerCase().includes("login") ||
-    errorMessage.toLowerCase().includes("not whitelisted") ||
-    errorMessage.toLowerCase().includes("permission");
+  $: isSignedOut = authenticationRequired;
   $: isUnlinkedAccount =
     errorMessage.toLowerCase().includes("no customer account is linked") ||
     errorMessage.toLowerCase().includes("do not have access");
@@ -149,6 +146,7 @@
   }
 
   function setSignedOut(message = "Your session has expired. Please sign in again.") {
+    authenticationRequired = true;
     currentCustomer = null;
     summary = null;
     vehicles = [];
@@ -166,6 +164,7 @@
     try {
       const customerResponse = await fetchPortalCurrentCustomer();
       currentCustomer = customerResponse;
+      authenticationRequired = false;
       resetIdleTimer();
 
       if (!customerResponse.legal.accepted) {
@@ -195,6 +194,15 @@
       selectedVehicle = null;
       selectedTicket = null;
     } catch (error) {
+      const failureMessage = error instanceof Error ? error.message : "Unable to load the customer portal.";
+      const unlinkedAccount =
+        failureMessage.toLowerCase().includes("no customer account is linked") ||
+        failureMessage.toLowerCase().includes("do not have access");
+      if (unlinkedAccount) {
+        await frappeLogout();
+        setSignedOut("This session is not linked to a customer account. Sign in with your Omni customer portal account.");
+        return;
+      }
       if (isFrappeAuthenticationError(error)) {
 		if (hadAuthenticatedCustomer) {
 			redirectToPortalLogin("expired");
@@ -202,7 +210,8 @@
 		}
 		setSignedOut();
       } else {
-        errorMessage = error instanceof Error ? error.message : "Unable to load the customer portal.";
+        authenticationRequired = false;
+        errorMessage = failureMessage;
       }
     } finally {
       loading = false;
@@ -283,6 +292,7 @@
     errorMessage = "";
     try {
       await frappeLogin(loginEmail.trim(), loginPassword);
+      authenticationRequired = false;
       loginPassword = "";
       await loadPortal();
     } catch (error) {
