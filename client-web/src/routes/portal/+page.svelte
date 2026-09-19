@@ -23,6 +23,9 @@
   import { frappeLogin, frappeLogout, isFrappeAuthenticationError } from "$lib/api/frappe";
 
   const adminUrl = import.meta.env.VITE_ADMIN_URL || "http://development.localhost:8000";
+  const portalApiOrigin = new URL(
+    import.meta.env.VITE_API_URL || "http://development.localhost:8000/api/method",
+  ).origin;
 
   let loading = true;
   let signingIn = false;
@@ -383,6 +386,11 @@
     return [address.line1, address.line2, address.city, address.state, address.country, address.postal_code]
       .filter(Boolean)
       .join(", ") || "No address recorded";
+  }
+
+  function portalDocumentUrl(fileUrl: string) {
+    if (/^https?:\/\//i.test(fileUrl)) return fileUrl;
+    return `${portalApiOrigin}${fileUrl.startsWith("/") ? "" : "/"}${fileUrl}`;
   }
 </script>
 
@@ -836,7 +844,7 @@
                       <p class="text-sm font-semibold text-slate-950">{document.title || document.name}</p>
                       <p class="mt-1 text-xs text-slate-500">{document.document_type || "Document"} · Expires {formatDate(document.expires_on)}</p>
                       {#if document.file_url}
-                        <a href={document.file_url} class="mt-2 inline-flex text-xs font-semibold text-cyan-700 hover:text-cyan-900">Open document</a>
+                        <a href={portalDocumentUrl(document.file_url)} class="mt-2 inline-flex text-xs font-semibold text-cyan-700 hover:text-cyan-900">Open document</a>
                       {/if}
                     </div>
                   {/each}

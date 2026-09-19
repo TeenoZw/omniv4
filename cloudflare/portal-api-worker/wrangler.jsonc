@@ -1,0 +1,17 @@
+{
+  "$schema": "../../client-web/node_modules/wrangler/config-schema.json",
+  "name": "omni-portal-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-19",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "portal-api.omnilogistics.co.zw",
+      "custom_domain": true
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}
