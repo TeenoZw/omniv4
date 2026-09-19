@@ -432,12 +432,15 @@ def resolve_discovered_account_duplicate(discovered_account_name, keep_customer,
 	if merge_customer:
 		if not frappe.db.exists("Customer", merge_customer):
 			frappe.throw(f"Customer {merge_customer} does not exist.")
+		from omni_operations.omni_setup.customer_merge import get_merged_portal_users, restore_portal_users
+		portal_users = get_merged_portal_users(merge_customer, keep_customer)
 		_prepare_customer_merge(merge_customer, keep_customer)
 		from frappe.model.rename_doc import rename_doc
 		rename_doc(
 			"Customer", merge_customer, keep_customer, force=True, merge=True,
 			ignore_permissions=True, show_alert=False,
 		)
+		restore_portal_users(keep_customer, portal_users)
 
 	account.reload()
 	account.suggested_existing_customer = keep_customer

@@ -30,6 +30,7 @@
   let submittingTicket = false;
   let errorMessage = "";
   let authenticationRequired = false;
+  let authenticatedSession = false;
   let loginMessage = "";
   let legalMessage = "";
   let ticketMessage = "";
@@ -147,6 +148,7 @@
 
   function setSignedOut(message = "Your session has expired. Please sign in again.") {
     authenticationRequired = true;
+    authenticatedSession = false;
     currentCustomer = null;
     summary = null;
     vehicles = [];
@@ -165,6 +167,7 @@
       const customerResponse = await fetchPortalCurrentCustomer();
       currentCustomer = customerResponse;
       authenticationRequired = false;
+      authenticatedSession = true;
       resetIdleTimer();
 
       if (!customerResponse.legal.accepted) {
@@ -199,8 +202,9 @@
         failureMessage.toLowerCase().includes("no customer account is linked") ||
         failureMessage.toLowerCase().includes("do not have access");
       if (unlinkedAccount) {
-        await frappeLogout();
-        setSignedOut("This session is not linked to a customer account. Sign in with your Omni customer portal account.");
+        authenticationRequired = false;
+        authenticatedSession = true;
+        errorMessage = failureMessage;
         return;
       }
       if (isFrappeAuthenticationError(error)) {
@@ -293,6 +297,7 @@
     try {
       await frappeLogin(loginEmail.trim(), loginPassword);
       authenticationRequired = false;
+      authenticatedSession = true;
       loginPassword = "";
       await loadPortal();
     } catch (error) {
@@ -397,8 +402,10 @@
         <a href="/" class="rounded-full px-4 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Website</a>
         <a href="/tracking" class="rounded-full px-4 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Tracking</a>
         <a href="mailto:support@omnilogistics.co.zw" class="rounded-full bg-slate-950 px-5 py-2.5 text-white transition hover:bg-cyan-700">Support</a>
-        {#if currentCustomer}
-		  <span class="hidden text-xs text-slate-500 sm:inline">{currentCustomer.user.full_name || currentCustomer.user.email}</span>
+        {#if authenticatedSession}
+          {#if currentCustomer}
+            <span class="hidden text-xs text-slate-500 sm:inline">{currentCustomer.user.full_name || currentCustomer.user.email}</span>
+          {/if}
           <button type="button" class="rounded-full bg-rose-700 px-5 py-2.5 text-white shadow-sm transition hover:bg-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2" on:click={signOut}>
             Sign out
           </button>

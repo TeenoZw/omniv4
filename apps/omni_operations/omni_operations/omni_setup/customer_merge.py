@@ -13,6 +13,7 @@ def merge_customer(source_customer, target_customer):
 	if not frappe.db.exists("Customer", target_customer):
 		frappe.throw(f"Customer {target_customer} does not exist.")
 
+	portal_users = get_merged_portal_users(source_customer, target_customer)
 	prepare_customer_fleet_profile_merge(source_customer, target_customer)
 
 	from frappe.model.rename_doc import rename_doc
@@ -26,8 +27,31 @@ def merge_customer(source_customer, target_customer):
 		ignore_permissions=True,
 		show_alert=False,
 	)
+	restore_portal_users(target_customer, portal_users)
 	frappe.db.commit()
 	return {"source_customer": source_customer, "customer": target_customer, "merged": True}
+
+
+def get_merged_portal_users(source_customer, target_customer):
+	"""Capture portal access before Frappe merges the Customer child tables."""
+	users = frappe.get_all(
+		"Portal User",
+		filters={"parent": ["in", [source_customer, target_customer]]},
+		pluck="user",
+	)
+	return sorted(set(filter(None, users)))
+
+
+def restore_portal_users(customer, users):
+	if not users:
+		return
+	customer_doc = frappe.get_doc("Customer", customer)
+	existing = {row.user for row in customer_doc.portal_users}
+	for user in users:
+		if user not in existing:
+			customer_doc.append("portal_users", {"user": user})
+	if {row.user for row in customer_doc.portal_users} != existing:
+		customer_doc.save(ignore_permissions=True)
 
 
 def prepare_customer_fleet_profile_merge(source_customer, target_customer):
