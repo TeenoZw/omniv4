@@ -87,7 +87,17 @@
   ];
 
   onMount(() => {
-    void loadPortal();
+    const reason = new URLSearchParams(window.location.search).get("reason");
+    if (reason === "signed-out" || reason === "expired") {
+      setSignedOut(
+        reason === "expired"
+          ? "Your session ended after 15 minutes of inactivity. Please sign in again."
+          : "You have signed out. Sign in again to access your fleet.",
+      );
+      loading = false;
+    } else {
+      void loadPortal();
+    }
     const activityEvents = ["pointerdown", "keydown", "scroll", "touchstart"];
     const recordActivity = () => {
       if (!idleWarning) resetIdleTimer();
