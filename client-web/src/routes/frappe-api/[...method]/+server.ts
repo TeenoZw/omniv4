@@ -7,8 +7,14 @@ function responseCookies(headers: Headers) {
     getAll?: (name: string) => string[];
     getSetCookie?: () => string[];
   };
-  if (typeof cloudflareHeaders.getAll === "function") return cloudflareHeaders.getAll("Set-Cookie");
-  if (typeof cloudflareHeaders.getSetCookie === "function") return cloudflareHeaders.getSetCookie();
+  if (typeof cloudflareHeaders.getAll === "function") {
+    const cookies = cloudflareHeaders.getAll("Set-Cookie");
+    if (cookies.length) return cookies;
+  }
+  if (typeof cloudflareHeaders.getSetCookie === "function") {
+    const cookies = cloudflareHeaders.getSetCookie();
+    if (cookies.length) return cookies;
+  }
 
   const combined = headers.get("Set-Cookie");
   if (!combined) return [];
@@ -23,7 +29,7 @@ function portalCookie(cookie: string) {
   return value;
 }
 
-const proxy: RequestHandler = async ({ request, params, url, fetch }) => {
+const proxy: RequestHandler = async ({ request, params, url }) => {
   const methodPath = params.method || "";
   const upstreamUrl = new URL(`/api/method/${methodPath}${url.search}`, FRAPPE_ORIGIN);
   const headers = new Headers(request.headers);
@@ -31,7 +37,7 @@ const proxy: RequestHandler = async ({ request, params, url, fetch }) => {
   headers.set("X-Forwarded-Host", url.host);
   headers.set("X-Omni-Surface", "customer-portal");
 
-  const upstream = await fetch(upstreamUrl, {
+  const upstream = await globalThis.fetch(upstreamUrl, {
     method: request.method,
     headers,
     body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,

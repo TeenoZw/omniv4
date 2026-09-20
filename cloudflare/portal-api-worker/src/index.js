@@ -25,10 +25,12 @@ function portalCookie(cookie) {
 
 function responseCookies(headers) {
   if (typeof headers.getAll === "function") {
-    return headers.getAll("Set-Cookie");
+    const cookies = headers.getAll("Set-Cookie");
+    if (cookies.length) return cookies;
   }
   if (typeof headers.getSetCookie === "function") {
-    return headers.getSetCookie();
+    const cookies = headers.getSetCookie();
+    if (cookies.length) return cookies;
   }
 
   const combined = headers.get("Set-Cookie");
