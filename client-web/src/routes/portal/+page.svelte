@@ -396,6 +396,14 @@
       .join(", ") || "No address recorded";
   }
 
+  function portalCustomerName() {
+    return currentCustomer?.customer?.display_name || summary?.customer?.display_name || "Customer Account";
+  }
+
+  function portalCustomerReference() {
+    return currentCustomer?.customer?.name || summary?.customer?.name || "Not available";
+  }
+
   function portalDocumentUrl(fileUrl: string) {
     if (/^https?:\/\//i.test(fileUrl)) return fileUrl;
     return `${portalApiOrigin}${fileUrl.startsWith("/") ? "" : "/"}${fileUrl}`;
@@ -575,16 +583,19 @@
           <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p class="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">Customer Portal</p>
-              <h1 class="mt-2 text-2xl font-bold text-slate-950 sm:text-3xl">
-                {currentCustomer?.customer.display_name}
-              </h1>
+              <h1 class="mt-2 text-2xl font-bold text-slate-950 sm:text-3xl">{portalCustomerName()}</h1>
               <p class="mt-2 text-sm text-slate-600">
                 {currentCustomer?.user.full_name || currentCustomer?.user.email} · Omni Eye Portal
               </p>
             </div>
-            <button type="button" class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-500" on:click={loadPortal}>
-              Refresh
-            </button>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-500" on:click={loadPortal}>
+                Refresh
+              </button>
+              <button type="button" class="rounded-full bg-rose-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-rose-800" on:click={signOut}>
+                Sign out
+              </button>
+            </div>
           </div>
         </section>
 
@@ -606,7 +617,7 @@
 			<div class="grid gap-5 px-5 py-5 sm:grid-cols-2 lg:grid-cols-4">
 				<div>
 					<p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Customer</p>
-					<p class="mt-2 text-sm font-semibold text-slate-950">{currentCustomer?.customer.display_name}</p>
+					<p class="mt-2 text-sm font-semibold text-slate-950">{portalCustomerName()}</p>
 					<p class="mt-1 text-xs text-slate-500">{currentCustomer?.customer.customer_group || "Customer group not set"}</p>
 				</div>
 				<div>
@@ -622,7 +633,7 @@
 				<div>
 					<p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Tax ID</p>
 					<p class="mt-2 text-sm font-semibold text-slate-950">{currentCustomer?.customer.tax_id || "Not recorded"}</p>
-					<p class="mt-1 text-xs text-slate-500">Customer reference: {currentCustomer?.customer.name}</p>
+					<p class="mt-1 text-xs text-slate-500">Customer reference: {portalCustomerReference()}</p>
 				</div>
 			</div>
 		</section>
