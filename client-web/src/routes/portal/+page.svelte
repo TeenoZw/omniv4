@@ -203,6 +203,14 @@
       ]);
 
       summary = summaryResponse;
+	  currentCustomer = {
+		...customerResponse,
+		customer: {
+		  ...customerResponse.customer,
+		  name: customerResponse.customer?.name || summaryResponse.customer.name,
+		  display_name: customerResponse.customer?.display_name || summaryResponse.customer.display_name,
+		},
+	  };
       vehicles = vehicleResponse.vehicles;
       invoices = invoiceResponse.invoices;
       documents = documentResponse.documents;
@@ -423,7 +431,7 @@
         <a href="/" class="rounded-full px-4 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Website</a>
         <a href="/tracking" class="rounded-full px-4 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Tracking</a>
         <a href="mailto:support@omnilogistics.co.zw" class="rounded-full bg-slate-950 px-5 py-2.5 text-white transition hover:bg-cyan-700">Support</a>
-        {#if !loading && !isSignedOut}
+        {#if currentCustomer || (!loading && errorMessage && !authenticationRequired)}
           {#if currentCustomer}
             <span class="hidden text-xs text-slate-500 sm:inline">{currentCustomer.user.full_name || currentCustomer.user.email}</span>
           {/if}
