@@ -23,6 +23,22 @@ function portalCookie(cookie) {
   return value;
 }
 
+function responseCookies(headers) {
+  if (typeof headers.getAll === "function") {
+    return headers.getAll("Set-Cookie");
+  }
+  if (typeof headers.getSetCookie === "function") {
+    return headers.getSetCookie();
+  }
+
+  const combined = headers.get("Set-Cookie");
+  if (!combined) return [];
+
+  // Set-Cookie values may contain a comma in Expires, so only split where the
+  // next token starts a new cookie name.
+  return combined.split(/,(?=\s*[^;,=\s]+=[^;,]*)/g);
+}
+
 export default {
   async fetch(request) {
     const incomingUrl = new URL(request.url);
@@ -63,10 +79,7 @@ export default {
     responseHeaders.set("Cache-Control", "private, no-store");
     applyCors(responseHeaders, origin);
 
-    const setCookies =
-      typeof upstreamResponse.headers.getSetCookie === "function"
-        ? upstreamResponse.headers.getSetCookie()
-        : [upstreamResponse.headers.get("Set-Cookie")].filter(Boolean);
+    const setCookies = responseCookies(upstreamResponse.headers);
     if (setCookies.length) {
       responseHeaders.delete("Set-Cookie");
       for (const cookie of setCookies) responseHeaders.append("Set-Cookie", portalCookie(cookie));
