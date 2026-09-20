@@ -1,4 +1,11 @@
-export const FRAPPE_API_BASE = import.meta.env.VITE_API_URL || "http://development.localhost:8000/api/method";
+const CONFIGURED_FRAPPE_API_BASE = import.meta.env.VITE_API_URL || "http://development.localhost:8000/api/method";
+
+export function frappeApiBase() {
+  if (typeof window !== "undefined" && ["portal-v4.omnilogistics.co.zw", "portal.omnilogistics.co.zw"].includes(window.location.hostname)) {
+    return `${window.location.origin}/frappe-api`;
+  }
+  return CONFIGURED_FRAPPE_API_BASE;
+}
 
 export type FrappeCallOptions = {
   params?: Record<string, string | number | boolean | null | undefined>;
@@ -29,7 +36,7 @@ export function isFrappeAuthenticationError(error: unknown) {
 }
 
 function buildUrl(methodPath: string, params: FrappeCallOptions["params"] = {}) {
-  const normalizedBase = FRAPPE_API_BASE.replace(/\/$/, "");
+  const normalizedBase = frappeApiBase().replace(/\/$/, "");
   const normalizedPath = methodPath.replace(/^\//, "");
   const url = new URL(`${normalizedBase}/${normalizedPath}`);
 
@@ -71,11 +78,17 @@ export async function frappeCall<T>(methodPath: string, options: FrappeCallOptio
     cache: "no-store",
   });
 
-  if (!response.ok) {
-    throw new FrappeRequestError(await readError(response), response.status);
-  }
-
   const payload = await response.json();
+  if (!response.ok || payload?.exception || payload?.exc_type) {
+    const message =
+      payload?._server_messages ??
+      payload?.exception ??
+      payload?.exc_type ??
+      payload?.message?.error?.message ??
+      payload?.message ??
+      `Request failed (${response.status})`;
+    throw new FrappeRequestError(typeof message === "string" ? message : JSON.stringify(message), response.status);
+  }
   return (payload?.message ?? payload) as T;
 }
 

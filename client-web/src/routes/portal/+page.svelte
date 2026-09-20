@@ -20,12 +20,10 @@
     type PortalVehicle,
     type PortalVehicleDetail,
   } from "$lib/api/portal";
-  import { frappeLogin, frappeLogout, isFrappeAuthenticationError } from "$lib/api/frappe";
+  import { frappeApiBase, frappeLogin, frappeLogout, isFrappeAuthenticationError } from "$lib/api/frappe";
 
   const adminUrl = import.meta.env.VITE_ADMIN_URL || "http://development.localhost:8000";
-  const portalApiOrigin = new URL(
-    import.meta.env.VITE_API_URL || "http://development.localhost:8000/api/method",
-  ).origin;
+  const portalApiOrigin = new URL(frappeApiBase()).origin;
 
   let loading = true;
   let signingIn = false;
