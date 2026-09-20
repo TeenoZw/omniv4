@@ -8,6 +8,21 @@ function isAllowedPath(pathname) {
   return pathname.startsWith("/api/") || pathname.startsWith("/files/") || pathname.startsWith("/private/files/");
 }
 
+function applyCors(headers, origin) {
+  if (!origin) return;
+  headers.set("Access-Control-Allow-Origin", origin);
+  headers.set("Access-Control-Allow-Credentials", "true");
+  headers.append("Vary", "Origin");
+}
+
+function portalCookie(cookie) {
+  let value = cookie.replace(/;\s*Domain=[^;]+/gi, "");
+  if (!/;\s*Path=/i.test(value)) value += "; Path=/";
+  if (!/;\s*Secure/i.test(value)) value += "; Secure";
+  if (!/;\s*SameSite=/i.test(value)) value += "; SameSite=Lax";
+  return value;
+}
+
 export default {
   async fetch(request) {
     const incomingUrl = new URL(request.url);
@@ -18,6 +33,16 @@ export default {
     const origin = request.headers.get("Origin");
     if (origin && !PORTAL_ORIGINS.has(origin)) {
       return new Response("Origin not allowed", { status: 403 });
+    }
+
+    if (request.method === "OPTIONS") {
+      const headers = new Headers({
+        "Access-Control-Allow-Headers": request.headers.get("Access-Control-Request-Headers") || "Content-Type",
+        "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
+        "Access-Control-Max-Age": "86400",
+      });
+      applyCors(headers, origin);
+      return new Response(null, { status: 204, headers });
     }
 
     const upstreamUrl = new URL(incomingUrl.pathname + incomingUrl.search, UPSTREAM_ORIGIN);
@@ -36,6 +61,17 @@ export default {
 
     const responseHeaders = new Headers(upstreamResponse.headers);
     responseHeaders.set("Cache-Control", "private, no-store");
+    applyCors(responseHeaders, origin);
+
+    const setCookies =
+      typeof upstreamResponse.headers.getSetCookie === "function"
+        ? upstreamResponse.headers.getSetCookie()
+        : [upstreamResponse.headers.get("Set-Cookie")].filter(Boolean);
+    if (setCookies.length) {
+      responseHeaders.delete("Set-Cookie");
+      for (const cookie of setCookies) responseHeaders.append("Set-Cookie", portalCookie(cookie));
+    }
+
     const location = responseHeaders.get("Location");
     if (location) {
       responseHeaders.set("Location", location.replace(UPSTREAM_ORIGIN, incomingUrl.origin));
