@@ -29,7 +29,50 @@ function portalCookie(cookie: string) {
   return value;
 }
 
-const proxy: RequestHandler = async ({ request, params, url }) => {
+function applyPortalCookie(
+  cookieHeader: string,
+  cookies: Parameters<RequestHandler>[0]["cookies"],
+) {
+  const parts = cookieHeader.split(";").map((part) => part.trim());
+  const [nameValue, ...attributes] = parts;
+  const separator = nameValue.indexOf("=");
+  if (separator < 1) return;
+
+  const name = nameValue.slice(0, separator);
+  const value = nameValue.slice(separator + 1);
+  const options: Parameters<typeof cookies.set>[2] = {
+    path: "/",
+    secure: true,
+    sameSite: "lax",
+  };
+
+  for (const attribute of attributes) {
+    const [rawName, ...rawValue] = attribute.split("=");
+    const attributeName = rawName.toLowerCase();
+    const attributeValue = rawValue.join("=");
+
+    if (attributeName === "httponly") options.httpOnly = true;
+    if (attributeName === "secure") options.secure = true;
+    if (attributeName === "path" && attributeValue) options.path = attributeValue;
+    if (attributeName === "max-age" && Number.isFinite(Number(attributeValue))) {
+      options.maxAge = Number(attributeValue);
+    }
+    if (attributeName === "expires" && attributeValue) {
+      const expires = new Date(attributeValue);
+      if (!Number.isNaN(expires.getTime())) options.expires = expires;
+    }
+    if (attributeName === "samesite") {
+      const sameSite = attributeValue.toLowerCase();
+      if (["lax", "strict", "none"].includes(sameSite)) {
+        options.sameSite = sameSite as "lax" | "strict" | "none";
+      }
+    }
+  }
+
+  cookies.set(name, value, options);
+}
+
+const proxy: RequestHandler = async ({ request, params, url, cookies }) => {
   const methodPath = params.method || "";
   const upstreamUrl = new URL(`/api/method/${methodPath}${url.search}`, FRAPPE_ORIGIN);
   const headers = new Headers(request.headers);
@@ -46,10 +89,12 @@ const proxy: RequestHandler = async ({ request, params, url }) => {
 
   const responseHeaders = new Headers(upstream.headers);
   responseHeaders.set("Cache-Control", "private, no-store");
-  const cookies = responseCookies(upstream.headers);
-  if (cookies.length) {
+  const upstreamCookies = responseCookies(upstream.headers);
+  if (upstreamCookies.length) {
     responseHeaders.delete("Set-Cookie");
-    for (const cookie of cookies) responseHeaders.append("Set-Cookie", portalCookie(cookie));
+    for (const cookie of upstreamCookies) {
+      applyPortalCookie(portalCookie(cookie), cookies);
+    }
   }
 
   return new Response(upstream.body, {
