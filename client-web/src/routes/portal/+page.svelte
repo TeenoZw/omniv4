@@ -237,6 +237,9 @@
         errorMessage = failureMessage;
       }
     } finally {
+      if (!currentCustomer && !errorMessage && !authenticationRequired) {
+        setSignedOut();
+      }
       loading = false;
     }
   }
@@ -872,17 +875,6 @@
             </article>
           </aside>
         </section>
-      </div>
-    {:else}
-      <div class="grid min-h-[60vh] place-items-center">
-        <div class="w-full max-w-xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-          <p class="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700">Omni Eye Portal</p>
-          <h1 class="mt-3 text-2xl font-bold text-slate-950">Sign in to continue</h1>
-          <p class="mt-3 text-sm leading-6 text-slate-600">Your portal session is no longer available. Please sign in again.</p>
-          <button type="button" class="mt-5 rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-700" on:click={() => setSignedOut()}>
-            Return to Sign In
-          </button>
-        </div>
       </div>
     {/if}
   </main>
