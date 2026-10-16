@@ -31,7 +31,9 @@ export function isFrappeAuthenticationError(error: unknown) {
       (message.includes("log in") || message.includes("login") || message.includes("guest") || message.includes("session"))) ||
     message.includes("login to access") ||
     message.includes("please log in") ||
-    message.includes("session expired")
+    message.includes("session expired") ||
+    (error instanceof FrappeRequestError && [401, 403].includes(error.status) &&
+      (message.includes("permissionerror") || message.includes("not permitted")))
   );
 }
 

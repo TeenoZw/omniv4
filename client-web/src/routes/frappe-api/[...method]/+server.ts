@@ -38,7 +38,10 @@ function applyPortalCookie(
   const separator = nameValue.indexOf("=");
   if (separator < 1) return;
 
-  const name = nameValue.slice(0, separator);
+  const upstreamName = nameValue.slice(0, separator);
+  if (upstreamName !== "sid") return;
+
+  const name = "omni_portal_sid";
   const value = nameValue.slice(separator + 1);
   const options: Parameters<typeof cookies.set>[2] = {
     path: "/",
@@ -77,6 +80,14 @@ const proxy: RequestHandler = async ({ request, params, url, cookies }) => {
   const upstreamUrl = new URL(`/api/method/${methodPath}${url.search}`, FRAPPE_ORIGIN);
   const headers = new Headers(request.headers);
   headers.delete("host");
+  const portalSession = cookies.get("omni_portal_sid");
+  const passthroughCookies = (headers.get("cookie") || "")
+    .split(";")
+    .map((cookie) => cookie.trim())
+    .filter((cookie) => cookie && !/^(sid|omni_portal_sid)=/i.test(cookie));
+  if (portalSession) passthroughCookies.push(`sid=${portalSession}`);
+  if (passthroughCookies.length) headers.set("cookie", passthroughCookies.join("; "));
+  else headers.delete("cookie");
   headers.set("X-Forwarded-Host", url.host);
   headers.set("X-Omni-Surface", "customer-portal");
 
