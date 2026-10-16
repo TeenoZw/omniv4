@@ -20,13 +20,12 @@
     type PortalVehicle,
     type PortalVehicleDetail,
   } from "$lib/api/portal";
-  import { frappeApiBase, frappeLogin, frappeLogout, isFrappeAuthenticationError } from "$lib/api/frappe";
+  import { frappeApiBase, frappeLogout, isFrappeAuthenticationError } from "$lib/api/frappe";
 
   const adminUrl = import.meta.env.VITE_ADMIN_URL || "http://development.localhost:8000";
   const portalApiOrigin = new URL(frappeApiBase()).origin;
 
   let loading = true;
-  let signingIn = false;
   let acceptingLegal = false;
   let submittingTicket = false;
   let errorMessage = "";
@@ -89,7 +88,12 @@
 
   onMount(() => {
     const reason = new URLSearchParams(window.location.search).get("reason");
-    if (reason === "signed-out" || reason === "expired") {
+    const loginError = new URLSearchParams(window.location.search).get("login_error");
+    if (loginError) {
+      loginMessage = loginError === "missing" ? "Enter your email address and password." : "The email address or password is incorrect.";
+      setSignedOut(loginMessage);
+      loading = false;
+    } else if (reason === "signed-out" || reason === "expired") {
       setSignedOut(
         reason === "expired"
           ? "Your session ended after 15 minutes of inactivity. Please sign in again."
@@ -311,27 +315,6 @@
     }
   }
 
-  async function submitLogin() {
-    if (signingIn || !loginEmail.trim() || !loginPassword) return;
-    signingIn = true;
-    loginMessage = "";
-    errorMessage = "";
-    try {
-      // Frappe uses one session cookie per API host. Clear an open Desk session
-      // before authenticating the customer so it cannot leak into the portal.
-      await frappeLogout();
-      await frappeLogin(loginEmail.trim(), loginPassword);
-      authenticationRequired = false;
-      authenticatedSession = true;
-      loginPassword = "";
-      await loadPortal();
-    } catch (error) {
-      loginMessage = cleanError(error instanceof Error ? error.message : "Unable to sign in.");
-    } finally {
-      signingIn = false;
-    }
-  }
-
   function cleanError(value: string) {
     if (!value) return "Unable to complete the request.";
     if (value.includes("not whitelisted") || value.includes("Login to access")) {
@@ -472,21 +455,21 @@
               Use the email and password issued for your Omni customer account. This portal is separate from the
               public website and only shows records linked to your customer profile.
             </p>
-            <form class="mt-5 space-y-4" on:submit|preventDefault={submitLogin}>
+            <form class="mt-5 space-y-4" method="POST" action="/portal-login">
               <label class="block text-sm font-medium text-slate-700">
                 Email address
-                <input bind:value={loginEmail} type="email" autocomplete="username" required class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-cyan-600" placeholder="name@example.com" />
+                <input bind:value={loginEmail} name="usr" type="email" autocomplete="username" required class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-cyan-600" placeholder="name@example.com" />
               </label>
               <label class="block text-sm font-medium text-slate-700">
                 Password
-                <input bind:value={loginPassword} type="password" autocomplete="current-password" required class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-cyan-600" placeholder="Your password" />
+                <input bind:value={loginPassword} name="pwd" type="password" autocomplete="current-password" required class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-cyan-600" placeholder="Your password" />
               </label>
               {#if loginMessage}
                 <p class="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">{loginMessage}</p>
               {/if}
               <div class="flex flex-wrap gap-3">
-                <button type="submit" disabled={signingIn} class="rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-700 disabled:opacity-50">
-                  {signingIn ? "Signing in..." : "Sign In"}
+                <button type="submit" class="rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-cyan-700">
+                  Sign In
                 </button>
                 <a href={signInUrl} class="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-500">
                   Admin Sign In
