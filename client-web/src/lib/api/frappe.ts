@@ -1,7 +1,16 @@
 const CONFIGURED_FRAPPE_API_BASE = import.meta.env.VITE_API_URL || "http://development.localhost:8000/api/method";
 
 export function frappeApiBase() {
-  if (typeof window !== "undefined" && ["portal-v4.omnilogistics.co.zw", "portal.omnilogistics.co.zw"].includes(window.location.hostname)) {
+  if (
+    typeof window !== "undefined" &&
+    [
+      "portal-v4.omnilogistics.co.zw",
+      "portal.omnilogistics.co.zw",
+      "v4.omnilogistics.co.zw",
+      "www.omnilogistics.co.zw",
+      "omnilogistics.co.zw",
+    ].includes(window.location.hostname)
+  ) {
     return `${window.location.origin}/frappe-api`;
   }
   return CONFIGURED_FRAPPE_API_BASE;
