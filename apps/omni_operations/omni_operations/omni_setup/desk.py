@@ -132,7 +132,7 @@ OMNI_LINK_GROUPS = [
 @frappe.whitelist()
 def configure_omni_focused_desk():
 	ensure_omni_workspace()
-	hide_non_omni_workspaces()
+	restore_public_workspaces()
 	focus_administrator_on_omni()
 	frappe.clear_cache()
 	return {
@@ -220,11 +220,10 @@ def ensure_omni_workspace():
 	workspace.save(ignore_permissions=True)
 
 
-def hide_non_omni_workspaces():
-	for workspace_name in frappe.get_all("Workspace", pluck="name"):
-		if workspace_name == OMNI_WORKSPACE:
-			continue
-		frappe.db.set_value("Workspace", workspace_name, "is_hidden", 1, update_modified=False)
+def restore_public_workspaces():
+	"""Keep the Omni home while preserving the complete ERPNext Desk for administrators."""
+	for workspace_name in frappe.get_all("Workspace", filters={"public": 1}, pluck="name"):
+		frappe.db.set_value("Workspace", workspace_name, "is_hidden", 0, update_modified=False)
 
 	frappe.db.set_value("Workspace", OMNI_WORKSPACE, {"is_hidden": 0, "sequence_id": 0}, update_modified=False)
 
@@ -234,8 +233,10 @@ def focus_administrator_on_omni():
 		try:
 			frappe.db.set_value("User", "Administrator", "default_workspace", OMNI_WORKSPACE)
 			admin = frappe.get_doc("User", "Administrator")
-			if "Workspace Manager" in {row.role for row in admin.roles}:
-				admin.set("roles", [row for row in admin.roles if row.role != "Workspace Manager"])
+			if frappe.db.exists("Role", "Workspace Manager") and "Workspace Manager" not in {
+				row.role for row in admin.roles
+			}:
+				admin.append("roles", {"role": "Workspace Manager"})
 				admin.save(ignore_permissions=True)
 		except frappe.QueryDeadlockError:
 			frappe.log_error(
@@ -305,13 +306,12 @@ def _workspace_content():
 
 
 def _should_use_omni_sidebar():
-	if frappe.session.user in {"Guest"}:
+	if frappe.session.user in {"Guest", "Administrator"}:
 		return False
 
 	roles = set(frappe.get_roles())
 	return bool(
 		{
-			"Administrator",
 			"System Manager",
 			"Omni Operations Admin",
 			"Fleet Manager",
