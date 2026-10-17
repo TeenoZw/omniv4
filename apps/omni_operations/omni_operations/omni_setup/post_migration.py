@@ -230,8 +230,10 @@ def normalize_tracker_inventory_state():
 		fields=["name", "status", "condition", "current_vehicle"],
 		limit=5000,
 	):
-		condition = condition_by_legacy_status.get(tracker.status) or tracker.condition or "Brand New"
 		status = "Assigned" if tracker.current_vehicle else "In Stock"
+		condition = condition_by_legacy_status.get(tracker.status) or tracker.condition or "Brand New"
+		if status == "Assigned" and condition == "Brand New":
+			condition = "Used - Serviceable"
 		if tracker.status == status and tracker.condition == condition:
 			continue
 		frappe.db.set_value(
