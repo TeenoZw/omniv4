@@ -1,7 +1,19 @@
 frappe.ui.form.on("Customer", {
 	refresh(frm) {
 		const can_merge = frappe.user.has_role("System Manager") || frappe.user.has_role("Omni Operations Admin");
-		if (frm.is_new() || !can_merge) return;
+		if (frm.is_new()) return;
+
+		frm.add_custom_button(__("Units / Vehicles"), () => {
+			frappe.set_route("List", "Fleet Vehicle", { customer: frm.doc.name });
+		}, __("Fleet"));
+		frm.add_custom_button(__("Assigned Trackers"), () => {
+			frappe.set_route("List", "Tracker Profile", { current_customer: frm.doc.name });
+		}, __("Fleet"));
+		frm.add_custom_button(__("Add Unit / Vehicle"), () => {
+			frappe.new_doc("Fleet Vehicle", { customer: frm.doc.name });
+		}, __("Fleet"));
+
+		if (!can_merge) return;
 
 		frm.add_custom_button(__("Merge Into Another Customer"), () => {
 			const dialog = new frappe.ui.Dialog({

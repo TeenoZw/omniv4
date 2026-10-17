@@ -39,6 +39,7 @@ frappe.ui.form.on("Fleet Vehicle", {
 		}, __("Actions"));
 
 		frm.trigger("show_telematics_status");
+		frm.trigger("show_tracker_status");
 		frm.trigger("show_maintenance_status");
 		frm.trigger("show_vehicle_360");
 		frm.add_custom_button(
@@ -59,6 +60,10 @@ frappe.ui.form.on("Fleet Vehicle", {
 		frm.add_custom_button(__("Telematics Links"), () => {
 			frappe.set_route("List", "Telematics Unit Link", { vehicle: frm.doc.name });
 		}, __("View"));
+		frm.add_custom_button(__("Assign Tracker"), () => {
+			open_tracker_assignment_dialog(frm);
+		}, __("Assignment"));
+		frm.change_custom_button_type(__("Assign Tracker"), __("Assignment"), "primary");
 		frm.add_custom_button(__("Maintenance"), () => {
 			frappe.set_route("List", "Fleet Maintenance Work Order", { vehicle: frm.doc.name });
 		}, __("View"));
@@ -71,6 +76,21 @@ frappe.ui.form.on("Fleet Vehicle", {
 		frm.add_custom_button(__("Contracts"), () => {
 			frappe.set_route("List", "Fleet Contract", { vehicle: frm.doc.name });
 		}, __("View"));
+	},
+
+	show_tracker_status(frm) {
+		frappe.db.get_list("Tracker Profile", {
+			filters: { current_vehicle: frm.doc.name },
+			fields: ["name", "status"],
+			limit: 5,
+		}).then((trackers) => {
+			if (!trackers.length) {
+				frm.dashboard.add_indicator(__("Tracker: Not assigned"), "gray");
+				return;
+			}
+			const tracker = trackers[0];
+			frm.dashboard.add_indicator(__("Tracker: {0} ({1})", [tracker.name, tracker.status]), "blue");
+		});
 	},
 
 	show_vehicle_360(frm) {
@@ -140,3 +160,65 @@ frappe.ui.form.on("Fleet Vehicle", {
 		});
 	},
 });
+
+function open_tracker_assignment_dialog(frm) {
+	const dialog = new frappe.ui.Dialog({
+		title: __("Assign Tracker to {0}", [frm.doc.name]),
+		fields: [
+			{
+				fieldname: "hub",
+				fieldtype: "Link",
+				options: "Customer",
+				label: __("Customer Hub"),
+				default: frm.doc.customer,
+				read_only: 1,
+			},
+			{
+				fieldname: "tracker",
+				fieldtype: "Link",
+				options: "Tracker Profile",
+				label: __("Tracker"),
+				reqd: 1,
+				description: __("Choose an available/prepared tracker, or the tracker already assigned to this unit."),
+				get_query: () => ({
+					filters: { status: ["in", ["Available", "Prepared", "Reserved", "Assigned", "Installed"]] },
+				}),
+			},
+			{
+				fieldname: "sim",
+				fieldtype: "Link",
+				options: "SIM Profile",
+				label: __("SIM (if not already paired)"),
+				get_query: () => ({ filters: { status: ["in", ["Available", "Prepared", "Reserved"]] } }),
+			},
+			{
+				fieldname: "technician",
+				fieldtype: "Link",
+				options: "User",
+				label: __("Technician"),
+			},
+		],
+		primary_action_label: __("Assign Tracker"),
+		primary_action(values) {
+			frappe.call({
+				method: "omni_operations.tracker_inventory.doctype.tracker_profile.tracker_profile.assign_to_unit",
+				args: {
+					tracker: values.tracker,
+					vehicle: frm.doc.name,
+					sim: values.sim,
+					technician: values.technician,
+				},
+				freeze: true,
+				freeze_message: __("Assigning tracker to unit..."),
+				callback(result) {
+					if (!result.exc) {
+						dialog.hide();
+						frappe.show_alert({ message: __("Tracker assigned"), indicator: "green" });
+						frm.reload_doc();
+					}
+				},
+			});
+		},
+	});
+	dialog.show();
+}

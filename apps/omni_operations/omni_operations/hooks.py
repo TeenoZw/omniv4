@@ -88,6 +88,7 @@ doctype_js = {
 }
 
 doctype_list_js = {
+	"Tracker Profile": "public/js/tracker_profile_list.js",
 	"Omni Onboarding Job": "public/js/omni_onboarding_job_list.js",
 	"Customer Fleet Profile": "public/js/customer_fleet_profile_list.js",
 	"Fleet Vehicle": "public/js/fleet_vehicle_list.js",

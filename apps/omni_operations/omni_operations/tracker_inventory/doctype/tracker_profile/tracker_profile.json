@@ -30,6 +30,7 @@
  ],
  "fields": [
   {
+   "description": "Hardware identifier printed on the tracker. This becomes the tracker record ID.",
    "fieldname": "imei",
    "fieldtype": "Data",
    "in_global_search": 1,
@@ -41,6 +42,7 @@
    "unique": 1
   },
   {
+   "description": "A friendly inventory name, for example Teltonika FMC920 - Batch 4.",
    "fieldname": "tracker_name",
    "fieldtype": "Data",
    "in_global_search": 1,
@@ -58,6 +60,7 @@
    "reqd": 1
   },
   {
+   "description": "Stock item/model represented by this physical tracker.",
    "fieldname": "item_code",
    "fieldtype": "Link",
    "in_standard_filter": 1,
@@ -79,20 +82,24 @@
    "label": "Current Assignment"
   },
   {
+   "description": "Automatically derived from the assigned unit. Use Assign to Unit instead of editing this field.",
    "fieldname": "current_customer",
    "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Current Customer",
-   "options": "Customer"
+   "label": "Current Hub",
+   "options": "Customer",
+   "read_only": 1
   },
   {
+   "description": "The unit or vehicle currently carrying this tracker. Use Assign to Unit to change it.",
    "fieldname": "current_vehicle",
    "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Current Vehicle",
-   "options": "Fleet Vehicle"
+   "label": "Assigned Unit / Vehicle",
+   "options": "Fleet Vehicle",
+   "read_only": 1
   },
   {
    "fieldname": "assignment_column_break",
@@ -102,7 +109,8 @@
    "fieldname": "assigned_technician",
    "fieldtype": "Link",
    "label": "Assigned Technician",
-   "options": "User"
+   "options": "User",
+   "read_only": 1
   },
   {
    "fieldname": "last_installation_date",
@@ -150,7 +158,20 @@
   }
  ],
  "index_web_pages_for_search": 1,
- "links": [],
+ "links": [
+  {
+   "link_doctype": "Tracker SIM Assignment",
+   "link_fieldname": "tracker"
+  },
+  {
+   "link_doctype": "Tracker Installation",
+   "link_fieldname": "tracker"
+  },
+  {
+   "link_doctype": "Telematics Unit Link",
+   "link_fieldname": "tracker"
+  }
+ ],
  "modified": "2026-08-16 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Tracker Inventory",
