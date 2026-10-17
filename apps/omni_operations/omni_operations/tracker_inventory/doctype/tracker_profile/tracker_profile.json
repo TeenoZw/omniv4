@@ -11,6 +11,7 @@
   "imei",
   "tracker_name",
   "status",
+  "condition",
   "item_code",
   "serial_no",
   "assignment_section",
@@ -50,13 +51,26 @@
    "label": "Tracker Name"
   },
   {
-   "default": "Available",
+   "default": "In Stock",
+   "description": "In Stock = held by Omni and not linked to a unit. Assigned = linked to a customer unit/vehicle. Installation progress is recorded on the installation job.",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Status",
-   "options": "Available\nPrepared\nReserved\nAssigned\nInstalled\nFaulty\nReturned\nRetired",
+   "label": "Assignment Status",
+   "options": "In Stock\nAssigned",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "Brand New",
+   "description": "Physical condition is independent of assignment. Only Brand New and Used - Serviceable trackers can be assigned to a unit.",
+   "fieldname": "condition",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Hardware Condition",
+   "options": "Brand New\nUsed - Serviceable\nNeeds Inspection\nFaulty\nRetired",
    "reqd": 1
   },
   {
@@ -79,7 +93,7 @@
   {
    "fieldname": "assignment_section",
    "fieldtype": "Section Break",
-   "label": "Current Assignment"
+   "label": "Unit Assignment"
   },
   {
    "description": "Automatically derived from the assigned unit. Use Assign to Unit instead of editing this field.",

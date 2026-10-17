@@ -4,7 +4,10 @@ frappe.ui.form.on("Tracker SIM Assignment", {
 			filters: frm.doc.customer ? { customer: frm.doc.customer } : {},
 		}));
 		frm.set_query("tracker", () => ({
-			filters: { status: ["in", ["Available", "Prepared", "Reserved", "Assigned", "Installed"]] },
+			filters: {
+				status: ["in", ["In Stock", "Assigned"]],
+				condition: ["in", ["Brand New", "Used - Serviceable"]],
+			},
 		}));
 		frm.set_query("sim", () => ({
 			filters: { status: ["in", ["Available", "Prepared", "Reserved", "Assigned", "Installed"]] },

@@ -181,7 +181,10 @@ function open_tracker_assignment_dialog(frm) {
 				reqd: 1,
 				description: __("Choose an available/prepared tracker, or the tracker already assigned to this unit."),
 				get_query: () => ({
-					filters: { status: ["in", ["Available", "Prepared", "Reserved", "Assigned", "Installed"]] },
+					filters: {
+						status: ["in", ["In Stock", "Assigned"]],
+						condition: ["in", ["Brand New", "Used - Serviceable"]],
+					},
 				}),
 			},
 			{

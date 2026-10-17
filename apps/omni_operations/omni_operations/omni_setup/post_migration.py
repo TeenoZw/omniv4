@@ -217,12 +217,40 @@ def backfill_tracker_sim_assignments():
 	return {"created": created, "updated": updated, "skipped": skipped}
 
 
+def normalize_tracker_inventory_state():
+	"""Separate unit assignment from physical tracker condition for legacy records."""
+	condition_by_legacy_status = {
+		"Faulty": "Faulty",
+		"Returned": "Needs Inspection",
+		"Retired": "Retired",
+	}
+	updated = []
+	for tracker in frappe.get_all(
+		"Tracker Profile",
+		fields=["name", "status", "condition", "current_vehicle"],
+		limit=5000,
+	):
+		condition = condition_by_legacy_status.get(tracker.status) or tracker.condition or "Brand New"
+		status = "Assigned" if tracker.current_vehicle else "In Stock"
+		if tracker.status == status and tracker.condition == condition:
+			continue
+		frappe.db.set_value(
+			"Tracker Profile",
+			tracker.name,
+			{"status": status, "condition": condition},
+			update_modified=False,
+		)
+		updated.append(tracker.name)
+	return {"updated": updated, "count": len(updated)}
+
+
 @frappe.whitelist()
 def run_post_migration_cleanup():
 	result = {
 		"vehicles": cleanup_migrated_vehicles(),
 		"portal_users": provision_customer_portal_users(),
 		"tracker_sim_assignments": backfill_tracker_sim_assignments(),
+		"tracker_inventory_state": normalize_tracker_inventory_state(),
 	}
 	frappe.db.commit()
 	return result

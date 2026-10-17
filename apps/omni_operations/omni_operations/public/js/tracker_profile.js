@@ -11,6 +11,11 @@ frappe.ui.form.on("Tracker Profile", {
 			open_unit_assignment_dialog(frm);
 		}, __("Assignment"));
 		frm.change_custom_button_type(__("Assign to Unit"), __("Assignment"), "primary");
+		if (frm.doc.current_vehicle) {
+			frm.add_custom_button(__("Return to Inventory"), () => {
+				open_return_to_inventory_dialog(frm);
+			}, __("Assignment"));
+		}
 
 		frm.add_custom_button(__("SIM Assignments"), () => {
 			frappe.set_route("List", "Tracker SIM Assignment", { tracker: frm.doc.name });
@@ -133,25 +138,61 @@ function open_unit_assignment_dialog(frm) {
 	});
 }
 
-function render_inventory_lifecycle(frm, kind) {
-	const statuses = ["Available", "Prepared", "Reserved", "Assigned", "Installed"];
-	const status = frm.doc.status || "Available";
-	const currentIndex = statuses.indexOf(status);
-
-	statuses.forEach((value, index) => {
-		const isDone = currentIndex >= 0 && index <= currentIndex;
-		frm.dashboard.add_indicator(__(value), isDone ? "green" : "gray");
+function open_return_to_inventory_dialog(frm) {
+	const dialog = new frappe.ui.Dialog({
+		title: __("Return Tracker to Inventory"),
+		fields: [
+			{
+				fieldname: "current_unit",
+				fieldtype: "Data",
+				label: __("Current Unit / Vehicle"),
+				default: frm.doc.current_vehicle,
+				read_only: 1,
+			},
+			{
+				fieldname: "condition",
+				fieldtype: "Select",
+				label: __("Condition on Return"),
+				options: ["Used - Serviceable", "Needs Inspection", "Faulty", "Retired"],
+				default: "Needs Inspection",
+				reqd: 1,
+				description: __("This closes the unit assignment. Installation history remains available."),
+			},
+		],
+		primary_action_label: __("Return to Inventory"),
+		primary_action(values) {
+			frappe.call({
+				method: "omni_operations.tracker_inventory.doctype.tracker_profile.tracker_profile.return_to_inventory",
+				args: { tracker: frm.doc.name, condition: values.condition },
+				freeze: true,
+				freeze_message: __("Returning tracker to inventory..."),
+				callback(result) {
+					if (!result.exc) {
+						dialog.hide();
+						frappe.show_alert({ message: __("Tracker returned to inventory"), indicator: "green" });
+						frm.reload_doc();
+					}
+				},
+			});
+		},
 	});
+	dialog.show();
+}
 
-	if (["Faulty", "Returned", "Retired", "Suspended", "Lost"].includes(status)) {
-		frm.dashboard.add_indicator(__(status), "orange");
-	}
+function render_inventory_lifecycle(frm, kind) {
+	const status = frm.doc.status || "In Stock";
+	const condition = frm.doc.condition || "Brand New";
+	frm.dashboard.add_indicator(__("Inventory: {0}", [status]), status === "Assigned" ? "blue" : "green");
+	frm.dashboard.add_indicator(
+		__("Condition: {0}", [condition]),
+		["Brand New", "Used - Serviceable"].includes(condition) ? "green" : condition === "Needs Inspection" ? "orange" : "red"
+	);
 
 	const identifier = kind === "tracker" ? frm.doc.imei : frm.doc.iccid;
 	const assignedTo = frm.doc.current_vehicle || frm.doc.current_customer || __("No customer assignment");
 	frm.dashboard.set_headline(
 		`${frappe.utils.escape_html(identifier || frm.doc.name)}: ` +
-			`<b>${frappe.utils.escape_html(status)}</b><br>` +
+			`<b>${frappe.utils.escape_html(status)}</b> · ${frappe.utils.escape_html(condition)}<br>` +
 			`${__("Current")}: ${frappe.utils.escape_html(assignedTo)}`
 	);
 }

@@ -3,7 +3,10 @@ from frappe.model.document import Document
 
 
 class TrackerProfile(Document):
-	pass
+	def validate(self):
+		self.status = "Assigned" if self.current_vehicle else "In Stock"
+		if self.current_vehicle and self.condition not in {"Brand New", "Used - Serviceable"}:
+			frappe.throw("Return this tracker to inventory before marking it as unavailable for installation.")
 
 
 @frappe.whitelist()
@@ -32,6 +35,11 @@ def assign_to_unit(tracker, vehicle, sim=None, technician=None):
 	tracker_doc.check_permission("write")
 	vehicle_doc = frappe.get_doc("Fleet Vehicle", vehicle)
 	vehicle_doc.check_permission("read")
+	if tracker_doc.condition not in {"Brand New", "Used - Serviceable"}:
+		frappe.throw(
+			f"Tracker {tracker} cannot be assigned while its condition is {tracker_doc.condition}. "
+			"Inspect or repair it and set the condition to Used - Serviceable first."
+		)
 
 	if not vehicle_doc.customer:
 		frappe.throw("Assign the unit to a customer hub before assigning a tracker.")
@@ -117,6 +125,43 @@ def assign_to_unit(tracker, vehicle, sim=None, technician=None):
 		"hub": vehicle_doc.customer,
 		"assignments": updated_assignments,
 	}
+
+
+@frappe.whitelist()
+def return_to_inventory(tracker, condition="Used - Serviceable"):
+	tracker_doc = frappe.get_doc("Tracker Profile", tracker)
+	tracker_doc.check_permission("write")
+	allowed_conditions = {"Brand New", "Used - Serviceable", "Needs Inspection", "Faulty", "Retired"}
+	if condition not in allowed_conditions:
+		frappe.throw("Select a valid tracker condition.")
+
+	from omni_operations.tracker_inventory.doctype.tracker_sim_assignment.tracker_sim_assignment import (
+		get_active_tracker_sim_assignments,
+	)
+
+	closed = []
+	for assignment in get_active_tracker_sim_assignments(tracker=tracker):
+		doc = frappe.get_doc("Tracker SIM Assignment", assignment.name)
+		doc.status = "Removed"
+		doc.save(ignore_permissions=True)
+		closed.append(doc.name)
+
+	frappe.db.set_value(
+		"Tracker Profile",
+		tracker,
+		{
+			"status": "In Stock",
+			"condition": condition,
+			"current_customer": None,
+			"current_vehicle": None,
+			"assigned_technician": None,
+		},
+		update_modified=True,
+	)
+	for link_name in frappe.get_all("Telematics Unit Link", filters={"tracker": tracker}, pluck="name"):
+		frappe.db.set_value("Telematics Unit Link", link_name, {"tracker": None, "sim": None}, update_modified=False)
+
+	return {"tracker": tracker, "status": "In Stock", "condition": condition, "closed_assignments": closed}
 
 
 def _sync_telematics_links(tracker, vehicle, customer, sim=None):

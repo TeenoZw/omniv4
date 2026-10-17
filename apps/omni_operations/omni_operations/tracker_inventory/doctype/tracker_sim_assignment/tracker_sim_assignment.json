@@ -36,12 +36,12 @@
   },
   {
    "default": "Prepared",
-   "description": "Prepared = tracker and SIM are paired before a customer is known. Reserved = held for a customer/job. Assigned = linked to a customer and vehicle. Installed = fitted and active on the vehicle.",
+   "description": "This is the kit workflow stage, not the tracker inventory status. Prepared = tracker/SIM paired. Reserved = held for a job. Assigned = linked to a unit. Installed = physical installation completed.",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Status",
+   "label": "Kit Workflow Stage",
    "options": "Prepared\nReserved\nAssigned\nInstalled\nRemoved\nCancelled",
    "reqd": 1
   },

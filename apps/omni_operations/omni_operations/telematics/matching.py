@@ -91,7 +91,7 @@ def preview_provider_unit_matches(csv_path):
 				{
 					"external_unit_id": clean(row.get("external_unit_id")),
 					"external_imei": clean(row.get("external_imei")),
-					"reason": "No installed Tracker Profile matched by IMEI.",
+					"reason": "No assigned Tracker Profile matched by IMEI.",
 				}
 			)
 

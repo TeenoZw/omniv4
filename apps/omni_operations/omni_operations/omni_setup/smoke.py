@@ -531,7 +531,7 @@ def _run_tracker_sim_assignment_behavior_check():
 						"imei": name,
 						"tracker_name": name,
 						"item_code": "TRACKER-HW-4G",
-						"status": "Available",
+						"status": "In Stock",
 					}
 				).insert(ignore_permissions=True)
 				created_docs.append(("Tracker Profile", name))

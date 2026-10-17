@@ -127,7 +127,7 @@ def sync_tracker_sim_assignment_state(tracker, exclude_assignment=None):
 			"Tracker Profile",
 			tracker,
 			{
-				"status": "Available",
+				"status": "In Stock",
 				"current_customer": None,
 				"current_vehicle": None,
 				"assigned_technician": None,
@@ -137,15 +137,16 @@ def sync_tracker_sim_assignment_state(tracker, exclude_assignment=None):
 		return
 
 	primary = assignments[0]
-	status = "Prepared" if primary.status == "Prepared" else primary.status
+	assigned = next((row for row in assignments if row.vehicle), None)
 	update = {
-		"status": status,
-		"current_customer": primary.customer,
-		"current_vehicle": primary.vehicle,
-		"assigned_technician": primary.assigned_technician,
+		"status": "Assigned" if assigned else "In Stock",
+		"current_customer": assigned.customer if assigned else None,
+		"current_vehicle": assigned.vehicle if assigned else None,
+		"assigned_technician": assigned.assigned_technician if assigned else primary.assigned_technician,
 	}
-	if primary.status == "Installed" and primary.installed_date:
-		update["last_installation_date"] = primary.installed_date.date()
+	installed = next((row for row in assignments if row.status == "Installed" and row.installed_date), None)
+	if installed:
+		update["last_installation_date"] = installed.installed_date.date()
 
 	frappe.db.set_value("Tracker Profile", tracker, update, update_modified=False)
 

@@ -18,7 +18,7 @@ def get_vehicle_360(vehicle):
 	tracker = frappe.get_all(
 		"Tracker Profile",
 		filters={"current_vehicle": vehicle},
-		fields=["name", "status", "imei", "tracker_name"],
+		fields=["name", "status", "condition", "imei", "tracker_name"],
 		order_by="modified desc",
 		limit=1,
 	)

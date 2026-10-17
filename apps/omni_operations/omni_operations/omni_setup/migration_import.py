@@ -24,12 +24,12 @@ STATUS_MAP = {
 		"retired": "Decommissioned",
 	},
 	"tracker": {
-		"in_stock": "Available",
+		"in_stock": "In Stock",
 		"assigned": "Assigned",
-		"active": "Installed",
-		"faulty": "Faulty",
-		"maintenance": "Faulty",
-		"retired": "Retired",
+		"active": "Assigned",
+		"faulty": "In Stock",
+		"maintenance": "In Stock",
+		"retired": "In Stock",
 	},
 	"sim": {
 		"in_stock": "Available",
@@ -38,6 +38,15 @@ STATUS_MAP = {
 		"faulty": "Lost",
 		"retired": "Retired",
 	},
+}
+
+TRACKER_CONDITION_MAP = {
+	"in_stock": "Brand New",
+	"assigned": "Used - Serviceable",
+	"active": "Used - Serviceable",
+	"faulty": "Faulty",
+	"maintenance": "Needs Inspection",
+	"retired": "Retired",
 }
 
 
@@ -327,7 +336,9 @@ def import_trackers(staging_dir):
 
 		doc.item_code = item_code
 		doc.tracker_name = row.get("model") or imei
-		doc.status = mapped_status("tracker", row.get("status"), "Available")
+		legacy_status = clean(row.get("status")).lower()
+		doc.status = mapped_status("tracker", legacy_status, "In Stock")
+		doc.condition = TRACKER_CONDITION_MAP.get(legacy_status, doc.condition or "Brand New")
 		doc.manufacturer = clean(row.get("manufacturer"))
 		doc.device_model = clean(row.get("model"))
 		doc.firmware_version = clean(row.get("firmware_version"))
@@ -474,7 +485,7 @@ def import_installations(staging_dir, company=None):
 			doc.save(ignore_permissions=True)
 			updated.append(doc.name)
 
-		frappe.db.set_value("Tracker Profile", tracker, {"current_customer": customer, "current_vehicle": vehicle, "status": "Installed"})
+		frappe.db.set_value("Tracker Profile", tracker, {"current_customer": customer, "current_vehicle": vehicle, "status": "Assigned"})
 		if sim and frappe.db.exists("SIM Profile", sim):
 			frappe.db.set_value("SIM Profile", sim, {"current_customer": customer, "current_vehicle": vehicle, "current_tracker": tracker, "status": "Installed"})
 
@@ -576,7 +587,7 @@ def refresh_imported_customer_fleet_profiles():
 		)
 		trackers = frappe.get_all(
 			"Tracker Profile",
-			filters={"current_customer": customer, "status": ["in", ["Assigned", "Installed"]]},
+			filters={"current_customer": customer, "status": "Assigned"},
 			fields=["name"],
 			order_by="modified desc",
 		)
