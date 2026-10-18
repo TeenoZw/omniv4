@@ -102,6 +102,102 @@ def run_smoke_checks():
 
 
 @frappe.whitelist()
+def run_public_enquiry_smoke_checks():
+	"""Exercise the public quote-request boundary and remove generated records."""
+	from omni_operations.customer_portal.enquiries import submit_quote_request
+
+	token = frappe.generate_hash(length=10).lower()
+	email = f"launch-enquiry-{token}@omni.local"
+	results = {
+		"reference": None,
+		"lead": None,
+		"lead_linked": False,
+		"website_source": False,
+		"terms_recorded": False,
+		"privacy_recorded": False,
+		"missing_consent_blocked": False,
+		"honeypot_ignored": False,
+		"cleanup_complete": False,
+		"ok": False,
+	}
+	payload = {
+		"full_name": "Omni Launch Smoke",
+		"email": email,
+		"phone": "+263 77 000 0000",
+		"company_name": f"Omni Launch Smoke {token}",
+		"fleet_size": 2,
+		"fleet_segments": [{"vehicle_type": "passenger-car", "label": "Passenger car", "count": 2}],
+		"hardware_choices": ["4G GPS tracker"],
+		"add_ons": [],
+		"preferred_contact_method": "email",
+		"terms_accepted": 1,
+		"privacy_accepted": 1,
+	}
+
+	try:
+		response = submit_quote_request(**payload)
+		results["reference"] = response.get("reference")
+		if results["reference"]:
+			job = frappe.get_doc("Omni Onboarding Job", results["reference"])
+			results["lead"] = job.lead
+			results["lead_linked"] = bool(job.lead and frappe.db.exists("Lead", job.lead))
+			results["website_source"] = job.source == "Website"
+			results["terms_recorded"] = "Terms accepted: Yes" in (job.notes or "")
+			results["privacy_recorded"] = "Privacy Policy accepted: Yes" in (job.notes or "")
+
+		try:
+			submit_quote_request(**{**payload, "email": f"no-consent-{email}", "terms_accepted": 0})
+		except frappe.ValidationError:
+			results["missing_consent_blocked"] = True
+
+		bot_email = f"bot-{email}"
+		bot_response = submit_quote_request(**{**payload, "email": bot_email, "website": "filled"})
+		results["honeypot_ignored"] = bot_response == {"received": True} and not frappe.db.exists(
+			"Lead", {"email_id": bot_email}
+		)
+	finally:
+		if results["reference"] and frappe.db.exists("Omni Onboarding Job", results["reference"]):
+			frappe.delete_doc("Omni Onboarding Job", results["reference"], ignore_permissions=True, force=True)
+		if results["lead"] and frappe.db.exists("Lead", results["lead"]):
+			frappe.delete_doc("Lead", results["lead"], ignore_permissions=True, force=True)
+		frappe.db.commit()
+		results["cleanup_complete"] = not frappe.db.exists("Lead", {"email_id": email}) and not frappe.db.exists(
+			"Omni Onboarding Job", {"contact_email": email}
+		)
+
+	results["ok"] = all(
+		[
+			results["reference"],
+			results["lead_linked"],
+			results["website_source"],
+			results["terms_recorded"],
+			results["privacy_recorded"],
+			results["missing_consent_blocked"],
+			results["honeypot_ignored"],
+			results["cleanup_complete"],
+		]
+	)
+	return results
+
+
+@frappe.whitelist()
+def run_launch_readiness_checks():
+	"""Return one report for the launch-critical application boundaries."""
+	checks = {
+		"foundation": run_smoke_checks(),
+		"public_enquiry": run_public_enquiry_smoke_checks(),
+		"tracker_sim_integrity": run_tracker_sim_assignment_smoke_checks(),
+		"administrator_workspace": run_desk_focus_smoke_checks(),
+	}
+	return {
+		"checks": checks,
+		"passed": [name for name, result in checks.items() if result.get("ok")],
+		"failed": [name for name, result in checks.items() if not result.get("ok")],
+		"ok": all(result.get("ok") for result in checks.values()),
+	}
+
+
+@frappe.whitelist()
 def run_security_smoke_checks(portal_user="portal-test@omni.local", allowed_customer="Mapanje Hub"):
 	results = {
 		"portal_user": portal_user,
