@@ -773,7 +773,12 @@ def run_desk_focus_smoke_checks(user="Administrator"):
 	finally:
 		frappe.set_user(previous_user)
 
-	results["ok"] = results["default_workspace"] == "Omni Operations" and results[
-		"visible_public_workspaces"
-	] == ["Omni Operations"] and results["work_queue_count"] > 0
+	results["ok"] = all(
+		[
+			results["default_workspace"] == "Omni Operations",
+			results["has_workspace_manager"] is True,
+			"Omni Operations" in results["visible_public_workspaces"],
+			results["work_queue_count"] > 0,
+		]
+	)
 	return results
