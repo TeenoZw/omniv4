@@ -475,6 +475,29 @@ def get_support_ticket_detail(ticket, customer=None):
 	if _doctype_has_field("Issue", "content"):
 		fields.append("content")
 	doc = frappe.db.get_value("Issue", ticket, fields, as_dict=True)
+	timeline = [
+		{
+			"event": "Created",
+			"detail": "Support request received by Omni.",
+			"timestamp": doc.creation,
+		},
+	]
+	if doc.modified and doc.modified != doc.creation:
+		timeline.append(
+			{
+				"event": "Updated",
+				"detail": f"Current status: {doc.status or 'Open'}.",
+				"timestamp": doc.modified,
+			}
+		)
+	if doc.resolution_details:
+		timeline.append(
+			{
+				"event": "Resolution recorded",
+				"detail": doc.resolution_details,
+				"timestamp": doc.modified,
+			}
+		)
 	return {
 		"name": doc.name,
 		"subject": doc.subject,
@@ -488,6 +511,7 @@ def get_support_ticket_detail(ticket, customer=None):
 		"created_on": doc.creation,
 		"modified": doc.modified,
 		"content": doc.get("content"),
+		"timeline": timeline,
 	}
 
 

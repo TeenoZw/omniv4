@@ -182,6 +182,11 @@ export type PortalTicketDetail = PortalTicket & {
   raised_by?: string | null;
   opening_date?: string | null;
   content?: string | null;
+  timeline: Array<{
+    event: string;
+    detail?: string | null;
+    timestamp?: string | null;
+  }>;
 };
 
 export async function fetchPortalCurrentCustomer() {

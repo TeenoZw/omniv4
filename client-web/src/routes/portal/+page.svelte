@@ -824,15 +824,32 @@
                     <h3 class="text-sm font-bold text-slate-950">Request</h3>
                     <p class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{stripHtml(selectedTicket.description || selectedTicket.content || "No description was captured.")}</p>
                   </div>
-                  {#if selectedTicket.resolution_details}
+				  {#if selectedTicket.resolution_details}
                     <div class="rounded-md bg-emerald-50 p-4">
                       <h3 class="text-sm font-bold text-emerald-950">Resolution</h3>
                       <p class="mt-2 whitespace-pre-line text-sm leading-6 text-emerald-800">{stripHtml(selectedTicket.resolution_details)}</p>
                     </div>
-                  {:else}
-                    <p class="rounded-md bg-slate-50 p-4 text-sm text-slate-600">Omni Support will update this ticket as work progresses.</p>
-                  {/if}
-                </div>
+				  {:else}
+					<p class="rounded-md bg-slate-50 p-4 text-sm text-slate-600">Omni Support will update this ticket as work progresses.</p>
+				  {/if}
+				  <div>
+					<h3 class="text-sm font-bold text-slate-950">History</h3>
+					<ol class="mt-3 space-y-3 border-l border-slate-200 pl-4">
+					  {#each selectedTicket.timeline || [] as event}
+						<li class="relative">
+						  <span class="absolute -left-[1.18rem] top-1.5 h-2 w-2 rounded-full bg-cyan-600"></span>
+						  <div class="flex flex-wrap items-baseline justify-between gap-2">
+							<p class="text-sm font-semibold text-slate-950">{event.event}</p>
+							<p class="text-xs text-slate-500">{formatDate(event.timestamp)}</p>
+						  </div>
+						  {#if event.detail}
+							<p class="mt-1 text-sm leading-6 text-slate-600">{stripHtml(event.detail)}</p>
+						  {/if}
+						</li>
+					  {/each}
+					</ol>
+				  </div>
+				</div>
               </article>
             {/if}
 

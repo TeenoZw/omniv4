@@ -186,6 +186,7 @@ def run_launch_readiness_checks():
 	checks = {
 		"foundation": run_smoke_checks(),
 		"public_enquiry": run_public_enquiry_smoke_checks(),
+		"customer_portal_api": run_portal_api_smoke_checks(),
 		"tracker_sim_integrity": run_tracker_sim_assignment_smoke_checks(),
 		"administrator_workspace": run_desk_focus_smoke_checks(),
 	}
@@ -326,6 +327,11 @@ def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_cu
 		"invoice_count": None,
 		"document_count": None,
 		"ticket_count": None,
+		"created_ticket": None,
+		"ticket_detail_checked": False,
+		"ticket_timeline_ready": False,
+		"blocked_ticket": None,
+		"blocked_ticket_denied": None,
 		"blocked_vehicle": None,
 		"blocked_vehicle_denied": None,
 		"ok": False,
@@ -339,11 +345,13 @@ def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_cu
 
 	from omni_operations.customer_portal.api import (
 		accept_legal_terms,
+		create_support_ticket,
 		get_current_customer,
 		get_dashboard_summary,
 		get_documents,
 		get_invoices,
 		get_support_tickets,
+		get_support_ticket_detail,
 		get_vehicle_detail,
 		get_vehicles,
 	)
@@ -370,6 +378,17 @@ def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_cu
 		results["invoice_count"] = len(invoices)
 		results["document_count"] = len(documents)
 		results["ticket_count"] = len(tickets)
+		created_ticket = create_support_ticket(
+			f"Portal API smoke {frappe.generate_hash(length=8)}",
+			"Temporary ticket created by the launch-readiness suite.",
+			"Low",
+		)
+		results["created_ticket"] = created_ticket["name"]
+		ticket_detail = get_support_ticket_detail(created_ticket["name"])
+		results["ticket_detail_checked"] = ticket_detail["customer"] == allowed_customer
+		results["ticket_timeline_ready"] = any(
+			event.get("event") == "Created" for event in ticket_detail.get("timeline", [])
+		)
 
 		if vehicles:
 			detail = get_vehicle_detail(vehicles[0]["name"])
@@ -387,8 +406,20 @@ def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_cu
 				results["blocked_vehicle_denied"] = False
 			except frappe.PermissionError:
 				results["blocked_vehicle_denied"] = True
+
+		blocked_ticket = frappe.db.get_value("Issue", {"customer": ["!=", allowed_customer]}, "name")
+		results["blocked_ticket"] = blocked_ticket
+		if blocked_ticket:
+			try:
+				get_support_ticket_detail(blocked_ticket)
+				results["blocked_ticket_denied"] = False
+			except frappe.PermissionError:
+				results["blocked_ticket_denied"] = True
 	finally:
 		frappe.set_user(previous_user)
+		if results["created_ticket"] and frappe.db.exists("Issue", results["created_ticket"]):
+			frappe.delete_doc("Issue", results["created_ticket"], ignore_permissions=True, force=True)
+			frappe.db.commit()
 
 	if results["provisioned_portal_user"]:
 		_cleanup_security_smoke_artifacts(
@@ -405,7 +436,10 @@ def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_cu
 			results["invoice_count"] is not None,
 			results["document_count"] is not None,
 			results["ticket_count"] is not None,
+			results["ticket_detail_checked"],
+			results["ticket_timeline_ready"],
 			results["blocked_vehicle_denied"] in {True, None},
+			results["blocked_ticket_denied"] in {True, None},
 		]
 	)
 	return results
