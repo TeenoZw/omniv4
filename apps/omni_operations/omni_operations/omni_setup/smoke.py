@@ -421,7 +421,7 @@ def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_cu
 			frappe.delete_doc("Issue", results["created_ticket"], ignore_permissions=True, force=True)
 			frappe.db.commit()
 
-	if results["provisioned_portal_user"]:
+	if results["provisioned_portal_user"] or portal_user.endswith("@omni.local"):
 		_cleanup_security_smoke_artifacts(
 			portal_user=portal_user,
 			allowed_customer=allowed_customer,
