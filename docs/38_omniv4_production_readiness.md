@@ -4,6 +4,8 @@
 
 This checklist tracks the remaining work needed before Omni v4 can move from local ERPNext evaluation into a production-ready business platform.
 
+> Production is now deployed on the Contabo VPS rather than Render. For the current verified state, acceptance evidence, and remaining blockers, use `docs/47_launch_acceptance_report.md`. Render material below is retained as historical staging guidance only.
+
 ## Priority Order
 
 1. Finish real telematics provider validation.

@@ -87,6 +87,7 @@ Useful Frappe commands are captured in:
 - `docs/42_omniv4_developer_runbook.md` - local development and verification commands
 - `docs/45_render_staging_runbook.md` - Render staging plan for the Frappe/ERPNext admin app
 - `docs/46_vps_production_runbook.md` - VPS deployment, smoke checks, and backup runbook
+- `docs/47_launch_acceptance_report.md` - current production evidence, passed checks, and remaining launch blockers
 - `deploy/render/` - Render Blueprint, Frappe staging Dockerfile, and startup script
 - `scripts/render_check_token.sh` - token-safe Render API access check
 
