@@ -28,6 +28,8 @@
   "odometer",
   "result_section",
   "work_performed",
+  "installation_photo",
+  "completion_evidence",
   "customer_signoff_name",
   "notes"
  ],
@@ -170,6 +172,18 @@
    "fieldname": "work_performed",
    "fieldtype": "Text Editor",
    "label": "Work Performed"
+  },
+  {
+   "description": "A clear photo showing the completed tracker installation.",
+   "fieldname": "installation_photo",
+   "fieldtype": "Attach Image",
+   "label": "Installation Photo"
+  },
+  {
+   "description": "Optional job card, signed completion sheet, or other installation evidence.",
+   "fieldname": "completion_evidence",
+   "fieldtype": "Attach",
+   "label": "Completion Evidence"
   },
   {
    "fieldname": "customer_signoff_name",

@@ -199,6 +199,98 @@ def run_launch_readiness_checks():
 
 
 @frappe.whitelist()
+def run_commercial_workflow_smoke_checks():
+	"""Create, pay, render, and remove an isolated quotation-to-payment flow."""
+	from frappe.utils.pdf import get_pdf
+
+	from omni_operations.omni_setup.commercial import validate_payment_capture
+	from omni_operations.omni_setup.hub_companies import (
+		ensure_customer_fleet_profile,
+		get_default_hub_company,
+		get_or_create_business_customer_group,
+		get_or_create_zimbabwe_territory,
+	)
+
+	token = frappe.generate_hash(length=8).upper()
+	customer = f"Omni Commercial Smoke {token}"
+	company = get_default_hub_company()
+	results = {
+		"customer": customer,
+		"company": company,
+		"quotation": None,
+		"sales_order": None,
+		"sales_invoice": None,
+		"payment_entry": None,
+		"invoice_total": None,
+		"invoice_outstanding": None,
+		"pdf_generated": False,
+		"outgoing_email_ready": False,
+		"cleanup_complete": False,
+		"ok": False,
+	}
+
+	try:
+		frappe.get_doc(
+			{
+				"doctype": "Customer",
+				"customer_name": customer,
+				"customer_type": "Company",
+				"customer_group": get_or_create_business_customer_group(),
+				"territory": get_or_create_zimbabwe_territory(),
+			}
+		).insert(ignore_permissions=True)
+		ensure_customer_fleet_profile(customer, company)
+		flow = validate_payment_capture(customer, company)
+		for key in ("quotation", "sales_order", "sales_invoice", "payment_entry"):
+			results[key] = flow.get(key)
+		results["invoice_total"] = flow.get("grand_total")
+		results["invoice_outstanding"] = flow.get("invoice_outstanding")
+		html = frappe.get_print("Sales Invoice", results["sales_invoice"], print_format="Omni Fiscal Sales Invoice")
+		results["pdf_generated"] = len(get_pdf(html)) > 1000
+		results["outgoing_email_ready"] = bool(
+			frappe.db.exists("Email Account", {"enable_outgoing": 1, "default_outgoing": 1})
+		)
+	finally:
+		for fiscal_document in frappe.get_all(
+			"Fiscal Document", filters={"sales_invoice": results["sales_invoice"]}, pluck="name"
+		):
+			frappe.delete_doc("Fiscal Document", fiscal_document, ignore_permissions=True, force=True)
+		for doctype, name in (
+			("Payment Entry", results["payment_entry"]),
+			("Sales Invoice", results["sales_invoice"]),
+			("Sales Order", results["sales_order"]),
+			("Quotation", results["quotation"]),
+		):
+			if not name or not frappe.db.exists(doctype, name):
+				continue
+			doc = frappe.get_doc(doctype, name)
+			if doc.docstatus == 1:
+				doc.cancel()
+			frappe.delete_doc(doctype, name, ignore_permissions=True, force=True)
+		if frappe.db.exists("Customer Fleet Profile", customer):
+			frappe.delete_doc("Customer Fleet Profile", customer, ignore_permissions=True, force=True)
+		if frappe.db.exists("Customer", customer):
+			frappe.delete_doc("Customer", customer, ignore_permissions=True, force=True)
+		frappe.db.commit()
+		results["cleanup_complete"] = not frappe.db.exists("Customer", customer)
+
+	results["ok"] = all(
+		[
+			results["quotation"],
+			results["sales_order"],
+			results["sales_invoice"],
+			results["payment_entry"],
+			results["invoice_total"] == 80,
+			results["invoice_outstanding"] == 0,
+			results["pdf_generated"],
+			results["outgoing_email_ready"],
+			results["cleanup_complete"],
+		]
+	)
+	return results
+
+
+@frappe.whitelist()
 def run_security_smoke_checks(portal_user="portal-test@omni.local", allowed_customer="Mapanje Hub"):
 	results = {
 		"portal_user": portal_user,

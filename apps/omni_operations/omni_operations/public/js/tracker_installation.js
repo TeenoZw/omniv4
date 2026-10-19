@@ -86,7 +86,7 @@ function get_installation_next_step(frm) {
 		return __("Step 4: Start work when the technician begins the installation.");
 	}
 	if (frm.doc.status === "In Progress") {
-		return __("Step 5: Capture work performed, signoff and completion details.");
+		return __("Step 5: Capture location, work performed, customer signoff and installation evidence.");
 	}
 	if (frm.doc.status === "Completed") {
 		return __("Installation completed. Confirm telematics link, billing and portal visibility.");
@@ -102,7 +102,7 @@ function add_installation_actions(frm) {
 		}, __("Workflow"));
 	}
 
-	if (["Scheduled", "In Progress"].includes(frm.doc.status)) {
+	if (frm.doc.status === "In Progress") {
 		frm.add_custom_button(__("Complete Installation"), () => {
 			frm.set_value("status", "Completed");
 			if (!frm.doc.completed_date) {

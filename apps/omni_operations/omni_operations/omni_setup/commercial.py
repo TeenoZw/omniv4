@@ -10,10 +10,10 @@ from omni_operations.omni_setup.items import ensure_fleet_service_items
 
 
 FLEET_STARTER_LINES = [
-	{"item_code": "TRACKER-HW-4G", "qty": 1, "rate": 120},
-	{"item_code": "SIM-IOT", "qty": 1, "rate": 15},
-	{"item_code": "INSTALL-LABOUR", "qty": 1, "rate": 60},
-	{"item_code": "FLEET-MONTHLY-SERVICE", "qty": 1, "rate": 35},
+	{"item_code": "TRACKER-HW-4G", "qty": 1, "rate": 70},
+	{"item_code": "SIM-IOT", "qty": 1, "rate": 0},
+	{"item_code": "INSTALL-LABOUR", "qty": 1, "rate": 0},
+	{"item_code": "FLEET-MONTHLY-SERVICE", "qty": 1, "rate": 10},
 ]
 
 DEMO_QUOTATION_TITLE = "Omni Fleet Starter Quote - Demo"
