@@ -156,6 +156,22 @@ def run_public_enquiry_smoke_checks():
 			"Lead", {"email_id": bot_email}
 		)
 	finally:
+		results["quotation"] = results["quotation"] or frappe.db.get_value(
+			"Quotation", {"party_name": customer, "docstatus": ["<", 2]}, "name"
+		)
+		results["sales_order"] = results["sales_order"] or frappe.db.get_value(
+			"Sales Order", {"customer": customer, "docstatus": ["<", 2]}, "name"
+		)
+		results["sales_invoice"] = results["sales_invoice"] or frappe.db.get_value(
+			"Sales Invoice", {"customer": customer, "docstatus": ["<", 2]}, "name"
+		)
+		if results["sales_invoice"] and not results["payment_entry"]:
+			payment_reference = frappe.db.get_value(
+				"Payment Entry Reference",
+				{"reference_doctype": "Sales Invoice", "reference_name": results["sales_invoice"]},
+				"parent",
+			)
+			results["payment_entry"] = payment_reference
 		if results["reference"] and frappe.db.exists("Omni Onboarding Job", results["reference"]):
 			frappe.delete_doc("Omni Onboarding Job", results["reference"], ignore_permissions=True, force=True)
 		if results["lead"] and frappe.db.exists("Lead", results["lead"]):

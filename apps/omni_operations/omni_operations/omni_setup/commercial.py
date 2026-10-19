@@ -55,6 +55,18 @@ def get_bank_or_cash_account(company):
 	)
 
 
+def get_fulfilment_warehouse(company):
+	warehouse = frappe.db.get_single_value("Stock Settings", "default_warehouse")
+	if warehouse and frappe.db.get_value("Warehouse", warehouse, "company") == company:
+		return warehouse
+	return frappe.db.get_value(
+		"Warehouse",
+		{"company": company, "is_group": 0, "disabled": 0},
+		"name",
+		order_by="warehouse_name asc",
+	)
+
+
 @frappe.whitelist()
 def ensure_fleet_item_prices(price_list="Standard Selling"):
 	ensure_fleet_service_items()
@@ -98,6 +110,9 @@ def ensure_fleet_item_prices(price_list="Standard Selling"):
 def create_fleet_starter_quotation(customer=None, company=None):
 	customer, company = get_working_customer_and_company(customer, company)
 	ensure_fleet_item_prices()
+	warehouse = get_fulfilment_warehouse(company)
+	if not warehouse:
+		frappe.throw(f"Create an active Omni warehouse for {company} before quoting tracker hardware.")
 
 	existing = frappe.db.exists(
 		"Quotation",
@@ -128,6 +143,7 @@ def create_fleet_starter_quotation(customer=None, company=None):
 					"item_code": line["item_code"],
 					"qty": line["qty"],
 					"rate": line["rate"],
+					"warehouse": warehouse if frappe.db.get_value("Item", line["item_code"], "is_stock_item") else None,
 				}
 				for line in FLEET_STARTER_LINES
 			],
