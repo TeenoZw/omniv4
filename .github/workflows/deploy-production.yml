@@ -50,7 +50,7 @@ jobs:
             -o BatchMode=yes \
             -o IdentitiesOnly=yes \
             deploy@13.140.144.28 \
-            'tar -xzf - -C /srv/omniv4/app'
+            'sudo tar -xzf - -C /srv/omniv4/app'
 
       - name: Migrate, restart, and verify backend
         run: |
