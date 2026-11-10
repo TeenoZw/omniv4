@@ -60,6 +60,15 @@ bench --site admin-v4.omnilogistics.co.zw execute omni_operations.omni_setup.smo
 bench --site admin-v4.omnilogistics.co.zw execute omni_operations.omni_setup.smoke.run_portal_api_smoke_checks
 ```
 
+## GitHub Actions Deployment
+
+Use the manual `Deploy Production` workflow when direct SSH is unavailable. The workflow requires these encrypted repository secrets:
+
+- `VPS_SSH_KEY` - the private deployment key for the `deploy` user.
+- `VPS_KNOWN_HOSTS` - pinned SSH host-key entries for `13.140.144.28`.
+
+The workflow creates an encrypted backup, refuses to overwrite a dirty production checkout, fast-forwards to `origin/main`, builds the shared Frappe image, runs migrations, recreates workers and web services, and performs production smoke checks.
+
 ## Backups
 
 Run:

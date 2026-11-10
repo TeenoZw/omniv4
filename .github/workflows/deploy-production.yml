@@ -1,0 +1,73 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: omni-v4-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-backend:
+    name: Deploy Frappe backend
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check out release
+        uses: actions/checkout@v4
+
+      - name: Configure production SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/omni_vps_ed25519
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/omni_vps_ed25519 ~/.ssh/known_hosts
+
+      - name: Deploy, migrate, and restart
+        run: |
+          ssh -i ~/.ssh/omni_vps_ed25519 \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            deploy@13.140.144.28 'bash -se' <<'REMOTE'
+          set -euo pipefail
+
+          cd /srv/omniv4/app
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Production checkout has uncommitted changes; refusing to overwrite them." >&2
+            git status --short
+            exit 1
+          fi
+
+          sudo systemctl start omniv4-backup.service
+          while [ "$(sudo systemctl is-active omniv4-backup.service)" = "activating" ]; do
+            sleep 2
+          done
+          test "$(sudo systemctl show omniv4-backup.service -p Result --value)" = "success"
+
+          git fetch origin main
+          git merge --ff-only origin/main
+
+          cd deploy/vps
+          sudo docker compose --env-file .env build backend
+          sudo docker compose --env-file .env run --rm site-init
+          sudo docker compose --env-file .env up -d --force-recreate --no-build \
+            backend frontend websocket queue-short queue-long scheduler
+
+          cd /srv/omniv4/app
+          ./deploy/vps/healthcheck.sh
+          sudo docker exec vps-backend-1 \
+            bench --site admin-v4.omnilogistics.co.zw execute \
+            omni_operations.omni_setup.smoke.run_smoke_checks
+          sudo docker exec vps-backend-1 \
+            bench --site admin-v4.omnilogistics.co.zw execute \
+            omni_operations.omni_setup.smoke.run_portal_api_smoke_checks
+          REMOTE
+
+      - name: Verify public production endpoint
+        run: ./scripts/production_smoke_check.sh https://admin-v4.omnilogistics.co.zw
