@@ -67,7 +67,7 @@ jobs:
           sudo docker compose --env-file .env build backend
           sudo docker compose --env-file .env run --rm site-init
           sudo docker compose --env-file .env up -d --force-recreate --no-build \
-            backend frontend websocket queue-short queue-long scheduler
+            backend frontend websocket queue-short queue-long scheduler proxy
 
           cd /srv/omniv4/app
           ./deploy/vps/healthcheck.sh
