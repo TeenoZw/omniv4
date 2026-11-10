@@ -61,9 +61,8 @@ jobs:
           set -euo pipefail
           cd /srv/omniv4/app
           cd deploy/vps
-          if ! sudo grep -q '^ADMIN_PUBLIC_HOST=' .env; then
-            echo 'ADMIN_PUBLIC_HOST=admin.omnilogistics.co.zw' | sudo tee -a .env >/dev/null
-          fi
+          sudo sed -i '/^ADMIN_PUBLIC_HOST=/d' .env
+          echo 'ADMIN_PUBLIC_HOST=admin.omnilogistics.co.zw' | sudo tee -a .env >/dev/null
           sudo docker compose --env-file .env build backend
           sudo docker compose --env-file .env run --rm site-init
           sudo docker compose --env-file .env up -d --force-recreate --no-build \
