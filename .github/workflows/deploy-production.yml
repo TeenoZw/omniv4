@@ -29,30 +29,37 @@ jobs:
           printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/omni_vps_ed25519 ~/.ssh/known_hosts
 
-      - name: Deploy, migrate, and restart
+      - name: Create encrypted production backup
         run: |
           ssh -i ~/.ssh/omni_vps_ed25519 \
             -o BatchMode=yes \
             -o IdentitiesOnly=yes \
             deploy@13.140.144.28 'bash -se' <<'REMOTE'
           set -euo pipefail
-
-          cd /srv/omniv4/app
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Production checkout has uncommitted changes; refusing to overwrite them." >&2
-            git status --short
-            exit 1
-          fi
-
           sudo systemctl start omniv4-backup.service
           while [ "$(sudo systemctl is-active omniv4-backup.service)" = "activating" ]; do
             sleep 2
           done
           test "$(sudo systemctl show omniv4-backup.service -p Result --value)" = "success"
+          REMOTE
 
-          git fetch origin main
-          git merge --ff-only origin/main
+      - name: Upload release artifact
+        run: |
+          tar --exclude=.git -czf - . | ssh \
+            -i ~/.ssh/omni_vps_ed25519 \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            deploy@13.140.144.28 \
+            'tar -xzf - -C /srv/omniv4/app'
 
+      - name: Migrate, restart, and verify backend
+        run: |
+          ssh -i ~/.ssh/omni_vps_ed25519 \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            deploy@13.140.144.28 'bash -se' <<'REMOTE'
+          set -euo pipefail
+          cd /srv/omniv4/app
           cd deploy/vps
           sudo docker compose --env-file .env build backend
           sudo docker compose --env-file .env run --rm site-init

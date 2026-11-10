@@ -67,7 +67,7 @@ Use the manual `Deploy Production` workflow when direct SSH is unavailable. The 
 - `VPS_SSH_KEY` - the private deployment key for the `deploy` user.
 - `VPS_KNOWN_HOSTS` - pinned SSH host-key entries for `13.140.144.28`.
 
-The workflow creates an encrypted backup, refuses to overwrite a dirty production checkout, fast-forwards to `origin/main`, builds the shared Frappe image, runs migrations, recreates workers and web services, and performs production smoke checks.
+The workflow creates an encrypted backup, uploads the checked-out release without overwriting the server-only `.env`, builds the shared Frappe image, runs migrations, recreates workers and web services, and performs production smoke checks.
 
 ## Backups
 
