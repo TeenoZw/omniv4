@@ -81,3 +81,12 @@ jobs:
 
       - name: Verify public production endpoint
         run: ./scripts/production_smoke_check.sh https://admin.omnilogistics.co.zw
+
+      - name: Capture proxy diagnostics
+        if: always()
+        run: |
+          ssh -i ~/.ssh/omni_vps_ed25519 \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            deploy@13.140.144.28 \
+            'cd /srv/omniv4/app/deploy/vps && sudo docker compose --env-file .env logs --no-color --tail=120 proxy'
