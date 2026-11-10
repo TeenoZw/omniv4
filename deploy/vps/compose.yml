@@ -65,6 +65,7 @@ services:
     entrypoint: ["bash", "/opt/omni/init-site.sh"]
     environment:
       FRAPPE_SITE_NAME: ${FRAPPE_SITE_NAME}
+      ADMIN_PUBLIC_HOST: ${ADMIN_PUBLIC_HOST}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
     volumes:
@@ -121,6 +122,7 @@ services:
     restart: unless-stopped
     environment:
       FRAPPE_SITE_NAME: ${FRAPPE_SITE_NAME}
+      ADMIN_PUBLIC_HOST: ${ADMIN_PUBLIC_HOST}
     ports:
       - "80:80"
       - "443:443"

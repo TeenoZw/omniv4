@@ -3,6 +3,7 @@ set -euo pipefail
 
 cd /home/frappe/frappe-bench
 site="${FRAPPE_SITE_NAME:?FRAPPE_SITE_NAME is required}"
+public_host="${ADMIN_PUBLIC_HOST:?ADMIN_PUBLIC_HOST is required}"
 
 if [ ! -d "sites/$site" ]; then
 	bench new-site "$site" \
@@ -18,7 +19,7 @@ else
 fi
 
 bench use "$site"
-bench --site "$site" set-config host_name "https://$site"
+bench --site "$site" set-config host_name "https://$public_host"
 bench --site "$site" set-config developer_mode 0
 bench --site "$site" enable-scheduler
 

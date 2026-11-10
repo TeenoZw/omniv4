@@ -30,7 +30,7 @@ for service in "${required[@]}"; do
 done
 
 docker compose --env-file .env exec -T proxy \
-	wget -qO- --header="Host: $FRAPPE_SITE_NAME" http://frontend:8080/api/method/ping \
+	wget -qO- --header="Host: ${ADMIN_PUBLIC_HOST:-$FRAPPE_SITE_NAME}" http://frontend:8080/api/method/ping \
 	| grep -q '"pong"'
 
 disk_used="$(df --output=pcent / | tail -n 1 | tr -dc '0-9')"

@@ -1,4 +1,4 @@
-const UPSTREAM_ORIGIN = "https://admin-v4.omnilogistics.co.zw";
+const UPSTREAM_ORIGIN = "https://admin.omnilogistics.co.zw";
 const PORTAL_ORIGINS = new Set([
   "https://portal-v4.omnilogistics.co.zw",
   "https://portal.omnilogistics.co.zw",

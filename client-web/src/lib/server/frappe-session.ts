@@ -1,6 +1,6 @@
 import type { Cookies } from "@sveltejs/kit";
 
-export const FRAPPE_ORIGIN = "https://admin-v4.omnilogistics.co.zw";
+export const FRAPPE_ORIGIN = "https://admin.omnilogistics.co.zw";
 export const PORTAL_SESSION_COOKIE = "omni_portal_sid";
 
 export function responseCookies(headers: Headers) {
