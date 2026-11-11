@@ -36,15 +36,15 @@ Status: **Implemented; final human walkthrough pending**
 
 ## 4. Wialon Production Validation
 
-Status: **Blocked by provider credentials**
+Status: **Passed**
 
-- The production scheduler and two workers are online.
-- Existing ownership reconciliation is intact: activated provider accounts and 14 linked vehicles have no reported ownership conflicts.
-- Live hierarchy/unit synchronization currently returns Wialon API error 8 during token login.
-- Production validation workflow run `42981769390` reproduced the failure against `Omnitrack Master` and created sync log `TSL-2026-4138`; discovery and synchronization were stopped before changing customer or vehicle mappings.
-- `.github/workflows/validate-wialon-production.yml` now provides a repeatable, token-safe acceptance check for connection, hierarchy discovery, unit synchronization, reconciliation, scheduler, and worker health.
-- Replace or renew the token on `Omnitrack Master`, run Check Connection, then run Discover Hierarchy and Sync Units.
-- Acceptance requires one newly discovered account/unit, confirmed customer ownership, current telemetry, a successful sync log, and a deliberate failed-call log.
+- The renewed `Omnitrack Master` token connects successfully through `https://hst-api.wialon.eu`.
+- Production validation workflow run `42981769390`, attempt 2, passed connection, hierarchy discovery, unit synchronization, activated-account reconciliation, scheduler, and worker checks.
+- Discovery processed 12 accounts, 13 users, and 15 units with no new records required: all current provider records were already known. Fourteen units were updated and one configured test unit was ignored.
+- All 14 linked production units report successful synchronization and customer ownership. A live sample confirmed `Toyota Probo` is linked to `Nenzou Hub` and vehicle `AHO8444`, with position data and a current successful sync timestamp.
+- Successful connection and discovery evidence is stored in sync logs `TSL-2026-4140` through `TSL-2026-4143`. The earlier rejected-token log `TSL-2026-4138` proves failed-call logging without altering customer or vehicle mappings.
+- The scheduler is enabled and two workers are online.
+- `.github/workflows/validate-wialon-production.yml` provides a repeatable, token-safe production acceptance check.
 
 ## 5. v3 Migration Rehearsal
 
@@ -72,8 +72,7 @@ Status: **Core controls passed; external destinations pending**
 
 The portal and core commercial workflow are production-functional. Do not call the complete launch finished until these external dependencies are closed:
 
-1. Renew the Wialon production token and pass live discovery/sync acceptance.
-2. Provide a fresh complete Supabase export and pass the clean-site migration rehearsal.
-3. Configure off-server backup replication and external health/error alerts.
-4. Complete one real technician installation from scheduling through signed completion.
+1. Provide a fresh complete Supabase export and pass the clean-site migration rehearsal.
+2. Configure off-server backup replication and external health/error alerts.
+3. Complete one real technician installation from scheduling through signed completion.
 
