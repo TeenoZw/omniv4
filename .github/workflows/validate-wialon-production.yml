@@ -1,0 +1,68 @@
+name: Validate Wialon Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider_account:
+        description: Telematics Provider Account to validate
+        required: true
+        default: Omnitrack Master
+
+permissions:
+  contents: read
+
+jobs:
+  validate-wialon:
+    name: Validate Wialon connection and synchronization
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Configure production SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/omni_vps_ed25519
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/omni_vps_ed25519 ~/.ssh/known_hosts
+
+      - name: Run production Wialon acceptance checks
+        env:
+          PROVIDER_ACCOUNT: ${{ inputs.provider_account }}
+        run: |
+          ssh -i ~/.ssh/omni_vps_ed25519 \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            deploy@13.140.144.28 \
+            "PROVIDER_ACCOUNT='$PROVIDER_ACCOUNT' bash -se" <<'REMOTE'
+          set -euo pipefail
+
+          container=vps-backend-1
+          site=admin-v4.omnilogistics.co.zw
+
+          run_bench() {
+            sudo docker exec "$container" bench --site "$site" execute "$@"
+          }
+
+          echo "Checking provider connection for: $PROVIDER_ACCOUNT"
+          connection="$(run_bench omni_operations.telematics.sync.check_provider_connection \
+            --kwargs "{\"provider_account_name\": \"$PROVIDER_ACCOUNT\"}")"
+          echo "Connection result: $connection"
+
+          if ! printf '%s' "$connection" | grep -q '"status": "Success"'; then
+            echo "Wialon connection validation failed. Renew the token before discovery and synchronization."
+            exit 1
+          fi
+
+          echo "Discovering provider hierarchy and synchronizing units..."
+          run_bench omni_operations.telematics.sync.discover_provider_hierarchy \
+            --kwargs "{\"provider_account_name\": \"$PROVIDER_ACCOUNT\"}"
+
+          echo "Reconciling activated customer accounts..."
+          run_bench omni_operations.telematics.scheduled.sync_enabled_provider_accounts
+
+          echo "Checking scheduler and workers..."
+          sudo docker exec "$container" bench --site "$site" scheduler status
+          sudo docker exec "$container" bench --site "$site" doctor
+          REMOTE
