@@ -1,6 +1,6 @@
 # 47 - Omni v4 Launch Acceptance Report
 
-Last verified: 2026-10-19
+Last verified: 2026-11-11
 
 This report records the production evidence for the first six launch-readiness workstreams. It complements the product plan and replaces older Render-specific deployment assumptions with the active Contabo VPS architecture.
 
@@ -41,6 +41,8 @@ Status: **Blocked by provider credentials**
 - The production scheduler and two workers are online.
 - Existing ownership reconciliation is intact: activated provider accounts and 14 linked vehicles have no reported ownership conflicts.
 - Live hierarchy/unit synchronization currently returns Wialon API error 8 during token login.
+- Production validation workflow run `42981769390` reproduced the failure against `Omnitrack Master` and created sync log `TSL-2026-4138`; discovery and synchronization were stopped before changing customer or vehicle mappings.
+- `.github/workflows/validate-wialon-production.yml` now provides a repeatable, token-safe acceptance check for connection, hierarchy discovery, unit synchronization, reconciliation, scheduler, and worker health.
 - Replace or renew the token on `Omnitrack Master`, run Check Connection, then run Discover Hierarchy and Sync Units.
 - Acceptance requires one newly discovered account/unit, confirmed customer ownership, current telemetry, a successful sync log, and a deliberate failed-call log.
 
