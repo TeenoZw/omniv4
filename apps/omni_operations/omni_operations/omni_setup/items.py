@@ -1,4 +1,6 @@
 import frappe
+from frappe import _
+from frappe.utils.nestedset import get_root_of
 
 
 FLEET_SERVICE_ITEMS = [
@@ -44,6 +46,7 @@ FLEET_SERVICE_ITEMS = [
 def ensure_fleet_service_items():
 	created = []
 	updated = []
+	_ensure_item_prerequisites()
 
 	for item_spec in FLEET_SERVICE_ITEMS:
 		item_code = item_spec["item_code"]
@@ -60,3 +63,30 @@ def ensure_fleet_service_items():
 
 	frappe.db.commit()
 	return {"created": created, "updated": updated}
+
+
+def _ensure_item_prerequisites():
+	if not frappe.db.exists("UOM", "Nos"):
+		frappe.get_doc({"doctype": "UOM", "uom_name": "Nos"}).insert(ignore_permissions=True)
+
+	root_item_group = get_root_of("Item Group") or _("All Item Groups")
+	if not frappe.db.exists("Item Group", root_item_group):
+		frappe.get_doc(
+			{
+				"doctype": "Item Group",
+				"item_group_name": root_item_group,
+				"is_group": 1,
+				"parent_item_group": "",
+			}
+		).insert(ignore_permissions=True)
+
+	for item_group in {item["item_group"] for item in FLEET_SERVICE_ITEMS}:
+		if not frappe.db.exists("Item Group", item_group):
+			frappe.get_doc(
+				{
+					"doctype": "Item Group",
+					"item_group_name": item_group,
+					"is_group": 0,
+					"parent_item_group": root_item_group,
+				}
+			).insert(ignore_permissions=True)

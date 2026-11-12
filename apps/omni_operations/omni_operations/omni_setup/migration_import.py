@@ -50,6 +50,21 @@ TRACKER_CONDITION_MAP = {
 }
 
 
+def ensure_erpnext_reference_data():
+	"""Install setup-wizard masters when importing into a genuinely blank site."""
+	required_roots = (
+		("Item Group", "All Item Groups"),
+		("Customer Group", "All Customer Groups"),
+		("Territory", "All Territories"),
+	)
+	if all(frappe.db.exists(doctype, name) for doctype, name in required_roots):
+		return
+
+	from erpnext.setup.setup_wizard.operations.install_fixtures import install
+
+	install(country="Zimbabwe")
+
+
 def read_rows(staging_dir, filename):
 	path = Path(staging_dir) / filename
 	if not path.exists():
@@ -449,6 +464,10 @@ def import_installations(staging_dir, company=None):
 		if not (frappe.db.exists("Customer", customer) and frappe.db.exists("Fleet Vehicle", vehicle) and frappe.db.exists("Tracker Profile", tracker)):
 			skipped.append(legacy_assignment_id)
 			continue
+		vehicle_customer = frappe.db.get_value("Fleet Vehicle", vehicle, "customer")
+		if vehicle_customer and vehicle_customer != customer:
+			skipped.append(legacy_assignment_id)
+			continue
 
 		existing = frappe.db.sql(
 			"""
@@ -465,7 +484,11 @@ def import_installations(staging_dir, company=None):
 			doc = frappe.get_doc({"doctype": "Tracker Installation", "naming_series": "TI-.YYYY.-.####"})
 			is_new = True
 
-		doc.status = "Completed" if clean(row.get("status")) == "Completed" else "Scheduled"
+		desired_status = "Completed" if clean(row.get("status")) == "Completed" else "Scheduled"
+		# Historical completions predate the current evidence/signoff checklist. Insert
+		# them as scheduled, then restore their source status without running a live
+		# installation transition.
+		doc.status = "Scheduled" if is_new else desired_status
 		doc.scheduled_date = normalise_datetime(row.get("assigned_at"))
 		doc.completed_date = normalise_datetime(row.get("installed_at"))
 		doc.customer = customer
@@ -480,6 +503,8 @@ def import_installations(staging_dir, company=None):
 
 		if is_new:
 			doc.insert(ignore_permissions=True)
+			if desired_status == "Completed":
+				frappe.db.set_value("Tracker Installation", doc.name, "status", desired_status, update_modified=False)
 			created.append(doc.name)
 		else:
 			doc.save(ignore_permissions=True)
@@ -622,12 +647,54 @@ def refresh_imported_customer_fleet_profiles():
 	return updated
 
 
+def reconcile_import(staging_dir, skipped_installations=None):
+	source_files = {
+		"customers": "01_customers_from_hubs.csv",
+		"customer_fleet_profiles": "02_customer_fleet_profiles_from_hubs.csv",
+		"trackers": "03_tracker_profiles_from_hardware.csv",
+		"sims": "04_sim_profiles_from_sim_inventory.csv",
+		"vehicles": "05_fleet_vehicles_from_vehicles.csv",
+		"installations": "06_tracker_installations_from_assignments.csv",
+		"leads": "07_sales_pipeline_from_enquiries.csv",
+		"subscriptions": "08_billing_subscriptions.csv",
+	}
+	destination_doctypes = {
+		"customers": "Customer",
+		"customer_fleet_profiles": "Customer Fleet Profile",
+		"trackers": "Tracker Profile",
+		"sims": "SIM Profile",
+		"vehicles": "Fleet Vehicle",
+		"installations": "Tracker Installation",
+		"leads": "Lead",
+	}
+	ownership_mismatches = frappe.db.sql(
+		"""
+		select ti.name, ti.customer, ti.vehicle, fv.customer as vehicle_customer
+		from `tabTracker Installation` ti
+		inner join `tabFleet Vehicle` fv on fv.name = ti.vehicle
+		where coalesce(ti.customer, '') != coalesce(fv.customer, '')
+		""",
+		as_dict=True,
+	)
+	return {
+		"source_counts": {
+			label: len(read_rows(staging_dir, filename)) for label, filename in source_files.items()
+		},
+		"destination_counts": {
+			label: frappe.db.count(doctype) for label, doctype in destination_doctypes.items()
+		},
+		"skipped_installations": skipped_installations or [],
+		"ownership_mismatches": ownership_mismatches,
+	}
+
+
 @frappe.whitelist()
 def import_from_staging(staging_dir):
 	staging_dir = Path(staging_dir)
 	if not staging_dir.exists():
 		frappe.throw(f"Staging directory not found: {staging_dir}")
 
+	ensure_erpnext_reference_data()
 	ensure_fleet_service_items()
 
 	report = {
@@ -644,6 +711,10 @@ def import_from_staging(staging_dir):
 	}
 	report["hub_companies_after_import"] = sync_hub_companies()
 	report["refreshed_customer_fleet_profiles"] = refresh_imported_customer_fleet_profiles()
+	report["reconciliation"] = reconcile_import(
+		staging_dir,
+		report["installations"].get("skipped"),
+	)
 
 	frappe.db.commit()
 	report_path = staging_dir / "erpnext_import_report.json"

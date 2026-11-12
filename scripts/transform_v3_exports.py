@@ -501,6 +501,9 @@ def transform(input_dir, output_dir):
 	for filename, rows in output_rows.items():
 		write_csv(output_dir / filename, rows)
 
+	vehicles_export = input_dir / "vehicles_rows.csv"
+	pairings_export = input_dir / "device_pairings_rows.csv"
+	jobs_export = input_dir / "technician_jobs_rows.csv"
 	report = {
 		"source_counts": {
 			"hubs": len(hubs),
@@ -519,10 +522,16 @@ def transform(input_dir, output_dir):
 			if not (input_dir / name).exists()
 		],
 		"notes": [
-			"Vehicle rows were derived from hardware assignment asset fields because vehicles_rows.csv was not present.",
+			"Vehicle rows were derived from hardware assignment asset fields because vehicles_rows.csv was empty."
+			if vehicles_export.exists()
+			else "Vehicle rows were derived from hardware assignment asset fields because vehicles_rows.csv was not present.",
 			"When multiple assignments referenced the same derived vehicle, the active assignment was preferred for the vehicle master row.",
-			"Device pairing IDs are blank because device_pairings_rows.csv was not present.",
-			"Technician job references are blank because technician_jobs_rows.csv was not present.",
+			"Device pairing IDs are blank because device_pairings_rows.csv was empty."
+			if pairings_export.exists()
+			else "Device pairing IDs are blank because device_pairings_rows.csv was not present.",
+			"Technician job references are blank because technician_jobs_rows.csv was empty."
+			if jobs_export.exists()
+			else "Technician job references are blank because technician_jobs_rows.csv was not present.",
 			"User password hashes were intentionally ignored.",
 		],
 	}
