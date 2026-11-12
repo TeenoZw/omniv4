@@ -46,9 +46,9 @@ Status: **Passed**
 - The scheduler is enabled and two workers are online.
 - `.github/workflows/validate-wialon-production.yml` provides a repeatable, token-safe production acceptance check.
 
-## 5. v3 Migration Rehearsal
+## 5. v3 Production Migration
 
-Status: **Clean-site rehearsal passed; production cutover pending**
+Status: **Production cutover passed**
 
 - Took a fresh Supabase Data API export on 2026-11-12. Credentials and customer data remain in ignored local files and are not committed.
 - The source contains 6 hubs/customers, 26 trackers, 10 SIMs, 12 assignment-history rows, 2 enquiries, and 5 subscriptions. The `vehicles`, `device_pairings`, and `technician_jobs` source tables exist but are empty; 11 current vehicles were reconstructed from assignment asset data.
@@ -56,7 +56,9 @@ Status: **Clean-site rehearsal passed; production cutover pending**
 - One superseded assignment was intentionally skipped: legacy assignment `1` incorrectly placed AGL-5700 under H2O, while the corrected later assignment and vehicle master place it under Pairtrade.
 - The second import created no duplicate business records, proving repeatability. The Omni smoke suite passed and installation-to-vehicle ownership reconciliation found zero mismatches.
 - The importer now bootstraps missing ERPNext setup masters on a genuinely blank site and emits machine-readable source/destination reconciliation in `erpnext_import_report.json`.
-- Production cutover still requires a brief write freeze, one final delta export, a pre-import production backup, the guarded import, and post-import reconciliation before v3 is retired.
+- Production workflow run `43233082010` completed successfully on 2026-11-12. It created an encrypted pre-import backup, validated and uploaded the sealed snapshot, ran the guarded import, emitted the reconciliation report, and passed backend, portal API, and production health checks.
+- The production import created the six source customers and reconciled them with the existing hub/customer records without replacing the current Wialon-managed operational structure.
+- Retiring the v3 Supabase project remains a separate, explicit decommissioning decision after business users confirm the migrated records in production.
 
 ## 6. Infrastructure Hardening
 
@@ -75,7 +77,6 @@ Status: **Core controls passed; external destinations pending**
 
 The portal and core commercial workflow are production-functional. Do not call the complete launch finished until these external dependencies are closed:
 
-1. Schedule the v3 write freeze and production migration cutover using the rehearsed import.
-2. Configure off-server backup replication and external health/error alerts.
-3. Complete one real technician installation from scheduling through signed completion.
+1. Configure off-server backup replication and external health/error alerts.
+2. Complete one real technician installation from scheduling through signed completion.
 
