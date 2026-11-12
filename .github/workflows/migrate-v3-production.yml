@@ -82,7 +82,7 @@ jobs:
           set -euo pipefail
           cd /srv/omniv4/app/deploy/vps
           staging=/srv/omniv4/migrations/v3-final-20261112
-          site="$(sed -n 's/^FRAPPE_SITE_NAME=//p' .env | tail -n 1)"
+          site="$(sudo sed -n 's/^FRAPPE_SITE_NAME=//p' .env | tail -n 1)"
           test -n "$site"
 
           sudo docker compose --env-file .env run --rm \
