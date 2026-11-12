@@ -1,0 +1,101 @@
+name: Migrate v3 Production Data
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: omni-v4-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    name: Import final v3 snapshot
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check out migration tooling
+        uses: actions/checkout@v4
+
+      - name: Configure production SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/omni_vps_ed25519
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/omni_vps_ed25519 ~/.ssh/known_hosts
+
+      - name: Validate sealed migration snapshot
+        env:
+          V3_MIGRATION_ARCHIVE_B64: ${{ secrets.V3_MIGRATION_ARCHIVE_B64 }}
+        run: |
+          test -n "$V3_MIGRATION_ARCHIVE_B64"
+          install -d -m 700 /tmp/omni-v3-final
+          printf '%s' "$V3_MIGRATION_ARCHIVE_B64" | base64 --decode > /tmp/omni-v3-final.tar.gz
+          tar -xzf /tmp/omni-v3-final.tar.gz -C /tmp/omni-v3-final
+          python3 scripts/validate_migration_templates.py /tmp/omni-v3-final
+
+      - name: Create encrypted pre-import backup
+        run: |
+          ssh -i ~/.ssh/omni_vps_ed25519 \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            deploy@13.140.144.28 'bash -se' <<'REMOTE'
+          set -euo pipefail
+          sudo systemctl start omniv4-backup.service
+          while [ "$(sudo systemctl is-active omniv4-backup.service)" = "activating" ]; do
+            sleep 2
+          done
+          test "$(sudo systemctl show omniv4-backup.service -p Result --value)" = "success"
+          REMOTE
+
+      - name: Upload snapshot to protected VPS staging
+        run: |
+          scp \
+            -i ~/.ssh/omni_vps_ed25519 \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            /tmp/omni-v3-final.tar.gz \
+            deploy@13.140.144.28:/tmp/omni-v3-final.tar.gz
+          ssh -i ~/.ssh/omni_vps_ed25519 \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            deploy@13.140.144.28 'bash -se' <<'REMOTE'
+          set -euo pipefail
+          install -d -m 700 /srv/omniv4/migrations/v3-final-20261112
+          tar -xzf /tmp/omni-v3-final.tar.gz -C /srv/omniv4/migrations/v3-final-20261112
+          rm -f /tmp/omni-v3-final.tar.gz
+          chmod -R go-rwx /srv/omniv4/migrations/v3-final-20261112
+          REMOTE
+
+      - name: Import, reconcile, and verify
+        run: |
+          ssh -i ~/.ssh/omni_vps_ed25519 \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            deploy@13.140.144.28 'bash -se' <<'REMOTE'
+          set -euo pipefail
+          cd /srv/omniv4/app/deploy/vps
+          staging=/srv/omniv4/migrations/v3-final-20261112
+          site="$(sed -n 's/^FRAPPE_SITE_NAME=//p' .env | tail -n 1)"
+          test -n "$site"
+
+          sudo docker compose --env-file .env run --rm \
+            -v "$staging:/migration:rw" \
+            backend bench --site "$site" execute \
+            omni_operations.omni_setup.migration_import.import_from_staging \
+            --kwargs '{"staging_dir":"/migration"}'
+
+          test -s "$staging/erpnext_import_report.json"
+          jq '.reconciliation' "$staging/erpnext_import_report.json"
+          sudo docker exec vps-backend-1 \
+            bench --site "$site" execute omni_operations.omni_setup.smoke.run_smoke_checks
+          sudo docker exec vps-backend-1 \
+            bench --site "$site" execute omni_operations.omni_setup.smoke.run_portal_api_smoke_checks
+          cd /srv/omniv4/app
+          ./deploy/vps/healthcheck.sh
+          REMOTE
