@@ -66,7 +66,8 @@ jobs:
             -o IdentitiesOnly=yes \
             deploy@13.140.144.28 'bash -se' <<'REMOTE'
           set -euo pipefail
-          install -d -m 700 /srv/omniv4/migrations/v3-final-20261112
+          sudo install -d -o deploy -g deploy -m 700 \
+            /srv/omniv4/migrations/v3-final-20261112
           tar -xzf /tmp/omni-v3-final.tar.gz -C /srv/omniv4/migrations/v3-final-20261112
           rm -f /tmp/omni-v3-final.tar.gz
           chmod -R go-rwx /srv/omniv4/migrations/v3-final-20261112
