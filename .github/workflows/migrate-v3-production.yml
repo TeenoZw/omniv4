@@ -66,11 +66,14 @@ jobs:
             -o IdentitiesOnly=yes \
             deploy@13.140.144.28 'bash -se' <<'REMOTE'
           set -euo pipefail
+          sudo rm -rf /srv/omniv4/migrations/v3-final-20261112
           sudo install -d -o deploy -g deploy -m 700 \
             /srv/omniv4/migrations/v3-final-20261112
           tar -xzf /tmp/omni-v3-final.tar.gz -C /srv/omniv4/migrations/v3-final-20261112
           rm -f /tmp/omni-v3-final.tar.gz
-          chmod -R go-rwx /srv/omniv4/migrations/v3-final-20261112
+          sudo chown -R 1000:1000 /srv/omniv4/migrations/v3-final-20261112
+          sudo find /srv/omniv4/migrations/v3-final-20261112 -type d -exec chmod 700 {} +
+          sudo find /srv/omniv4/migrations/v3-final-20261112 -type f -exec chmod 600 {} +
           REMOTE
 
       - name: Import, reconcile, and verify
@@ -91,8 +94,8 @@ jobs:
             omni_operations.omni_setup.migration_import.import_from_staging \
             --kwargs '{"staging_dir":"/migration"}'
 
-          test -s "$staging/erpnext_import_report.json"
-          jq '.reconciliation' "$staging/erpnext_import_report.json"
+          sudo test -s "$staging/erpnext_import_report.json"
+          sudo jq '.reconciliation' "$staging/erpnext_import_report.json"
           sudo docker exec vps-backend-1 \
             bench --site "$site" execute omni_operations.omni_setup.smoke.run_smoke_checks
           sudo docker exec vps-backend-1 \
