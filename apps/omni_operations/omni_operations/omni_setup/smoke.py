@@ -3,6 +3,8 @@ from pathlib import Path
 
 import frappe
 
+from omni_operations.omni_security.access import require_system_manager
+
 
 REQUIRED_DOCTYPES = [
 	"Omni Onboarding Job",
@@ -52,6 +54,7 @@ REQUIRED_TEMPLATE_HEADERS = {
 
 @frappe.whitelist()
 def run_smoke_checks():
+	require_system_manager()
 	results = {
 		"missing_doctypes": [doctype for doctype in REQUIRED_DOCTYPES if not frappe.db.exists("DocType", doctype)],
 		"missing_roles": [role for role in REQUIRED_ROLES if not frappe.db.exists("Role", role)],
@@ -103,6 +106,7 @@ def run_smoke_checks():
 
 @frappe.whitelist()
 def run_public_enquiry_smoke_checks():
+	require_system_manager()
 	"""Exercise the public quote-request boundary and remove generated records."""
 	from omni_operations.customer_portal.enquiries import submit_quote_request
 
@@ -198,6 +202,7 @@ def run_public_enquiry_smoke_checks():
 
 @frappe.whitelist()
 def run_launch_readiness_checks():
+	require_system_manager()
 	"""Return one report for the launch-critical application boundaries."""
 	checks = {
 		"foundation": run_smoke_checks(),
@@ -216,6 +221,7 @@ def run_launch_readiness_checks():
 
 @frappe.whitelist()
 def run_commercial_workflow_smoke_checks():
+	require_system_manager()
 	"""Create, pay, render, and remove an isolated quotation-to-payment flow."""
 	from frappe.utils.pdf import get_pdf
 
@@ -308,6 +314,7 @@ def run_commercial_workflow_smoke_checks():
 
 @frappe.whitelist()
 def run_security_smoke_checks(portal_user="portal-test@omni.local", allowed_customer="Mapanje Hub"):
+	require_system_manager()
 	results = {
 		"portal_user": portal_user,
 		"allowed_customer": allowed_customer,
@@ -423,6 +430,7 @@ def run_security_smoke_checks(portal_user="portal-test@omni.local", allowed_cust
 
 @frappe.whitelist()
 def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_customer="Mapanje Hub"):
+	require_system_manager()
 	results = {
 		"portal_user": portal_user,
 		"allowed_customer": allowed_customer,
@@ -555,6 +563,7 @@ def run_portal_api_smoke_checks(portal_user="portal-test@omni.local", allowed_cu
 
 @frappe.whitelist()
 def run_onboarding_job_smoke_checks():
+	require_system_manager()
 	test_customer = "Mapanje Hub"
 	test_email = "portal-test@omni.local"
 	lead_email = f"portal-lead-test-{frappe.generate_hash(length=8).lower()}@omni.local"
@@ -663,6 +672,7 @@ def run_onboarding_job_smoke_checks():
 
 @frappe.whitelist()
 def run_tracker_sim_assignment_smoke_checks():
+	require_system_manager()
 	results = {
 		"assignment_count": 0,
 		"duplicate_active_sims": [],
@@ -889,6 +899,7 @@ def _cleanup_security_smoke_artifacts(portal_user, allowed_customer, issue_name=
 
 @frappe.whitelist()
 def run_desk_focus_smoke_checks(user="Administrator"):
+	require_system_manager()
 	from omni_operations.omni_setup.work_queues import get_my_work_queues
 
 	results = {

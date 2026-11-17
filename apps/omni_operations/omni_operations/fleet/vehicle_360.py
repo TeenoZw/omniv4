@@ -1,12 +1,15 @@
 import frappe
 
 from omni_operations.field_service.maintenance import get_vehicle_maintenance_status
+from omni_operations.omni_security.access import has_customer_permission
 from omni_operations.telematics.status import get_vehicle_telematics_status
 
 
 @frappe.whitelist()
 def get_vehicle_360(vehicle):
 	doc = frappe.get_doc("Fleet Vehicle", vehicle)
+	if not doc.has_permission("read") or not has_customer_permission(doc, ptype="read"):
+		frappe.throw("You are not permitted to view this vehicle.", frappe.PermissionError)
 	customer_profile = frappe.db.get_value("Customer Fleet Profile", doc.customer, "name")
 	hub_assignment = frappe.get_all(
 		"Vehicle Assignment",

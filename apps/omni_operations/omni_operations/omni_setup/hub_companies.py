@@ -225,6 +225,9 @@ def detach_system_provider_accounts():
 
 @frappe.whitelist()
 def sync_hub_companies():
+	from omni_operations.omni_security.access import require_system_manager
+
+	require_system_manager()
 	updated = []
 	record_updates = []
 	hubs = get_hub_customers()
@@ -274,6 +277,9 @@ def _company_has_transactions(company):
 
 @frappe.whitelist()
 def remove_generated_hub_companies():
+	from omni_operations.omni_security.access import require_system_manager
+
+	require_system_manager()
 	default_company = get_default_hub_company()
 	hub_company_names = [hub for hub in get_hub_customers() if frappe.db.exists("Company", hub)]
 	removed = []

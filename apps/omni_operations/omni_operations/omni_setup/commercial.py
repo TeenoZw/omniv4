@@ -69,6 +69,9 @@ def get_fulfilment_warehouse(company):
 
 @frappe.whitelist()
 def ensure_fleet_item_prices(price_list="Standard Selling"):
+	from omni_operations.omni_security.access import require_internal_user
+
+	require_internal_user("System Manager", "Omni Operations Admin")
 	ensure_fleet_service_items()
 	created = []
 	updated = []
@@ -108,6 +111,9 @@ def ensure_fleet_item_prices(price_list="Standard Selling"):
 
 @frappe.whitelist()
 def create_fleet_starter_quotation(customer=None, company=None):
+	from omni_operations.omni_security.access import require_internal_user
+
+	require_internal_user("System Manager", "Omni Operations Admin")
 	customer, company = get_working_customer_and_company(customer, company)
 	ensure_fleet_item_prices()
 	warehouse = get_fulfilment_warehouse(company)
@@ -155,6 +161,9 @@ def create_fleet_starter_quotation(customer=None, company=None):
 
 @frappe.whitelist()
 def validate_quote_to_invoice_flow(customer=None, company=None):
+	from omni_operations.omni_security.access import require_system_manager
+
+	require_system_manager()
 	customer, company = get_working_customer_and_company(customer, company)
 	quotation_name = create_fleet_starter_quotation(customer, company)
 	quotation = frappe.get_doc("Quotation", quotation_name)
@@ -205,6 +214,9 @@ def validate_quote_to_invoice_flow(customer=None, company=None):
 
 @frappe.whitelist()
 def validate_payment_capture(customer=None, company=None):
+	from omni_operations.omni_security.access import require_system_manager
+
+	require_system_manager()
 	customer, company = get_working_customer_and_company(customer, company)
 	flow = validate_quote_to_invoice_flow(customer, company)
 	sales_invoice = frappe.get_doc("Sales Invoice", flow["sales_invoice"])
@@ -296,6 +308,9 @@ def get_customer_commercial_summary(customer, company=None):
 
 @frappe.whitelist()
 def refresh_customer_fleet_profile_commercial(customer=None, company=None):
+	from omni_operations.omni_security.access import require_internal_user
+
+	require_internal_user("System Manager", "Omni Operations Admin")
 	customer, company = get_working_customer_and_company(customer, company)
 	profile_name = frappe.db.exists("Customer Fleet Profile", customer)
 	if not profile_name:

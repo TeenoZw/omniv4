@@ -4,6 +4,8 @@ from pathlib import Path
 import frappe
 from frappe.utils import get_datetime, now_datetime
 
+from omni_operations.omni_security.access import require_system_manager
+
 
 REQUIRED_HEADERS = [
 	"provider_account",
@@ -71,6 +73,7 @@ def tracker_for_provider_row(row):
 
 @frappe.whitelist()
 def preview_provider_unit_matches(csv_path):
+	require_system_manager()
 	rows = read_provider_units(csv_path)
 	matches = []
 	unmatched = []
@@ -100,6 +103,7 @@ def preview_provider_unit_matches(csv_path):
 
 @frappe.whitelist()
 def apply_provider_unit_matches(csv_path, enable_sync=0):
+	require_system_manager()
 	rows = read_provider_units(csv_path)
 	created = []
 	updated = []

@@ -690,6 +690,9 @@ def reconcile_import(staging_dir, skipped_installations=None):
 
 @frappe.whitelist()
 def import_from_staging(staging_dir):
+	from omni_operations.omni_security.access import require_system_manager
+
+	require_system_manager()
 	staging_dir = Path(staging_dir)
 	if not staging_dir.exists():
 		frappe.throw(f"Staging directory not found: {staging_dir}")

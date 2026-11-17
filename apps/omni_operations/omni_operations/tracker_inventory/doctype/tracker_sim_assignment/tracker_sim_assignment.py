@@ -254,6 +254,9 @@ def upsert_assignment_from_installation(installation):
 
 @frappe.whitelist()
 def sync_all_tracker_sim_assignment_state():
+	from omni_operations.omni_security.access import require_system_manager
+
+	require_system_manager()
 	trackers = set()
 	sims = set()
 	for assignment in frappe.get_all(

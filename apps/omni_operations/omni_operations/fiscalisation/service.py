@@ -2,11 +2,14 @@ import frappe
 from frappe.utils import now_datetime
 
 from omni_operations.fiscalisation.providers.registry import get_provider
+from omni_operations.omni_security.access import require_internal_user
 
 
 @frappe.whitelist()
 def fiscalise_sales_invoice(sales_invoice_name, provider_account_name=None):
+	require_internal_user("System Manager", "Omni Operations Admin")
 	sales_invoice = frappe.get_doc("Sales Invoice", sales_invoice_name)
+	sales_invoice.check_permission("write")
 	if sales_invoice.docstatus != 1:
 		frappe.throw("Only submitted Sales Invoices can be fiscalised.")
 

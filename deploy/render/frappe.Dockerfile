@@ -1,4 +1,4 @@
-FROM frappe/erpnext:v15
+FROM frappe/erpnext:v15.125.0@sha256:18127922c64b2e3d009989384bc6a61043d5e41a82ae9f956d03dedcf6478d65
 
 USER root
 

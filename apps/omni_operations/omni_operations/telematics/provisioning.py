@@ -1,6 +1,7 @@
 import frappe
 
 from omni_operations.omni_setup.commercial import get_default_company
+from omni_operations.omni_security.access import require_system_manager
 
 
 def ensure_imported_fleet_provider_account():
@@ -43,6 +44,7 @@ def sim_for_tracker_vehicle(tracker, vehicle):
 
 @frappe.whitelist()
 def create_telematics_links_for_installed_trackers(provider_account=None):
+	require_system_manager()
 	provider_account = provider_account or ensure_imported_fleet_provider_account()
 	provider = frappe.db.get_value("Telematics Provider Account", provider_account, "provider")
 	created = []

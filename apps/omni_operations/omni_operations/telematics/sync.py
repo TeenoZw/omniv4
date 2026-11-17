@@ -5,11 +5,17 @@ import re
 import frappe
 from frappe.utils import get_datetime, now_datetime
 
+from omni_operations.omni_security.access import require_internal_user
 from omni_operations.telematics.providers.registry import get_provider
+
+
+def _require_telematics_access():
+	require_internal_user("System Manager", "Omni Operations Admin", "Fleet Manager")
 
 
 @frappe.whitelist()
 def discover_provider_hierarchy(provider_account_name):
+	_require_telematics_access()
 	return {
 		"accounts": discover_provider_accounts(provider_account_name),
 		"users": discover_provider_users(provider_account_name),
@@ -19,6 +25,7 @@ def discover_provider_hierarchy(provider_account_name):
 
 @frappe.whitelist()
 def discover_provider_accounts(provider_account_name):
+	_require_telematics_access()
 	provider_account = frappe.get_doc("Telematics Provider Account", provider_account_name)
 	provider = get_provider(provider_account.name)
 	started = now_datetime()
@@ -67,6 +74,7 @@ def discover_provider_accounts(provider_account_name):
 
 @frappe.whitelist()
 def discover_provider_users(provider_account_name):
+	_require_telematics_access()
 	provider_account = frappe.get_doc("Telematics Provider Account", provider_account_name)
 	provider = get_provider(provider_account.name)
 	started = now_datetime()
@@ -141,6 +149,7 @@ def discover_provider_users(provider_account_name):
 
 @frappe.whitelist()
 def activate_discovered_account(discovered_account_name):
+	_require_telematics_access()
 	if not frappe.has_permission("Telematics Discovered Account", "write"):
 		frappe.throw("Not permitted to activate provider accounts.", frappe.PermissionError)
 
@@ -227,6 +236,7 @@ def activate_discovered_account(discovered_account_name):
 
 @frappe.whitelist()
 def link_approved_account_units(discovered_account_name, commit=True):
+	_require_telematics_access()
 	"""Link units owned by an approved provider account without moving existing ownership."""
 	if not frappe.has_permission("Telematics Discovered Account", "write"):
 		frappe.throw("Not permitted to link provider units.", frappe.PermissionError)
@@ -421,6 +431,7 @@ def _update_discovered_onboarding_vehicle_state(account, result):
 
 @frappe.whitelist()
 def resolve_discovered_account_duplicate(discovered_account_name, keep_customer, merge_customer=None, activate=1):
+	_require_telematics_access()
 	if not frappe.has_permission("Telematics Discovered Account", "write"):
 		frappe.throw("Not permitted to resolve duplicate customers.", frappe.PermissionError)
 	if not frappe.db.exists("Customer", keep_customer):
@@ -467,6 +478,7 @@ def _prepare_customer_merge(source_customer, target_customer):
 
 @frappe.whitelist()
 def sync_provider_units(provider_account_name):
+	_require_telematics_access()
 	provider_account = frappe.get_doc("Telematics Provider Account", provider_account_name)
 	provider = get_provider(provider_account.name)
 	started = now_datetime()
@@ -689,6 +701,7 @@ def _refresh_discovered_account_hierarchy(provider_account_name):
 
 @frappe.whitelist()
 def refresh_duplicate_matches(provider_account_name=None):
+	_require_telematics_access()
 	provider_accounts = [provider_account_name] if provider_account_name else frappe.get_all(
 		"Telematics Provider Account", pluck="name"
 	)
@@ -745,6 +758,7 @@ def _customer_name_quality(value):
 
 @frappe.whitelist()
 def check_provider_connection(provider_account_name):
+	_require_telematics_access()
 	provider_account = frappe.get_doc("Telematics Provider Account", provider_account_name)
 	provider = get_provider(provider_account.name)
 	started = now_datetime()
@@ -793,6 +807,7 @@ def check_provider_connection(provider_account_name):
 
 @frappe.whitelist()
 def preview_provider_units(provider_account_name):
+	_require_telematics_access()
 	provider_account = frappe.get_doc("Telematics Provider Account", provider_account_name)
 	provider = get_provider(provider_account.name)
 	units = provider.list_units()
@@ -842,6 +857,7 @@ def preview_provider_units(provider_account_name):
 
 @frappe.whitelist()
 def create_provider_unit_links(provider_account_name, links):
+	_require_telematics_access()
 	created = []
 	updated = []
 
@@ -888,6 +904,7 @@ def create_provider_unit_links(provider_account_name, links):
 
 @frappe.whitelist()
 def sync_vehicle_telematics(vehicle):
+	_require_telematics_access()
 	unit_links = frappe.get_all(
 		"Telematics Unit Link",
 		filters={"vehicle": vehicle, "sync_enabled": 1},

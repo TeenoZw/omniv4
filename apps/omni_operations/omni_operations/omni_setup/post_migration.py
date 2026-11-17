@@ -248,6 +248,9 @@ def normalize_tracker_inventory_state():
 
 @frappe.whitelist()
 def run_post_migration_cleanup():
+	from omni_operations.omni_security.access import require_system_manager
+
+	require_system_manager()
 	result = {
 		"vehicles": cleanup_migrated_vehicles(),
 		"portal_users": provision_customer_portal_users(),

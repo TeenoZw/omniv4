@@ -1,8 +1,14 @@
 import frappe
 
+from omni_operations.omni_security.access import has_customer_permission
+
 
 @frappe.whitelist()
 def get_vehicle_maintenance_status(vehicle):
+	vehicle_doc = frappe.get_doc("Fleet Vehicle", vehicle)
+	if not vehicle_doc.has_permission("read") or not has_customer_permission(vehicle_doc, ptype="read"):
+		frappe.throw("You are not permitted to view this vehicle.", frappe.PermissionError)
+
 	work_orders = frappe.get_all(
 		"Fleet Maintenance Work Order",
 		filters={"vehicle": vehicle},

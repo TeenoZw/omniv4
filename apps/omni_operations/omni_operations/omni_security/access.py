@@ -31,6 +31,26 @@ CUSTOMER_FIELD_BY_DOCTYPE = {
 }
 
 
+def require_authenticated_user():
+	if frappe.session.user == "Guest":
+		frappe.throw("Authentication is required.", frappe.PermissionError)
+
+
+def require_internal_user(*allowed_roles):
+	require_authenticated_user()
+	if frappe.session.user == "Administrator":
+		return
+
+	roles = set(frappe.get_roles())
+	allowed = set(allowed_roles) if allowed_roles else INTERNAL_ROLES
+	if not roles.intersection(allowed):
+		frappe.throw("You are not permitted to perform this operation.", frappe.PermissionError)
+
+
+def require_system_manager():
+	require_internal_user("System Manager")
+
+
 def role_home_page(user):
 	if user == "Guest":
 		return "index"

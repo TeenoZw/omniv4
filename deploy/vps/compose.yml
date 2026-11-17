@@ -1,5 +1,5 @@
 x-image: &image
-  image: omniv4-frappe:${OMNIV4_IMAGE_TAG:-15.119.2}
+  image: omniv4-frappe:${OMNIV4_IMAGE_TAG:-15.125.0}
   build:
     context: ../..
     dockerfile: deploy/vps/Dockerfile

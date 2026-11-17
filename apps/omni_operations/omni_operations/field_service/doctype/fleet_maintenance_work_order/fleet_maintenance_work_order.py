@@ -25,6 +25,9 @@ class FleetMaintenanceWorkOrder(Document):
 
 	@frappe.whitelist()
 	def create_stock_entry(self):
+		self.check_permission("write")
+		if not frappe.has_permission("Stock Entry", "create"):
+			frappe.throw("Not permitted to create stock entries.", frappe.PermissionError)
 		if self.stock_entry:
 			return self.stock_entry
 
@@ -55,6 +58,9 @@ class FleetMaintenanceWorkOrder(Document):
 
 	@frappe.whitelist()
 	def create_sales_invoice(self):
+		self.check_permission("write")
+		if not frappe.has_permission("Sales Invoice", "create"):
+			frappe.throw("Not permitted to create sales invoices.", frappe.PermissionError)
 		if self.sales_invoice:
 			return self.sales_invoice
 

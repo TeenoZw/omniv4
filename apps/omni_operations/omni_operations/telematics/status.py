@@ -1,8 +1,14 @@
 import frappe
 
+from omni_operations.omni_security.access import has_customer_permission
+
 
 @frappe.whitelist()
 def get_vehicle_telematics_status(vehicle):
+	vehicle_doc = frappe.get_doc("Fleet Vehicle", vehicle)
+	if not vehicle_doc.has_permission("read") or not has_customer_permission(vehicle_doc, ptype="read"):
+		frappe.throw("You are not permitted to view this vehicle.", frappe.PermissionError)
+
 	links = frappe.get_all(
 		"Telematics Unit Link",
 		filters={"vehicle": vehicle},

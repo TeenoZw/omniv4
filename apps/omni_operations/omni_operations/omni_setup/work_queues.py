@@ -37,6 +37,9 @@ DIRECTOR_QUEUES = [
 
 @frappe.whitelist()
 def get_my_work_queues():
+	from omni_operations.omni_security.access import require_internal_user
+
+	require_internal_user()
 	roles = set(frappe.get_roles())
 	queue_defs = []
 

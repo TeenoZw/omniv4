@@ -69,7 +69,7 @@ Status: **Core controls passed; external destinations pending**
 - Daily encrypted backup and five-minute health timers are enabled and active.
 - A real isolated restore drill passed and restored 801 DocTypes.
 - Only `Administrator` currently has the `System Manager` role.
-- Deployed versions are pinned at Frappe 15.118.0, ERPNext 15.119.2, MariaDB 10.11.19, and Redis 7.2.16.
+- The production image is pinned to ERPNext 15.125.0 by immutable digest; MariaDB remains on 10.11 and Redis on 7.2.
 - SMTP is configured through the default outgoing Email Account.
 - Remaining hardening: configure `BACKUP_REMOTE` for off-server encrypted copies, configure `HEALTHCHECK_WEBHOOK_URL` for external alerts, and choose an error-monitoring destination.
 

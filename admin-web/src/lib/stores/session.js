@@ -45,12 +45,17 @@ function defaultHubIdForRoles(hubs = [], roles = [], explicitHubId) {
 }
 
 function loadSession() {
-  if (typeof localStorage === "undefined") {
+  if (typeof sessionStorage === "undefined") {
     return { ...emptySession };
   }
 
+  // Remove credentials persisted by older releases before sessions became tab-scoped.
+  if (typeof localStorage !== "undefined") {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = sessionStorage.getItem(STORAGE_KEY);
     if (!raw) {
       return { ...emptySession };
     }
@@ -80,10 +85,10 @@ function loadSession() {
 }
 
 function persistSession(value) {
-  if (typeof localStorage === "undefined") {
+  if (typeof sessionStorage === "undefined") {
     return;
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(value));
 }
 
 function normalizeSession(payload = {}) {
@@ -137,8 +142,8 @@ function createSessionStore() {
     logout() {
       store.set({ ...emptySession });
       setSessionHeaders({ token: null, hubId: null });
-      if (typeof localStorage !== "undefined") {
-        localStorage.removeItem(STORAGE_KEY);
+      if (typeof sessionStorage !== "undefined") {
+        sessionStorage.removeItem(STORAGE_KEY);
       }
     },
     getSession() {

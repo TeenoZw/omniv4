@@ -44,6 +44,9 @@ FLEET_SERVICE_ITEMS = [
 
 @frappe.whitelist()
 def ensure_fleet_service_items():
+	from omni_operations.omni_security.access import require_internal_user
+
+	require_internal_user("System Manager", "Omni Operations Admin")
 	created = []
 	updated = []
 	_ensure_item_prerequisites()

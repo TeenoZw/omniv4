@@ -119,7 +119,22 @@ function readFromStorage(storage: Storage): SessionState | null {
 
 export function getSession(): SessionState | null {
   if (!browser) return null;
-  return readFromStorage(localStorage) ?? readFromStorage(sessionStorage);
+  // Older releases persisted bearer tokens across browser restarts. Clear that
+  // legacy state and keep credentials scoped to the current tab.
+  for (const key of [
+    AUTH_TOKEN_KEY,
+    REFRESH_TOKEN_KEY,
+    HUB_ID_KEY,
+    HUB_CODE_KEY,
+    HUB_NAME_KEY,
+    HUBS_KEY,
+    ROLES_KEY,
+    USER_EMAIL_KEY,
+    TOKEN_EXPIRES_AT_KEY,
+  ]) {
+    localStorage.removeItem(key);
+  }
+  return readFromStorage(sessionStorage);
 }
 
 export const sessionStore = writable<SessionState | null>(getSession());
@@ -130,9 +145,9 @@ function refreshStore() {
 
 export function persistSession(state: SessionState, options: PersistOptions = {}) {
   if (!browser) return;
-  const persistent = options.persistent ?? true;
+  void options;
   clearSession();
-  writeStorage(persistent ? localStorage : sessionStorage, {
+  writeStorage(sessionStorage, {
     ...state,
     forceLogoutCountdown: false,
     expiresAt: state.expiresAt ?? nextExpiryIso(),
@@ -175,9 +190,8 @@ export function switchHub(hubId: string) {
   refreshStore();
 }
 
-function isPersistentSession(current: SessionState | null) {
-  if (!browser || !current?.token) return true;
-  return localStorage.getItem(AUTH_TOKEN_KEY) === current.token;
+function isPersistentSession(_current: SessionState | null) {
+  return false;
 }
 
 export function extendSession(durationMs = DEFAULT_SESSION_DURATION_MS) {

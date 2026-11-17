@@ -191,6 +191,9 @@ def send_portal_password_reset(customer, email):
 
 @frappe.whitelist()
 def ensure_internal_portal_test_user(customer="Mapanje Hub", email="portal-test@omni.local"):
+	from omni_operations.omni_security.access import require_system_manager
+
+	require_system_manager()
 	if not frappe.db.exists("Customer", customer):
 		frappe.throw(f"Customer not found: {customer}")
 

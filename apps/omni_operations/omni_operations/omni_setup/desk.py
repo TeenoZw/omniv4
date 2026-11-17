@@ -131,6 +131,9 @@ OMNI_LINK_GROUPS = [
 
 @frappe.whitelist()
 def configure_omni_focused_desk():
+	from omni_operations.omni_security.access import require_system_manager
+
+	require_system_manager()
 	ensure_omni_workspace()
 	restore_public_workspaces()
 	focus_administrator_on_omni()
