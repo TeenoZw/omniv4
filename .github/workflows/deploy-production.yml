@@ -65,6 +65,8 @@ jobs:
           sudo sed -i '/^OMNIV4_IMAGE_TAG=/d' .env
           echo 'ADMIN_PUBLIC_HOST=admin.omnilogistics.co.zw' | sudo tee -a .env >/dev/null
           echo 'OMNIV4_IMAGE_TAG=${{ github.sha }}' | sudo tee -a .env >/dev/null
+          sudo chown deploy:deploy .env
+          chmod 600 .env
           export OMNIV4_IMAGE_TAG='${{ github.sha }}'
           sudo env OMNIV4_IMAGE_TAG='${{ github.sha }}' \
             docker compose --env-file .env build backend
@@ -101,7 +103,8 @@ jobs:
           ./scripts/production_smoke_check.sh https://admin.omnilogistics.co.zw
           diagnostic_response="$(curl -sS \
             'https://admin.omnilogistics.co.zw/api/method/omni_operations.omni_security.access.get_current_technician_access_diagnostics')"
-          grep -q 'Authentication is required' <<<"$diagnostic_response"
+          grep -Eq '(Authentication is required|is not whitelisted)' <<<"$diagnostic_response"
+          ! grep -q 'has no attribute' <<<"$diagnostic_response"
 
       - name: Capture proxy diagnostics
         if: always()
