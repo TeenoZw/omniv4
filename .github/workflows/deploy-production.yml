@@ -76,6 +76,9 @@ jobs:
           sudo docker exec vps-backend-1 \
             bench --site admin-v4.omnilogistics.co.zw execute \
             omni_operations.omni_setup.smoke.run_portal_api_smoke_checks
+          sudo docker exec vps-backend-1 \
+            bench --site admin-v4.omnilogistics.co.zw execute \
+            omni_operations.omni_setup.smoke.run_technician_access_smoke_checks
           REMOTE
 
       - name: Verify public production endpoint

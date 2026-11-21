@@ -935,3 +935,64 @@ def run_desk_focus_smoke_checks(user="Administrator"):
 		]
 	)
 	return results
+
+
+@frappe.whitelist()
+def run_technician_access_smoke_checks():
+	"""Verify production technicians only see installations assigned to them."""
+	require_system_manager()
+	from omni_operations.omni_security.access import (
+		TECHNICIAN_ELEVATED_ROLES,
+		is_technician_only,
+		tracker_installation_query,
+	)
+
+	technicians = frappe.get_all(
+		"Has Role",
+		filters={"role": "Technician", "parenttype": "User"},
+		pluck="parent",
+		distinct=True,
+	)
+	results = {"technician_count": 0, "technicians": [], "ok": True}
+	previous_user = frappe.session.user
+
+	try:
+		for user in technicians:
+			if not frappe.db.get_value("User", user, "enabled"):
+				continue
+
+			roles = set(frappe.get_roles(user))
+			frappe.set_user(user)
+			visible = frappe.get_all("Tracker Installation", pluck="name")
+			assigned = frappe.get_all(
+				"Tracker Installation", filters={"technician": user}, pluck="name"
+			)
+			condition = tracker_installation_query(user) or ""
+			entry = {
+				"index": len(results["technicians"]) + 1,
+				"technician_only": is_technician_only(user),
+				"elevated_roles": sorted(roles.intersection(TECHNICIAN_ELEVATED_ROLES)),
+				"query_is_scoped": "`technician`" in condition and user in condition,
+				"visible_count": len(visible),
+				"assigned_count": len(assigned),
+				"visible_matches_assigned": set(visible) == set(assigned),
+				"can_create": frappe.has_permission("Tracker Installation", "create"),
+			}
+			entry["ok"] = all(
+				[
+					entry["technician_only"],
+					not entry["elevated_roles"],
+					entry["query_is_scoped"],
+					entry["visible_matches_assigned"],
+					not entry["can_create"],
+				]
+			)
+			results["technicians"].append(entry)
+	finally:
+		frappe.set_user(previous_user)
+
+	results["technician_count"] = len(results["technicians"])
+	results["ok"] = results["technician_count"] > 0 and all(
+		entry["ok"] for entry in results["technicians"]
+	)
+	return results
