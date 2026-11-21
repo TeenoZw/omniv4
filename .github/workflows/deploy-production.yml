@@ -69,7 +69,7 @@ jobs:
           sudo env OMNIV4_IMAGE_TAG='${{ github.sha }}' \
             docker compose --env-file .env build backend
           sudo env OMNIV4_IMAGE_TAG='${{ github.sha }}' \
-            docker compose --env-file .env run --rm site-init
+            docker compose --env-file .env run -T --rm site-init
           sudo env OMNIV4_IMAGE_TAG='${{ github.sha }}' \
             docker compose --env-file .env up -d --force-recreate --no-build \
             backend frontend websocket queue-short queue-long scheduler proxy
