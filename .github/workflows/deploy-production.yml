@@ -66,9 +66,12 @@ jobs:
           echo 'ADMIN_PUBLIC_HOST=admin.omnilogistics.co.zw' | sudo tee -a .env >/dev/null
           echo 'OMNIV4_IMAGE_TAG=${{ github.sha }}' | sudo tee -a .env >/dev/null
           export OMNIV4_IMAGE_TAG='${{ github.sha }}'
-          sudo docker compose --env-file .env build backend
-          sudo docker compose --env-file .env run --rm site-init
-          sudo docker compose --env-file .env up -d --force-recreate --no-build \
+          sudo env OMNIV4_IMAGE_TAG='${{ github.sha }}' \
+            docker compose --env-file .env build backend
+          sudo env OMNIV4_IMAGE_TAG='${{ github.sha }}' \
+            docker compose --env-file .env run --rm site-init
+          sudo env OMNIV4_IMAGE_TAG='${{ github.sha }}' \
+            docker compose --env-file .env up -d --force-recreate --no-build \
             backend frontend websocket queue-short queue-long scheduler proxy
 
           sudo docker exec vps-backend-1 grep -q \
