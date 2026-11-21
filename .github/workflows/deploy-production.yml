@@ -76,9 +76,11 @@ jobs:
           sudo docker exec vps-backend-1 \
             bench --site admin-v4.omnilogistics.co.zw execute \
             omni_operations.omni_setup.smoke.run_portal_api_smoke_checks
-          sudo docker exec vps-backend-1 \
+          technician_audit="$(sudo docker exec vps-backend-1 \
             bench --site admin-v4.omnilogistics.co.zw execute \
-            omni_operations.omni_setup.smoke.run_technician_access_smoke_checks
+            omni_operations.omni_setup.smoke.run_technician_access_smoke_checks)"
+          printf 'Technician access audit: %s\n' "$technician_audit"
+          grep -Eq "('ok': True|\"ok\": true)" <<<"$technician_audit"
           REMOTE
 
       - name: Verify public production endpoint

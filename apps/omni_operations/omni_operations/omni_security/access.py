@@ -182,3 +182,32 @@ def is_portal_only_user(user):
 
 	roles = set(frappe.get_roles(user))
 	return PORTAL_ROLE in roles and not roles.intersection(INTERNAL_ROLES)
+
+
+@frappe.whitelist()
+def get_current_technician_access_diagnostics(installation=None):
+	"""Return non-sensitive permission diagnostics for the signed-in technician."""
+	require_authenticated_user()
+	user = frappe.session.user
+	roles = set(frappe.get_roles(user))
+	if "Technician" not in roles:
+		frappe.throw("This diagnostic is only available to technicians.", frappe.PermissionError)
+
+	result = {
+		"technician_only": is_technician_only(user),
+		"roles": sorted(roles),
+		"elevated_roles": sorted(roles.intersection(TECHNICIAN_ELEVATED_ROLES)),
+		"query_is_scoped": user in (tracker_installation_query(user) or ""),
+		"hook_registered": bool(
+			frappe.get_hooks("has_permission").get("Tracker Installation")
+		),
+	}
+	if installation:
+		doc = frappe.get_doc("Tracker Installation", installation)
+		result.update(
+			{
+				"installation_assigned": doc.technician == user,
+				"installation_read_allowed": doc.has_permission("read"),
+			}
+		)
+	return result
