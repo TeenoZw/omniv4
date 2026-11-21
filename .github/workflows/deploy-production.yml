@@ -105,5 +105,20 @@ jobs:
           ssh -i ~/.ssh/omni_vps_ed25519 \
             -o BatchMode=yes \
             -o IdentitiesOnly=yes \
-            deploy@13.140.144.28 \
-            'cd /srv/omniv4/app/deploy/vps && sudo docker compose --env-file .env logs --no-color --tail=120 proxy'
+            deploy@13.140.144.28 'bash -se' <<'REMOTE'
+          set -euo pipefail
+          cd /srv/omniv4/app/deploy/vps
+          sudo docker compose --env-file .env ps
+          for service in backend frontend proxy; do
+            container="$(sudo docker compose --env-file .env ps -q "$service")"
+            sudo docker inspect --format \
+              '{{.Name}} image={{.Config.Image}} id={{.Id}} networks={{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' \
+              "$container"
+          done
+          sudo docker exec vps-frontend-1 getent hosts backend
+          curl -sk --resolve admin.omnilogistics.co.zw:443:127.0.0.1 \
+            'https://admin.omnilogistics.co.zw/api/method/omni_operations.omni_security.access.get_current_technician_access_diagnostics?source=localhost' \
+            | head -c 1200
+          printf '\n'
+          sudo docker compose --env-file .env logs --no-color --tail=120 proxy
+          REMOTE
