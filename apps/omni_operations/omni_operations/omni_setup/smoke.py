@@ -963,7 +963,7 @@ def run_technician_access_smoke_checks():
 
 			roles = set(frappe.get_roles(user))
 			frappe.set_user(user)
-			visible = frappe.get_all("Tracker Installation", pluck="name")
+			visible = frappe.get_list("Tracker Installation", pluck="name")
 			assigned = frappe.get_all(
 				"Tracker Installation", filters={"technician": user}, pluck="name"
 			)
@@ -995,4 +995,6 @@ def run_technician_access_smoke_checks():
 	results["ok"] = results["technician_count"] > 0 and all(
 		entry["ok"] for entry in results["technicians"]
 	)
+	if not results["ok"]:
+		frappe.throw(f"Technician access smoke check failed: {results}")
 	return results
