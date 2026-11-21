@@ -62,11 +62,17 @@ jobs:
           cd /srv/omniv4/app
           cd deploy/vps
           sudo sed -i '/^ADMIN_PUBLIC_HOST=/d' .env
+          sudo sed -i '/^OMNIV4_IMAGE_TAG=/d' .env
           echo 'ADMIN_PUBLIC_HOST=admin.omnilogistics.co.zw' | sudo tee -a .env >/dev/null
+          echo 'OMNIV4_IMAGE_TAG=${{ github.sha }}' | sudo tee -a .env >/dev/null
           sudo docker compose --env-file .env build backend
           sudo docker compose --env-file .env run --rm site-init
           sudo docker compose --env-file .env up -d --force-recreate --no-build \
             backend frontend websocket queue-short queue-long scheduler proxy
+
+          sudo docker exec vps-backend-1 grep -q \
+            'def get_current_technician_access_diagnostics' \
+            /home/frappe/frappe-bench/apps/omni_operations/omni_operations/omni_security/access.py
 
           cd /srv/omniv4/app
           ./deploy/vps/healthcheck.sh
