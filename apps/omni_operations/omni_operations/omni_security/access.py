@@ -11,6 +11,13 @@ INTERNAL_ROLES = {
 	"Technician",
 }
 
+TECHNICIAN_ELEVATED_ROLES = {
+	"System Manager",
+	"Omni Operations Admin",
+	"Fleet Manager",
+	"Installation Coordinator",
+}
+
 PORTAL_ROLE = "Customer Portal User"
 
 CUSTOMER_FIELD_BY_DOCTYPE = {
@@ -93,6 +100,9 @@ def vehicle_assignment_query(user=None, doctype=None):
 
 
 def tracker_installation_query(user=None, doctype=None):
+	user = user or frappe.session.user
+	if is_technician_only(user):
+		return f"`tabTracker Installation`.`technician` = {frappe.db.escape(user)}"
 	return get_customer_query_conditions_for("Tracker Installation", user)
 
 
@@ -130,6 +140,9 @@ def issue_query(user=None, doctype=None):
 
 def has_customer_permission(doc, user=None, ptype=None, **kwargs):
 	user = user or frappe.session.user
+	if doc.doctype == "Tracker Installation" and is_technician_only(user):
+		return doc.technician == user
+
 	if not should_scope_to_customer(user):
 		return True
 
@@ -153,6 +166,14 @@ def should_scope_to_customer(user):
 		return False
 
 	return PORTAL_ROLE in roles
+
+
+def is_technician_only(user):
+	if user in {"Administrator", "Guest"}:
+		return False
+
+	roles = set(frappe.get_roles(user))
+	return "Technician" in roles and not roles.intersection(TECHNICIAN_ELEVATED_ROLES)
 
 
 def is_portal_only_user(user):

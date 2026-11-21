@@ -1,5 +1,9 @@
+from unittest.mock import patch
+
 import frappe
 from frappe.tests.utils import FrappeTestCase
+
+from omni_operations.omni_security.access import has_customer_permission, tracker_installation_query
 
 
 class TestTrackerInstallation(FrappeTestCase):
@@ -36,3 +40,18 @@ class TestTrackerInstallation(FrappeTestCase):
 			}
 		)
 		doc._validate_completion()
+
+	def test_technician_query_is_scoped_to_assigned_user(self):
+		user = "assigned-technician@example.com"
+		with patch("frappe.get_roles", return_value=["Technician"]):
+			condition = tracker_installation_query(user)
+
+		self.assertIn("`tabTracker Installation`.`technician`", condition)
+		self.assertIn(user, condition)
+
+	def test_technician_cannot_open_another_technicians_installation(self):
+		doc = frappe._dict(doctype="Tracker Installation", technician="other@example.com")
+		with patch("frappe.get_roles", return_value=["Technician"]):
+			self.assertFalse(
+				has_customer_permission(doc, user="assigned-technician@example.com", ptype="read")
+			)

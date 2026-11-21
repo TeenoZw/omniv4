@@ -56,6 +56,12 @@ WRITE_NO_DELETE = {
 	"share": 0,
 }
 
+WRITE_EXISTING_ONLY = {
+	**WRITE_NO_DELETE,
+	"create": 0,
+	"email": 0,
+}
+
 
 DOCTYPE_PERMISSIONS = {
 	"Fleet Vehicle": {
@@ -116,7 +122,7 @@ DOCTYPE_PERMISSIONS = {
 		"Omni Operations Admin": FULL_ACCESS,
 		"Fleet Manager": FULL_ACCESS,
 		"Installation Coordinator": WRITE_NO_DELETE,
-		"Technician": WRITE_NO_DELETE,
+		"Technician": WRITE_EXISTING_ONLY,
 		"Customer Portal User": PORTAL_READ_ONLY,
 	},
 	"Fleet Maintenance Work Order": {
