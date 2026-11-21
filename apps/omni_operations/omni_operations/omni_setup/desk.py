@@ -176,7 +176,10 @@ def ensure_omni_workspace():
 
 	workspace.label = OMNI_WORKSPACE
 	workspace.title = OMNI_WORKSPACE
-	workspace.module = "Omni Operations"
+	# Keep the workspace independent of Frappe's module-access gate. Technician
+	# permissions are granted on Field Service and inventory DocTypes, so tying
+	# this page to the otherwise empty Omni Operations module hides their home.
+	workspace.module = None
 	workspace.public = 1
 	workspace.is_hidden = 0
 	workspace.sequence_id = 0
