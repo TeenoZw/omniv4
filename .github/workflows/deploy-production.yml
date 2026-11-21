@@ -73,6 +73,9 @@ jobs:
           sudo docker exec vps-backend-1 grep -q \
             'def get_current_technician_access_diagnostics' \
             /home/frappe/frappe-bench/apps/omni_operations/omni_operations/omni_security/access.py
+          sudo docker exec vps-backend-1 \
+            /home/frappe/frappe-bench/env/bin/python -c \
+            "import omni_operations.omni_security.access as m; print(m.__file__); assert hasattr(m, 'get_current_technician_access_diagnostics')"
 
           cd /srv/omniv4/app
           ./deploy/vps/healthcheck.sh
@@ -90,7 +93,11 @@ jobs:
           REMOTE
 
       - name: Verify public production endpoint
-        run: ./scripts/production_smoke_check.sh https://admin.omnilogistics.co.zw
+        run: |
+          ./scripts/production_smoke_check.sh https://admin.omnilogistics.co.zw
+          diagnostic_response="$(curl -sS \
+            'https://admin.omnilogistics.co.zw/api/method/omni_operations.omni_security.access.get_current_technician_access_diagnostics')"
+          grep -q 'Authentication is required' <<<"$diagnostic_response"
 
       - name: Capture proxy diagnostics
         if: always()
