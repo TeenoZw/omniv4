@@ -967,6 +967,16 @@ def run_technician_access_smoke_checks():
 			assigned = frappe.get_all(
 				"Tracker Installation", filters={"technician": user}, pluck="name"
 			)
+			unassigned = next(
+				(
+					row.name
+					for row in frappe.get_all(
+						"Tracker Installation", fields=["name", "technician"]
+					)
+					if row.technician != user
+				),
+				None,
+			)
 			condition = tracker_installation_query(user) or ""
 			entry = {
 				"index": len(results["technicians"]) + 1,
@@ -976,6 +986,8 @@ def run_technician_access_smoke_checks():
 				"visible_count": len(visible),
 				"assigned_count": len(assigned),
 				"visible_matches_assigned": set(visible) == set(assigned),
+				"unassigned_document_denied": not unassigned
+				or not frappe.get_doc("Tracker Installation", unassigned).has_permission("read"),
 				"can_create": frappe.has_permission("Tracker Installation", "create"),
 			}
 			entry["ok"] = all(
@@ -984,6 +996,7 @@ def run_technician_access_smoke_checks():
 					not entry["elevated_roles"],
 					entry["query_is_scoped"],
 					entry["visible_matches_assigned"],
+					entry["unassigned_document_denied"],
 					not entry["can_create"],
 				]
 			)
