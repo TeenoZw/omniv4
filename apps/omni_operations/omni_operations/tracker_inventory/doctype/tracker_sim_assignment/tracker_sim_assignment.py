@@ -264,6 +264,7 @@ def upsert_assignment_from_installation(installation):
 	if status == "Installed":
 		doc.installed_date = installation.completed_date or now_datetime()
 	elif status == "Assigned":
+		doc.installed_date = None
 		doc.assigned_date = installation.scheduled_date or now_datetime()
 	elif status == "Reserved":
 		doc.prepared_date = installation.scheduled_date or now_datetime()
