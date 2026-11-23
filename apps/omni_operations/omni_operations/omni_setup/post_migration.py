@@ -186,13 +186,26 @@ def backfill_tracker_sim_assignments():
 			continue
 
 		if sim.status == "Installed" and sim.current_customer and sim.current_vehicle:
-			status = "Installed"
+			source_installation = frappe.db.get_value(
+				"Tracker Installation",
+				{
+					"tracker": sim.current_tracker,
+					"sim": sim.name,
+					"vehicle": sim.current_vehicle,
+					"status": "Completed",
+				},
+				"name",
+			)
+			status = "Installed" if source_installation else "Assigned"
 		elif sim.status == "Assigned" and sim.current_customer and sim.current_vehicle:
 			status = "Assigned"
+			source_installation = None
 		elif sim.status == "Reserved" and sim.current_customer:
 			status = "Reserved"
+			source_installation = None
 		else:
 			status = "Prepared"
+			source_installation = None
 		doc = frappe.get_doc(
 			{
 				"doctype": "Tracker SIM Assignment",
@@ -203,6 +216,7 @@ def backfill_tracker_sim_assignments():
 				"sim": sim.name,
 				"customer": sim.current_customer,
 				"vehicle": sim.current_vehicle,
+				"source_installation": source_installation,
 				"notes": "Backfilled from SIM Profile current assignment fields.",
 			}
 		)

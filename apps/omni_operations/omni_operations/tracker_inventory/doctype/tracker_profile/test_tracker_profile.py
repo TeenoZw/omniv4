@@ -28,6 +28,22 @@ class TestTrackerProfile(FrappeTestCase):
 		doc.validate()
 
 		self.assertEqual(doc.status, "In Stock")
+		self.assertEqual(doc.installation_stage, "In Inventory")
+
+	def test_assigned_tracker_is_waiting_for_installation(self):
+		doc = frappe.get_doc(
+			{
+				"doctype": "Tracker Profile",
+				"imei": "TEST-AWAITING-INSTALL",
+				"current_vehicle": "TEST-UNIT",
+				"condition": "Used - Serviceable",
+			}
+		)
+
+		doc.validate()
+
+		self.assertEqual(doc.status, "Assigned")
+		self.assertEqual(doc.installation_stage, "Assigned - Awaiting Installation")
 
 	def test_faulty_tracker_cannot_remain_assigned(self):
 		doc = frappe.get_doc(

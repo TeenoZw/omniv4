@@ -79,6 +79,7 @@
    "reqd": 1
   },
   {
+   "description": "The field-service job that controls the Installed stage. Installed cannot be selected manually; this job must be completed with evidence and customer sign-off.",
    "fieldname": "source_installation",
    "fieldtype": "Link",
    "in_standard_filter": 1,
@@ -130,9 +131,11 @@
    "label": "Assigned Date"
   },
   {
+   "description": "Set automatically when the linked Tracker Installation is completed.",
    "fieldname": "installed_date",
    "fieldtype": "Datetime",
-   "label": "Installed Date"
+   "label": "Installed Date",
+   "read_only": 1
   },
   {
    "fieldname": "removed_date",

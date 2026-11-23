@@ -1,9 +1,10 @@
 frappe.listview_settings["Tracker Profile"] = {
-	add_fields: ["status", "condition", "tracker_name", "item_code", "current_customer", "current_vehicle"],
+	add_fields: ["status", "installation_stage", "condition", "tracker_name", "item_code", "current_customer", "current_vehicle"],
 	get_indicator(doc) {
 		const serviceable = ["Brand New", "Used - Serviceable"].includes(doc.condition);
-		const color = !serviceable ? "red" : doc.status === "Assigned" ? "blue" : "green";
-		const label = `${doc.status || "In Stock"} · ${doc.condition || "Brand New"}`;
+		const installationStage = doc.installation_stage || (doc.status === "Assigned" ? "Assigned - Awaiting Installation" : "In Inventory");
+		const color = !serviceable ? "red" : installationStage === "Installed" ? "green" : doc.status === "Assigned" ? "orange" : "blue";
+		const label = `${doc.status || "In Stock"} · ${installationStage} · ${doc.condition || "Brand New"}`;
 		return [__(label), color, `status,=,${doc.status || "In Stock"}`];
 	},
 	onload(listview) {

@@ -5,6 +5,10 @@ from frappe.model.document import Document
 class TrackerProfile(Document):
 	def validate(self):
 		self.status = "Assigned" if self.current_vehicle else "In Stock"
+		if not self.current_vehicle:
+			self.installation_stage = "In Inventory"
+		elif not self.installation_stage or self.installation_stage == "In Inventory":
+			self.installation_stage = "Assigned - Awaiting Installation"
 		if self.current_vehicle and self.condition not in {"Brand New", "Used - Serviceable"}:
 			frappe.throw("Return this tracker to inventory before marking it as unavailable for installation.")
 
@@ -151,6 +155,7 @@ def return_to_inventory(tracker, condition="Used - Serviceable"):
 		tracker,
 		{
 			"status": "In Stock",
+			"installation_stage": "In Inventory",
 			"condition": condition,
 			"current_customer": None,
 			"current_vehicle": None,

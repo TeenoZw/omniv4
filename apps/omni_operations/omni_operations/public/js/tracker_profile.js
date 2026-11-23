@@ -181,8 +181,13 @@ function open_return_to_inventory_dialog(frm) {
 
 function render_inventory_lifecycle(frm, kind) {
 	const status = frm.doc.status || "In Stock";
+	const installationStage = frm.doc.installation_stage || (status === "Assigned" ? "Assigned - Awaiting Installation" : "In Inventory");
 	const condition = frm.doc.condition || "Brand New";
 	frm.dashboard.add_indicator(__("Inventory: {0}", [status]), status === "Assigned" ? "blue" : "green");
+	frm.dashboard.add_indicator(
+		__("Installation: {0}", [installationStage]),
+		installationStage === "Installed" ? "green" : installationStage === "Assigned - Awaiting Installation" ? "orange" : "gray"
+	);
 	frm.dashboard.add_indicator(
 		__("Condition: {0}", [condition]),
 		["Brand New", "Used - Serviceable"].includes(condition) ? "green" : condition === "Needs Inspection" ? "orange" : "red"
@@ -192,7 +197,7 @@ function render_inventory_lifecycle(frm, kind) {
 	const assignedTo = frm.doc.current_vehicle || frm.doc.current_customer || __("No customer assignment");
 	frm.dashboard.set_headline(
 		`${frappe.utils.escape_html(identifier || frm.doc.name)}: ` +
-			`<b>${frappe.utils.escape_html(status)}</b> · ${frappe.utils.escape_html(condition)}<br>` +
+			`<b>${frappe.utils.escape_html(status)}</b> · ${frappe.utils.escape_html(installationStage)} · ${frappe.utils.escape_html(condition)}<br>` +
 			`${__("Current")}: ${frappe.utils.escape_html(assignedTo)}`
 	);
 }

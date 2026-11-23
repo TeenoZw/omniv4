@@ -11,6 +11,7 @@
   "imei",
   "tracker_name",
   "status",
+  "installation_stage",
   "condition",
   "item_code",
   "serial_no",
@@ -59,6 +60,18 @@
    "in_standard_filter": 1,
    "label": "Assignment Status",
    "options": "In Stock\nAssigned",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "In Inventory",
+   "description": "Physical deployment stage. Assigned - Awaiting Installation means allocated to a unit but not yet fitted. Installed is set only after the linked installation job is completed.",
+   "fieldname": "installation_stage",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Installation Stage",
+   "options": "In Inventory\nAssigned - Awaiting Installation\nInstalled",
    "read_only": 1,
    "reqd": 1
   },

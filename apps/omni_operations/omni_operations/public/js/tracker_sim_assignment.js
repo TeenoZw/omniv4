@@ -15,6 +15,7 @@ frappe.ui.form.on("Tracker SIM Assignment", {
 	},
 
 	refresh(frm) {
+		frm.set_df_property("status", "read_only", 1);
 		render_assignment_lifecycle(frm);
 
 		if (frm.is_new()) {
@@ -78,10 +79,10 @@ function get_assignment_next_step(frm) {
 		return __("Reserved kit: choose the customer, vehicle and technician before installation.");
 	}
 	if (frm.doc.status === "Assigned") {
-		return __("Assigned kit: install it on the vehicle or open the installation job.");
+		return __("Assigned only: this kit is linked to the vehicle but is not yet installed. Open and complete the installation job after the physical work, evidence and customer sign-off are captured.");
 	}
 	if (frm.doc.status === "Installed") {
-		return __("Installed kit: tracker and SIM inventory now reflect the customer and vehicle.");
+		return __("Installed: the linked installation job was completed with installation details, evidence and customer sign-off.");
 	}
 	return __("Assignment closed. Create a new assignment if this kit is reused.");
 }
@@ -90,19 +91,34 @@ function add_assignment_actions(frm) {
 	const transitions = {
 		Prepared: ["Reserved", "Assigned"],
 		Reserved: ["Assigned", "Cancelled"],
-		Assigned: ["Installed", "Removed"],
+		Assigned: ["Removed"],
 		Installed: ["Removed"],
 	};
 
 	(transitions[frm.doc.status] || []).forEach((status) => {
 		frm.add_custom_button(__(`Mark ${status}`), () => {
 			frm.set_value("status", status);
-			if (status === "Installed" && !frm.doc.installed_date) {
-				frm.set_value("installed_date", frappe.datetime.now_datetime());
-			}
 			frm.save();
 		}, __("Workflow"));
 	});
+
+	if (frm.doc.status === "Assigned") {
+		frm.add_custom_button(__("Open Installation Job"), () => {
+			if (frm.doc.source_installation) {
+				frappe.set_route("Form", "Tracker Installation", frm.doc.source_installation);
+				return;
+			}
+			frappe.new_doc("Tracker Installation", {
+				customer: frm.doc.customer,
+				company: frappe.defaults.get_default("Company"),
+				vehicle: frm.doc.vehicle,
+				tracker: frm.doc.tracker,
+				sim: frm.doc.sim,
+				technician: frm.doc.assigned_technician,
+				status: "Scheduled",
+			});
+		}, __("Workflow"));
+	}
 }
 
 function add_assignment_links(frm) {
@@ -124,19 +140,9 @@ function add_assignment_links(frm) {
 		}
 	}, __("View"));
 
-	frm.add_custom_button(__("Installation"), () => {
-		if (frm.doc.source_installation) {
+	if (frm.doc.source_installation) {
+		frm.add_custom_button(__("Installation Job"), () => {
 			frappe.set_route("Form", "Tracker Installation", frm.doc.source_installation);
-		} else {
-			frappe.new_doc("Tracker Installation", {
-				customer: frm.doc.customer,
-				company: frappe.defaults.get_default("Company"),
-				vehicle: frm.doc.vehicle,
-				tracker: frm.doc.tracker,
-				sim: frm.doc.sim,
-				technician: frm.doc.assigned_technician,
-				status: "Scheduled",
-			});
-		}
-	}, __("Open/Create"));
+		}, __("View"));
+	}
 }

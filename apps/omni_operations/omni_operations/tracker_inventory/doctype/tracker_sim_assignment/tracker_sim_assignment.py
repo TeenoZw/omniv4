@@ -17,6 +17,7 @@ class TrackerSIMAssignment(Document):
 	def validate(self):
 		self._set_default_dates()
 		self._validate_context()
+		self._validate_installed_source()
 		if self.status in ACTIVE_STATUSES:
 			self._validate_unique_active_sim()
 			self._validate_unique_active_tracker_slot()
@@ -61,6 +62,21 @@ class TrackerSIMAssignment(Document):
 
 		if self.status == "Installed" and not self.vehicle:
 			frappe.throw("Vehicle is required when a SIM assignment is installed.")
+
+	def _validate_installed_source(self):
+		if self.status != "Installed" or (not self.is_new() and not self.has_value_changed("status")):
+			return
+		if not self.source_installation:
+			frappe.throw(
+				"A kit cannot be marked Installed directly. Complete its Tracker Installation job first."
+			)
+		installation_status = frappe.db.get_value(
+			"Tracker Installation", self.source_installation, "status"
+		)
+		if installation_status != "Completed":
+			frappe.throw(
+				f"Tracker Installation {self.source_installation} must be Completed before this kit is Installed."
+			)
 
 	def _validate_unique_active_sim(self):
 		filters = {
@@ -128,6 +144,7 @@ def sync_tracker_sim_assignment_state(tracker, exclude_assignment=None):
 			tracker,
 			{
 				"status": "In Stock",
+				"installation_stage": "In Inventory",
 				"current_customer": None,
 				"current_vehicle": None,
 				"assigned_technician": None,
@@ -140,6 +157,13 @@ def sync_tracker_sim_assignment_state(tracker, exclude_assignment=None):
 	assigned = next((row for row in assignments if row.vehicle), None)
 	update = {
 		"status": "Assigned" if assigned else "In Stock",
+		"installation_stage": (
+			"Installed"
+			if any(row.status == "Installed" for row in assignments)
+			else "Assigned - Awaiting Installation"
+			if assigned
+			else "In Inventory"
+		),
 		"current_customer": assigned.customer if assigned else None,
 		"current_vehicle": assigned.vehicle if assigned else None,
 		"assigned_technician": assigned.assigned_technician if assigned else primary.assigned_technician,
@@ -231,6 +255,7 @@ def upsert_assignment_from_installation(installation):
 		)
 
 	doc.status = status
+	doc.source_installation = installation.name
 	doc.slot = doc.slot or "Primary"
 	doc.tracker = installation.tracker
 	doc.customer = installation.customer
